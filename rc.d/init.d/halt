@@ -13,7 +13,12 @@
 # Set the path.
 PATH=/sbin:/bin:/usr/bin:/usr/sbin
 export NOLOCALE=1
+
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
 . /etc/init.d/functions
+
 unset TEXTDOMAIN TEXTDOMAINDIR
 
 unset action
@@ -21,32 +26,27 @@ action()
 {
 	echo -n "$1 "
 	shift
-	if [ "$BOOTUP" = "color" ]; then
-		$* && echo_success || echo_failure
-	else
-		$*
-	fi
+	$*
 	local rc=$?
+	if [ "$BOOTUP" = color ]; then
+		[ $rc = 0 ] && echo_success || echo_failure
+	fi
 	echo -e '\r'
 	return $rc
 }
 
 # See how we were called.
 case "$0" in
-	*halt)
+	*halt|*poweroff)
 		message="The system is halted"
-		command=/sbin/halt
+		command=/sbin/poweroff
 		;;
 	*reboot)
 		message="Please stand by while rebooting the system..."
 		command=/sbin/reboot
 		;;
-	*poweroff)
-		message="The system is turned off"
-		command=/sbin/poweroff
-		;;
 	*)
-		echo "${0##*/}: call me as \"rc.halt\", \"rc.reboot\" or \"rc.poweroff\" please!"
+		msg_usage "${0##*/}: call me as \"halt\", \"reboot\" or \"poweroff\" please!"
 		exit 1
 		;;
 esac
@@ -56,7 +56,7 @@ if [ -n "$1" ]; then
 		*start)
 			;;
 		*)
-			echo "Usage: (halt|reboot) {start}"
+			msg_usage "(halt|reboot|poweroff) {start}"
 			exit 1
 			;;
 	esac
@@ -122,9 +122,9 @@ fi
 
 [ -f /proc/bus/usb/devices ] && umount -n /proc/bus/usb >/dev/null 2>&1
 
-# Remount read only anything that's left mounted.
-action "Remounting remaining filesystems (if any) readonly:" umount -anrf
-mount -n -o remount,ro /
+# Remount read-only anything that's left mounted.
+action "Remounting remaining filesystems (if any) read-only:" umount -anrf
+action "Remounting root filesystem read-only:" mount -n -o remount,ro /
 
 action "Unmounting proc filesystem:" umount -n /proc
 
@@ -132,12 +132,7 @@ action "Unmounting proc filesystem:" umount -n /proc
 UPSCTL=/etc/apcupsd/apccontrol
 if [ -x "$UPSCTL" -a -f /etc/apcupsd/powerfail ]; then
 	action "Attempting to turn the UPS off:" "$UPSCTL" killpower
-	message="The system is turned off"
-	command=/sbin/poweroff
-fi
-
-if [ -f /poweroff ] || [ "$command" = /sbin/halt -a ! -f /halt ]; then
-	message="The system is turned off"
+	message="The system is halted"
 	command=/sbin/poweroff
 fi
 
