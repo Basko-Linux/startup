@@ -2,7 +2,7 @@
 
 Name: initscripts
 Version: 5.49
-Release: ipl51mdk
+Release: ipl52mdk
 
 Summary: The inittab file and the %_sysconfdir/init.d scripts.
 License: GPL
@@ -241,6 +241,10 @@ fi
 %doc sysconfig.txt sysvinitfiles ChangeLog*
 
 %changelog
+* Wed Mar 05 2003 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl52mdk
+- Removed /proc/progress support.
+- %_initdir/dm: keep current fgconsole.
+
 * Mon Mar 03 2003 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl51mdk
 - Implemented rundm:
   %_sbindir/rundm: new program;
