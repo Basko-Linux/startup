@@ -4,16 +4,14 @@
 # You can put your own initialization stuff in here if you don't
 # want to do the full Sys V style init stuff.
 
-[ -s /etc/sysconfig/system ] && . /etc/sysconfig/system
-[ -z "$SECURITY" ] && SECURITY=0
+[ ! -s /etc/sysconfig/system ] || . /etc/sysconfig/system
+[ -n "$SECURITY" ] || SECURITY=0
 
 if [ -f /var/lock/TMP_1ST ]; then
 	/etc/rc.d/scripts/mandrake_firstime
 fi
 
-if [ -f /etc/mandrake-release ]; then
-	R=$(cat /etc/mandrake-release)
-
+if R=$(cat /etc/altlinux-release 2>/dev/null) || R=$(cat /etc/mandrake-release 2>/dev/null) || R=$(cat /etc/redhat-release 2>/dev/null); then
 	arch=$(uname -m)
 	a="a"
 	case "_$arch" in
