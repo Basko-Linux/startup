@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.8.3
+Version: 0.8.4
 Release: alt1
 
 Summary: The system startup scripts
@@ -144,6 +144,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed May 26 2004 Dmitry V. Levin <ldv@altlinux.org> 0.8.4-alt1
+- init.d/fbsetfont: fixed (#3120).
+- sysconfig/clock: added missing desriptions (#3496).
+
 * Sat Feb 07 2004 Dmitry V. Levin <ldv@altlinux.org> 0.8.3-alt1
 - Requires: filesystem >= 0:2.1.7-alt1 (due to /sys).
 - rc.d/rc.sysinit:
