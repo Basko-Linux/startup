@@ -420,12 +420,6 @@ action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat
 # Set system font again, if required.
 [ -n "$SETSYSFONT_DONE" ] || /sbin/setsysfont >/dev/null 2>&1
 
-# Initialize screensaver
-if [ -x /usr/bin/setterm -a -d /usr/share/terminfo -a -s /etc/sysconfig/console/setterm ]; then
-	action "Initializing console powersaver:" \
-		"sh -c \"/usr/bin/setterm `cat /etc/sysconfig/console/setterm` >/dev/console\""
-fi
-
 if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
 	action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
 fi
