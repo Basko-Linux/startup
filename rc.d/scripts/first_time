@@ -1,5 +1,5 @@
 #!/bin/sh
-# Description: Launch ALT Linux Configuration
+# Launch ALT Linux postinstall autoconfiguration.
 
 FLO=/var/log/first_boot_log
 :>>$FLO
@@ -8,7 +8,7 @@ chmod go-rwx $FLO
 . /etc/init.d/functions
 
 # On fail/exit erase the temporary file
-trap 'rm -f /var/lock/TMP_1ST' 1 2 3 15 EXIT
+trap 'rm -f /var/lock/TMP_1ST' 0 1 2 3 15
 
 for f in /dev/cdrom*; do
 	t="${f/cdrom/dvd}"
@@ -30,13 +30,6 @@ action "Adjusting automounter configuration:" /etc/rc.d/scripts/adjust_autofs
 for i in `awk -F: '{if ($3>=400) print $1}' </etc/passwd`; do
 	[ -e "/var/mail/$i" ] || action "Creating mailbox for $i:" install --owner="$i" --group=mail --mode=660 /dev/null "/var/mail/$i"
 done
-
-# Build the whatis database
-{
-	for i in /etc/cron.weekly/makewhatis*.cron; do
-		[ -r "$i" ] && nice -20 /bin/sh "$i" 2>> $FLO
-	done
-} &
 
 #Rebuild Mozilla registry to be sure that mozilla registry is ok
 MOZILLA_REGXPCOM=/usr/lib/mozilla/regxpcom
