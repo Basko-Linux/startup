@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# /etc/rc.d/scripts/load_modules - run once at boot time from rc.sysinit
+#
+
+. /etc/init.d/functions
+
+[ -s /etc/modules ] || exit 0
+
+# Source functions
+. /etc/init.d/functions
+
+# Loop over every line in /etc/modules.
+(cat /etc/modules; echo) | while read module args
+do
+	# Ignore empty lines and comments.
+	[ -n "${module##\#*}" ] || continue
+
+	action "Loading module $module:" modprobe "$module" $args 2>/dev/null
+done
