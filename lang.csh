@@ -4,7 +4,7 @@ set sourced=0
 
 foreach file ($HOME/.i18n /etc/sysconfig/i18n)
 	if ($sourced == 0 && -f $file ) then
-	    eval `sed 's|=C$|=en_US|g' $file | sed 's|^#.*||' | sed 's|\([^=]*\)=\([^=]*\)|setenv \1 \2|g' | sed 's|$|;|' `
+	    eval `sed 's|^#.*||' $file | sed 's|\([^=]*\)=\([^=]*\)|setenv \1 \2|g' | sed 's|$|;|' `
 	set sourced=1
 	endif
 end

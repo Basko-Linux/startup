@@ -24,29 +24,15 @@ CondSet()
 }
 
 if [ -n "$sourced" ]; then
-	CondSet LANGUAGE LC_ADDRESS LC_COLLATE LC_CTYPE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE
-	if [ -n "$LANG" ]; then
-		if [ "$LANG" = C ]; then LANG="en_US"; fi
-		export LANG
-	else
-		Unset LANG
-	fi
+	CondSet LANGUAGE LC_ADDRESS LC_COLLATE LC_CTYPE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE LC_TIME
+	[ -n "$LANG" ] && export LANG || Unset LANG
 	if [ -n "$LC_ALL" ]; then
-		if [ "$LC_ALL" != "$LANG" ]; then
-			if [ "$LC_ALL" = C ]; then LC_ALL="en_US"; fi
-			export LC_ALL
-		else
-			Unset LC_ALL
-		fi
+		[ "$LC_ALL" != "$LANG" ] && export LC_ALL || Unset LC_ALL
 	else
 		Unset LC_ALL
 	fi
 	if [ -n "$LINGUAS" ]; then
-		if [ "$LINGUAS" != "$LANG" -a "$LINGUAS" != "$LANGUAGE" ]; then
-			export LINGUAS
-		else
-			Unset LINGUAS
-		fi
+		[ "$LINGUAS" != "$LANG" -a "$LINGUAS" != "$LANGUAGE" ] && export LINGUAS || Unset LINGUAS
 	else 
 		Unset LINGUAS
 	fi

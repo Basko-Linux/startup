@@ -233,6 +233,7 @@ fi
 - network-scripts/ifup: added PEERNTP logic to dhcpcd; (#0001263).
 - init.d/single: fixed; (#0001324).
 - profile.d/inputrc.{sh,csh}: removed; (#0001327).
+- profile.d/lang.{sh,csh): removed 'C->en_US' convertion; (#0001403).
 - ppp/ip-up: added /etc/ppp/ip-up.d/ support.
 - ppp/ip-down: added /etc/ppp/ip-down.d/ support.
 
