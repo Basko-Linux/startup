@@ -38,7 +38,7 @@ if [ -s /etc/sysconfig/desktop ]; then
 		preferred=xdm
 	fi
 fi
-if [ -n "$preferred" ] && which "$preferred" &>/dev/null; then 
+if [ -n "$preferred" ] && which "$preferred" >/dev/null 2>&1; then 
     if [ -n "$log" ]; then
 	exec "$preferred" >/dev/null 2>&1 $@
     else
@@ -46,18 +46,18 @@ if [ -n "$preferred" ] && which "$preferred" &>/dev/null; then
     fi
 fi
 
-if which kdm &>/dev/null; then
+if which kdm >/dev/null 2>&1; then
 	preferred=kdm
 	log=1
-elif which gdm &>/dev/null; then
+elif which gdm >/dev/null 2>&1; then
 	preferred=gdm
-elif which wdm &>/dev/null; then
+elif which wdm >/dev/null 2>&1; then
 	preferred=wdm
-elif which xdm &>/dev/null; then
+elif which xdm >/dev/null 2>&1; then
 	preferred=xdm
 fi
 
-if [ -n "$preferred" ] && which "$preferred" &>/dev/null; then 
+if [ -n "$preferred" ] && which "$preferred" >/dev/null 2>&1; then 
     if [ -n "$log" ]; then
 	exec "$preferred" >/dev/null 2>&1 $@
     else

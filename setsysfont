@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # ALT's /sbin/setsysfont.
 # Agrees with RH's initscripts-7.06-1.
