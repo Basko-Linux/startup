@@ -15,7 +15,7 @@
 HDPARM=/sbin/hdparm
 [ -x "$HDPARM" ] || exit 0
 
-for i in a b c d e f g h; do
+for i in a b c d e f g h i j k l m n o p r s t; do
 	if [ -e "/proc/ide/hd$i/media" ]; then
 		hdmedia=`cat /proc/ide/hd$i/media`
 		if [ "$hdmedia" = disk ]; then
@@ -31,19 +31,19 @@ for i in a b c d e f g h; do
 			SourceIfNotEmpty /etc/sysconfig/harddisk/hd$i && sourced=1
 			[ -n "$sourced" ] || continue
 			HDFLAGS=
-			if [ -n "$MULTIPLE_IO" ] && [ "$MULTIPLE_IO" != 0 ]; then
+			if [ -n "$MULTIPLE_IO" ] && [ "$MULTIPLE_IO" -ge 0 ] 2>/dev/null; then
 				HDFLAGS="-q -m$MULTIPLE_IO"
 			fi
-			if [ -n "$USE_DMA" ] && [ "$USE_DMA" != 0 ]; then
+			if [ -n "$USE_DMA" ] && [ "$USE_DMA" -ge 0 ] 2>/dev/null; then
 				HDFLAGS="$HDFLAGS -q -d$USE_DMA"
 			fi
-			if [ -n "$EIDE_32BIT" ]; then
+			if [ -n "$EIDE_32BIT" ] && [ "$EIDE_32BIT" -ge 0 ] 2>/dev/null; then
 				HDFLAGS="$HDFLAGS -q -c$EIDE_32BIT"
 			fi
-			if [ -n "$UNMASKIRQ" ]; then
+			if [ -n "$UNMASKIRQ" ] && [ "$UNMASKIRQ" -ge 0 ] 2>/dev/null; then
 				HDFLAGS="$HDFLAGS -q -u$UNMASKIRQ"
 			fi
-			if [ -n "$LOOKAHEAD" ]; then
+			if [ -n "$LOOKAHEAD" ] && [ "$LOOKAHEAD" -ge 0 ] 2>/dev/null; then
 				HDFLAGS="$HDFLAGS -q -A$LOOKAHEAD"
 			fi
 			if [ -n "$EXTRA_PARAMS" ]; then
@@ -64,16 +64,16 @@ for i in a b c d e f g h; do
 			SourceIfNotEmpty /etc/sysconfig/harddisk/hd$i && sourced=1
 			[ -n "$sourced" ] || continue
 			HDFLAGS=
-			if [ -n "$USE_DMA" ] && [ "$USE_DMA" != 0 ]; then
+			if [ -n "$USE_DMA" ] && [ "$USE_DMA" -ge 0 ] 2>/dev/null; then
 				HDFLAGS="$HDFLAGS -q -d$USE_DMA"
 			fi
-			if [ -n "$EIDE_32BIT" ]; then
+			if [ -n "$EIDE_32BIT" ] && [ "$EIDE_32BIT" -ge 0 ] 2>/dev/null; then
 				HDFLAGS="$HDFLAGS -q -c$EIDE_32BIT"
 			fi
-			if [ -n "$UNMASKIRQ" ]; then
+			if [ -n "$UNMASKIRQ" ] && [ "$UNMASKIRQ" -ge 0 ] 2>/dev/null; then
 				HDFLAGS="$HDFLAGS -q -u$UNMASKIRQ"
 			fi
-			if [ -n "$SPEED" ]; then
+			if [ -n "$SPEED" ] && [ "$SPEED" -ge 0 ] 2>/dev/null; then
 				HDFLAGS="$HDFLAGS -q -E$SPEED"
 			fi
 			if [ -n "$EXTRA_PARAMS" ]; then
