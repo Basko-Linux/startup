@@ -1,7 +1,10 @@
 #!/bin/sh
 
-[ -d "/usr/share/doc/HTML" ] && cd /usr/share/doc/HTML || exit 0
+cd /usr/share/doc/HTML >/dev/null 2>&1 || exit 0
 
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
 . /etc/init.d/functions
 
 if SourceIfNotEmpty /etc/sysconfig/i18n; then
@@ -28,13 +31,10 @@ if SourceIfNotEmpty /etc/sysconfig/i18n; then
 	done
 fi
 
-PERL=/usr/bin/perl
-if [ -x "$PERL" ]; then
-	for f in index*.html; do
-		[ -w "$f" ] || continue
-		"$PERL" -pi -e "s/_RAND_/`head -c 32 /dev/urandom |md5sum |cut -d\  -f1`/" "$f"
-		"$PERL" -pi -e "s/_LOCALE_/`locale|grep ^LANG=|cut -d= -f2-`/" "$f"
-	done
-fi
+for f in index*.html; do
+	[ -w "$f" ] || continue
+	subst "s/_RAND_/`head -c 32 /dev/urandom |md5sum |cut -d\  -f1`/" "$f"
+	subst "s/_LOCALE_/`locale |grep ^LANG= |cut -d= -f2-`/" "$f"
+done
 
 :
