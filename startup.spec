@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.2
+Version: 0.3
 Release: alt1
 
 Summary: The system startup scripts
@@ -135,6 +135,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Sun May 25 2003 Dmitry V. Levin <ldv@altlinux.org> 0.3-alt1
+- init.d/fbsetfont: fixed tty initialization.
+
 * Wed May 21 2003 Dmitry V. Levin <ldv@altlinux.org> 0.2-alt1
 - Relocated scripts/framebuffer_setfont -> init.d/fbsetfont.
 - Removed framebuffer_setfont entry from inittab.
