@@ -1,0 +1,15 @@
+# -*- Mode: sh -*-
+# Set this to no if you don't want USB.
+USB=yes
+
+# This will force to load the usb system and keyboard at the early
+# process of the boot proces
+KEYBOARD_AT_BOOT=no
+
+# Some driver you may want to force the load, normally all of this is
+# done by the USBD daemon
+MOUSE=no
+KEYBOARD=no
+STORAGE=no
+VISOR=no
+PRINTER=no
