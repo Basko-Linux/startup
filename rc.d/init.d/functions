@@ -1,5 +1,7 @@
 #!/bin/sh
 #
+# $Id$
+#
 # functions	This file contains functions to be used by most or all
 #		shell scripts in the /etc/init.d directory.
 #

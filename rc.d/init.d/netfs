@@ -1,5 +1,7 @@
 #!/bin/sh
 #
+# $Id$
+#
 # netfs	Mount network filesystems.
 #
 # Authors:	Bill Nottingham <notting@redhat.com>

@@ -1,5 +1,7 @@
 #!/bin/sh
 #
+# $Id$
+#
 # rawdevices       This shell script assignes rawdevices to block devices
 #
 # chkconfig: 345 56 44

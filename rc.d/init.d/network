@@ -1,5 +1,7 @@
 #!/bin/sh
 #
+# $Id$
+#
 # network       Bring up/down networking
 #
 # chkconfig: 2345 10 90

@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/sh
+#
+# $Id$
 
 # Bring down all unneeded services that are still running (there shouldn't 
 # be any, so this is just a sanity check)
@@ -6,6 +8,9 @@
 for i in /var/lock/subsys/*; do
 	# Check if the script is there.
 	[ ! -f "$i" ] && continue
+
+	# Don't run *.rpm* and *~ scripts
+	[ "${i%.rpm*}" = "$i" -a "${i%\~}" = "$i" ] || continue
 
 	# Get the subsystem name.
 	subsys="${i#/var/lock/subsys/}"
