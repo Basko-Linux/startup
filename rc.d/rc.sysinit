@@ -67,6 +67,9 @@ fi
 # Fix console loglevel
 dmesg -n "$LOGLEVEL"
 
+# Load keymap and system font, setup powersaver
+/etc/rc.d/scripts/console
+
 # Set the system clock.
 /etc/init.d/clock start
 
@@ -365,8 +368,8 @@ action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat
 
 # At this point everything should be mounted.
 
-# Load keymap and system font, setup powersaver
-. /etc/rc.d/scripts/console
+# Again, load keymap and system font, setup powersaver.
+/etc/rc.d/scripts/console
 
 # Try to get linuxconf profile.
 if profile=$(sed 's/.*prof=\([A-Za-z_0-9]*\).*$/\1/' /proc/cmdline) && \

@@ -482,3 +482,17 @@ confirm()
 		fi
 	done
 }
+
+FindFile()
+{
+	local n f
+	for n in "$@"; do
+		for f in "$n"*; do
+			if [ -r "$f" ]; then
+				echo "$f"
+				return 0
+			fi
+		done
+	done
+	return 1
+}
