@@ -3,17 +3,17 @@
 
 [ -d /etc/alternatives ] || exit 0
 
-KV=`/bin/uname -r |/bin/cut -d- -f1`
-[ -n "$KV" ]
-KV_MAJOR=`echo "$KV" |/bin/cut -d. -f1`
-[ -n "$KV_MAJOR" ]
-KV_MINOR=`echo "$KV" |/bin/cut -d. -f2`
-[ -n "$KV_MINOR" ]
-
-[ "$KV_MAJOR" -ge 2 ]
+KV_MAJOR=`/sbin/kernelversion_major`
+[ -n "$KV_MAJOR" ] && [ "$KV_MAJOR" -ge 2 ] || exit 0
+KV_MINOR=`/sbin/kernelversion_minor`
+[ -n "$KV_MINOR" ] || exit 0
 
 if [ "$KV_MAJOR" -eq 2 ] && [ "$KV_MINOR" -lt 4 ]; then
-	ln -snf /usr/bin/vconfig22 /etc/alternatives/vconfig
+	[ -x /usr/bin/vconfig22 ] &&
+		ln -snf /usr/bin/vconfig22 /etc/alternatives/vconfig ||
+		rm -f /etc/alternatives/vconfig
 else
-	ln -snf /usr/bin/vconfig24 /etc/alternatives/vconfig
+	[ -x /usr/bin/vconfig24 ] &&
+		ln -snf /usr/bin/vconfig24 /etc/alternatives/vconfig ||
+		rm -f /etc/alternatives/vconfig
 fi
