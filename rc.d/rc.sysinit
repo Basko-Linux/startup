@@ -44,21 +44,22 @@ action "Mounting proc filesystem" mount -n -t proc /proc /proc
 chgrp proc /proc &>/dev/null ||:
 
 # Configure kernel parameters
-action "Configuring kernel parameters: " sysctl -p /etc/sysctl.conf
+action "Configuring kernel parameters:" sysctl -p /etc/sysctl.conf
 
 # Try to get devfsd
 if [ -c /dev/.devfsd -a -x /sbin/devfsd ]; then
-	action "Running DevFS daemon" devfsd /dev
-	for i in /dev/cdroms/*; do 
-		ln -sf "$i" /dev/
-	done
-	if [ -e /dev/cdrom0	]; then
-		ln -sf /dev/cdrom0 /dev/cdrom
-	fi
-	if SourceIfNotEmpty /etc/sysconfig/mouse; then
-		device=`echo "$device" |sed -e 's,psaux,misc/psaux,' -e 's/ttyS\(.\)/tts\/\1/g'`
-		if [ -n "$device" ]; then
-			ln -s "/dev/$device" /dev/mouse
+	if action "Running DevFS daemon:" devfsd /dev; then
+		for i in /dev/cdroms/*; do 
+			ln -sf "$i" /dev/
+		done
+		if [ -e /dev/cdrom0	]; then
+			ln -sf /dev/cdrom0 /dev/cdrom
+		fi
+		if SourceIfNotEmpty /etc/sysconfig/mouse; then
+			device=`echo "$device" |sed -e 's,psaux,misc/psaux,' -e 's/ttyS\(.\)/tts\/\1/g'`
+			if [ -n "$device" ]; then
+				ln -s "/dev/$device" /dev/mouse
+			fi
 		fi
 	fi
 fi
@@ -70,14 +71,14 @@ dmesg -n "$LOGLEVEL"
 /etc/init.d/clock
 
 # Activate swapping.
-action "Activating swap partitions: " swapon -a
+action "Activating swap partitions:" swapon -a
 
 # Set the hostname.
-action "Setting hostname $HOSTNAME: " hostname "$HOSTNAME"
+action "Setting hostname $HOSTNAME:" hostname "$HOSTNAME"
 
 # Set the NIS domain name
 if [ -n "$NISDOMAIN" ]; then
-	action "Setting NIS domain name $NISDOMAIN: " domainname "$NISDOMAIN"
+	action "Setting NIS domain name $NISDOMAIN:" domainname "$NISDOMAIN"
 else
 	domainname ""
 fi
@@ -152,14 +153,14 @@ fi
 # set up pnp 
 if [ -x /sbin/isapnp -a -s /etc/isapnp.conf ]; then
 	if [ -n "$PNP" ]; then
-		action "Setting up ISA PNP devices: " /sbin/isapnp /etc/isapnp.conf
+		action "Setting up ISA PNP devices:" /sbin/isapnp /etc/isapnp.conf
 	else
-		action "Skipping ISA PNP configuration at users request: " /bin/true
+		action "Skipping ISA PNP configuration at users request:" /bin/true
 	fi
 fi
 
 # Remount the root filesystem read-write.
-action "Remounting root filesystem in read/write mode: " mount -n -o remount,rw /
+action "Remounting root filesystem in read/write mode:" mount -n -o remount,rw /
 
 # Clear mtab
 >/etc/mtab
@@ -196,7 +197,7 @@ if [ -x "$HDPARM" ] && SourceIfNotEmpty /etc/sysconfig/harddisks; then
 			if [ -e "/proc/ide/hd$i/media" ]; then
 				hdmedia=`cat /proc/ide/hd$i/media`
 				if [ "$hdmedia" = "disk" ]; then
-					action "Setting hard drive parameters for hd$i: " "$HDPARM" $HDFLAGS "/dev/hd$i"
+					action "Setting hard drive parameters for hd$i:" "$HDPARM" $HDFLAGS "/dev/hd$i"
 				fi
 			fi
  		done
@@ -206,7 +207,7 @@ fi
 # Update quotas if fsck was run on /.
 QUOTACHECK=/sbin/quotacheck
 if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
-	action "Checking root filesystem quotas" "$QUOTACHECK" -v /
+	action "Checking root filesystem quotas:" "$QUOTACHECK" -v /
 fi
 
 # The root filesystem is now read-write, so we can now log via syslog() directly..
@@ -238,9 +239,9 @@ if [ -x /sbin/depmod -a -n "$USEMODULES" ]; then
 		fi
 	fi
 	if [ -L /lib/modules/default ]; then
-		INITLOG_ARGS= action "Finding module dependencies" depmod -A default
+		INITLOG_ARGS= action "Finding module dependencies:" depmod -A default
 	else
-		INITLOG_ARGS= action "Finding module dependencies" depmod -A
+		INITLOG_ARGS= action "Finding module dependencies:" depmod -A
 	fi
 fi
 
@@ -386,12 +387,12 @@ if [ -z "$fastboot" ]; then
 		echo "Automatic reboot in progress."
 		reboot -f
 	elif [ "$rc" = "1" -a -x "$QUOTACHECK" ]; then
-		action "Checking filesystem quotas: " "$QUOTACHECK" -v -R -a
+		action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
 	fi
 fi
 
 # Mount loopback
-action "Mounting loopback filesystems: " mount -a -t loop,ext2,vfat
+action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat
 
 # At this point everything should be mounted.
 
@@ -403,7 +404,7 @@ if profile=$(sed 's/.*prof=\([A-Za-z_0-9]*\).*$/\1/' /proc/cmdline) && \
 	[ -d "/etc/linuxconf/archive/$profile" -o -d "/etc/linuxconf/archive/$profile-family" ] && \
 	! fgrep -qs "confver.current $profile" /etc/conf.linuxconf; then
 
-	action "Setting profile to $profile: " /bin/linuxconf --selectprofile "$profile"
+	action "Setting profile to $profile:" /bin/linuxconf --selectprofile "$profile"
 	
 	# Setting again network scripts.
 	if SourceIfNotEmpty /etc/sysconfig/network; then
@@ -414,7 +415,7 @@ if profile=$(sed 's/.*prof=\([A-Za-z_0-9]*\).*$/\1/' /proc/cmdline) && \
 fi
 
 if [ X"$_RUN_QUOTACHECK" = X1 -a -x "$QUOTACHECK" ]; then
-	action "Checking filesystem quotas: " "$QUOTACHECK" -v -R -a
+	action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
 fi
 
 # Configure machine if necessary.
@@ -428,13 +429,13 @@ if [ -f /.unconfigured ]; then
 	# Reread in network configuration data.
 	if SourceIfNotEmpty /etc/sysconfig/network ]; then
 		# Reset the hostname.
-		action "Resetting hostname $HOSTNAME: " hostname "$HOSTNAME"
+		action "Resetting hostname $HOSTNAME:" hostname "$HOSTNAME"
 
 		# Reset the NIS domain name.
 		if [ -n "$NISDOMAIN" ]; then
-			action "Resetting NIS domain name $NISDOMAIN: " domainname "$NISDOMAIN"
+			action "Resetting NIS domain name $NISDOMAIN:" domainname "$NISDOMAIN"
 		else
-			domainname ""
+			domainname ''
 		fi
 	fi
 
@@ -442,21 +443,21 @@ if [ -f /.unconfigured ]; then
 fi
 
 if [ -x /sbin/quotaon ]; then
-	action "Turning on user and group quotas for local filesystems: " /sbin/quotaon -a
+	action "Turning on user and group quotas for local filesystems:" /sbin/quotaon -a
 fi
 
 # Do the following while waiting for an 'I' from the user...
 {
 
 # Cleanup everything :)
-action "Cleaning up temporary files from previous boot: " /etc/init.d/cleanup
+action "Cleaning up temporary files from previous boot:" /etc/init.d/cleanup
 
 # Language fixes
 /etc/init.d/lang
 
 # Now turn on swap again (in case we swap to files).
 swapon -a &>/dev/null
-action "Enabling swap space: " /bin/true
+action "Enabling swap space:" /bin/true
 
 # Initialize the serial ports.
 ExecIfExecutable /etc/rc.d/rc.serial
@@ -504,7 +505,7 @@ if [ -n "$PROMPT" ]; then
 	touch /var/run/confirm
 fi
 
-if fgrep -iqs "failsafe" /proc/cmdline; then
+if fgrep -iwqs "failsafe" /proc/cmdline; then
 	touch /var/run/failsafe
 fi
 
