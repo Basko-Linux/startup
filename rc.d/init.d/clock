@@ -5,6 +5,8 @@
 # /etc/init.d/clock - initialize system clock / sync hardware clock
 #
 
+WITHOUT_RC_COMPAT=1
+
 # Source function library.
 . /etc/init.d/functions
 

@@ -4,6 +4,8 @@
 #
 # This script should be executed after all the other init scripts.
 
+WITHOUT_RC_COMPAT=1
+
 # Source function library.
 . /etc/init.d/functions
 

@@ -2,10 +2,13 @@
 #
 # /etc/rc.d/scripts/framebuffer - run once at boot time from inittab.
 
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
 . /etc/init.d/functions
 
 # Parse framebuffer config.
-SourceIfNotEmpty /etc/sysconfig/framebuffer && [ "$ENABLE" != no ] || exit 0
+SourceIfNotEmpty /etc/sysconfig/framebuffer && ! is_no "$ENABLE" || exit 0
 
 sleep 1
 

@@ -10,6 +10,9 @@
 # (hdb, hdc...) and modify it.
 # each device witch has no special parameters will use the defaults.
  
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
 . /etc/init.d/functions
 
 HDPARM=/sbin/hdparm

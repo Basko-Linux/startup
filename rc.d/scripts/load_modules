@@ -3,16 +3,15 @@
 # /etc/rc.d/scripts/load_modules - run once at boot time from rc.sysinit
 #
 
-. /etc/init.d/functions
-
 [ -s /etc/modules ] || exit 0
 
-# Source functions
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
 . /etc/init.d/functions
 
 # Loop over every line in /etc/modules.
-(cat /etc/modules; echo) | while read module args
-do
+(cat /etc/modules; echo) | while read module args; do
 	# Ignore empty lines and comments.
 	[ -n "${module##\#*}" ] || continue
 

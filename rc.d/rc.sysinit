@@ -19,7 +19,9 @@ if [ -z "$IN_INITLOG" -a -x /sbin/initlog ]; then
 	exec /sbin/initlog $INITLOG_ARGS -r /etc/rc.d/rc.sysinit
 fi
 
-# Source functions
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
 . /etc/init.d/functions
 
 # Fix console loglevel
@@ -57,7 +59,7 @@ echo -n "$BANNER"
 SETCOLOR_NORMAL
 echo
 
-if [ -n "$PROMPT" -a "$PROMPT" != no ]; then
+if is_yes "$PROMPT"; then
 	PROMPT=1
 	MESSAGE="Press 'I' to enter interactive startup"
 	PrintMargin "$MESSAGE"
@@ -80,7 +82,7 @@ action "Activating swap partitions:" swapon -a
 action "Setting hostname $HOSTNAME:" hostname "$HOSTNAME"
 
 # Set the NIS domain name.
-if [ -n "$NISDOMAIN" -a "$NISDOMAIN" != no ]; then
+if [ -n "$NISDOMAIN" ] && ! is_no "$NISDOMAIN"; then
 	action "Setting NIS domain name $NISDOMAIN:" domainname "$NISDOMAIN"
 fi
 

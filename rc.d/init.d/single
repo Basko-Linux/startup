@@ -11,10 +11,13 @@
 #               Modified for RHS Linux by Damien Neil
 #
 
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
 . /etc/init.d/functions
 
-if [ "$1" != "start" ]; then
-   exit 0
+if [ "$1" != start ]; then
+	exit 0
 fi
 
 # Kill all processes.
@@ -27,9 +30,6 @@ echo "Sending all processes the KILL signal.."
 kill -9 -1
 
 rm -f /var/lock/subsys/*
-
-# This isn't look nices
-#[ -x /usr/bin/clear ] && /usr/bin/clear
 
 # make sure modprobe is working
 if [ -f /proc/sys/kernel/modprobe ]; then

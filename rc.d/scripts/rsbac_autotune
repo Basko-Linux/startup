@@ -12,7 +12,9 @@ if [ -f "$LOCKFILE" ]; then
 	exit 0
 fi
 
-# Source functions
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
 . /etc/init.d/functions
 
 if action "Adjusting RSBAC configuration:" "$RSBAC_INIT"; then

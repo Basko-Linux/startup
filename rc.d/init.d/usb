@@ -19,12 +19,14 @@ if fgrep -iwqs nousb /proc/cmdline; then
 	exit 0
 fi
 
-LOCKFILE=/var/lock/subsys/usb
+WITHOUT_RC_COMPAT=1
 
+# Source function library.
 . /etc/init.d/functions
 
 SourceIfNotEmpty /etc/sysconfig/usb && is_yes "$USB" || exit 0
 
+LOCKFILE=/var/lock/subsys/usb
 PKLVL=
 exit_handler()
 {

@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.0.2
+Version: 0.1
 Release: alt1
 
 Summary: The system startup scripts
@@ -125,6 +125,12 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Mon May 12 2003 Dmitry V. Levin <ldv@altlinux.org> 0.1-alt1
+- rc.sysinit:
+  + removed (never used) devfs initialization code;
+  + fixed ROOTFSTYPE initialization.
+- init.d/*: use new functions from service package.
+
 * Wed Apr 23 2003 Dmitry V. Levin <ldv@altlinux.org> 0.0.2-alt1
 - Relocated %_sysconfdir/rc?.d and %_sysconfdir/rc.d/rc?.d
   from this package to service package.

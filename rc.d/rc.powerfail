@@ -2,6 +2,11 @@
 #
 # $Id$
 
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
+. /etc/init.d/functions
+
 # See how we were called.
 case "$1" in
 	start)
@@ -18,7 +23,7 @@ case "$1" in
 		/sbin/shutdown -c "Power Restored; Shutdown Cancelled"
 		;;
 	*)
-		echo "Usage: ${0##*/} {start|now|stop}"
+		msg_usage "${0##*/} {start|now|stop}"
 		exit 1
 		;;
 esac

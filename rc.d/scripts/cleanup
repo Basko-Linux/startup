@@ -3,6 +3,9 @@
 # /etc/rc.d/scripts/cleanup - run once at boot time from rc.sysinit
 #
 
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
 . /etc/init.d/functions
 
 SourceIfNotEmpty /etc/sysconfig/system
