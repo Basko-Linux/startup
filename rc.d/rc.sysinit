@@ -397,8 +397,8 @@ action "Mounting loopback filesystems: " mount -a -t loop,ext2,vfat
 
 # Try to get linuxconf profile.
 if profile=$(sed 's/.*prof=\([A-Za-z_0-9]*\).*$/\1/' /proc/cmdline) && \
-	[ -d  "/etc/linuxconf/archive/$profile" ] && \
-	! grep -q "confver.current $profile" /etc/conf.linuxconf; then
+	[ -d "/etc/linuxconf/archive/$profile" -o -d "/etc/linuxconf/archive/$profile-family" ] && \
+	! fgrep -qs "confver.current $profile" /etc/conf.linuxconf; then
 
 	action "Setting profile to $profile: " /bin/linuxconf --selectprofile "$profile"
 	
