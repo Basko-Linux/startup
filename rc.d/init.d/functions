@@ -35,7 +35,7 @@ ExecIfExecutable()
 }
 
 # Get a sane screen width
-[ -z "$COLUMNS" ] && COLUMNS=80
+[ -n "$COLUMNS" ] || COLUMNS=80
 
 # Read in our configuration
 if [ -z "$BOOTUP" ]; then
@@ -85,8 +85,7 @@ fi
 # Check if $pid (could be plural) are running
 checkpid() {
 	while [ "$1" ]; do
-	   [ -d "/proc/$1" ] && return 0
-	   shift
+		[ -d "/proc/$1" ] && return 0 || shift
 	done
 	return 1
 }
@@ -121,21 +120,23 @@ daemon() {
 	done
 
 	# Save basename.
-	[ -z $gotbase ] && base="${1##*/}"
+	[ -n "$gotbase" ] || base="${1##*/}"
 
 	# See if it's already running.
 	pidlist=`pidofproc $1`
 	
 	pid=
-	for apid in $pidlist ; do
-	   [ -d /proc/$apid ] && pid="$pid $apid"
+	for apid in $pidlist; do
+		if [ -d /proc/$apid ]; then
+			pid="$pid $apid"
+		fi
 	done
 
 	
 	# Echo daemon
 	if [ "$BOOTUP" = "verbose" ]; then echo -n "$base "; fi
 
-	[ -n "$pid" ] && { echo_passed; return; }
+	[ -z "$pid" ] || { echo_passed; return; }
 
 	# make sure it doesn't core dump anywhere; while this could mask
 	# problems with the daemon, it also closes some security problems
@@ -193,8 +194,10 @@ killproc() {
 	pidlist=`pidofproc $1`
 	
 	pid=
-	for apid in $pidlist ; do
-	   [ -d /proc/$apid ] && pid="$pid $apid"
+	for apid in $pidlist; do
+		if [ -d /proc/$apid ]; then
+			pid="$pid $apid"
+		fi
 	done
 
 	# Kill it.
