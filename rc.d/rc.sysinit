@@ -491,14 +491,6 @@ if [ ! -e /boot/System.map -a -r /boot/System.map-`uname -r` ] ; then
 	ln -snf System.map-`uname -r` /boot/System.map 2>/dev/null
 fi
 
-if [ -x /usr/sbin/update_wms ]; then
-	action "Updating Window Manager Sessions:" /usr/sbin/update_wms
-fi
-
-# Autogenerate kernel headers.
-ExecIfExecutable /etc/rc.d/scripts/gen_kernel_headers ||
-ExecIfExecutable /etc/init.d/kheader
-
 # Check if /mnt/cdrom, /mnt/floppy and /mnt/disk are here - if not create them
 [ -d /mnt/cdrom ] || action "Creating /mnt/cdrom:" mkdir -p /mnt/cdrom
 [ -d /mnt/floppy ] || action "Creating /mnt/floppy:" mkdir -p /mnt/floppy
