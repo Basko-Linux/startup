@@ -1,5 +1,7 @@
 #!/bin/sh
 #
+# $Id$
+#
 # fbsetfont	Framebuffer post initialization
 #
 # chkconfig: 345 33 67
