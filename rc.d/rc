@@ -30,36 +30,36 @@ else
 	newrunlevel="$runlevel"
 fi
 
-if [ "$previous" = "N" ];then
-    if [ -e /var/run/failsafe ];then
-        rm -f /var/run/failsafe
-	if [ -x /sbin/askrunlevel ];then
-		/sbin/askrunlevel --interactive && ASKRUNLEVEL=no
-	else
-	    init 1 #jump to init 1 if not aksrunlevel.
-       fi
-    fi
+if [ "$previous" = "N" ]; then
+	if [ -e /var/run/failsafe ]; then
+		rm -f /var/run/failsafe
+		if ExecIfExecutable /sbin/askrunlevel --interactive; then
+			ASKRUNLEVEL=no
+		else
+			init 1 #jump to init 1 if not aksrunlevel.
+		fi
+	fi
 fi
 
 # See if we want to be in user confirmation mode
-  if [ "$previous" = "N" ]; then
-    if grep -i confirm /proc/cmdline >/dev/null || [ -f /var/run/confirm ] ; then
-      rm -f /var/run/confirm
-      CONFIRM=yes
-      echo "Entering interactive startup"
-      if [ "$ASKRUNLEVEL" != "no" ] && [ -x /sbin/askrunlevel ];then
-	    /sbin/askrunlevel --interactive
-      fi
-    else
-      CONFIRM=
-      echo "Entering non-interactive startup"
-    fi
-  fi
+if [ "$previous" = "N" ]; then
+	if [ -f /var/run/confirm ] || fgrep -iqs confirm /proc/cmdline; then
+		rm -f /var/run/confirm
+		CONFIRM=yes
+		echo "Entering interactive startup"
+		if [ "$ASKRUNLEVEL" != "no" ]; then
+			ExecIfExecutable /sbin/askrunlevel --interactive
+		fi
+	else
+		CONFIRM=
+		echo "Entering non-interactive startup"
+	fi
+fi
 
 runlevel="$newrunlevel"
 
 # Tell linuxconf what runlevel we are in
-[ -d /var/run ] && echo "/etc/rc.d/rc$runlevel.d" > /var/run/runlevel.dir
+[ -d /var/run ] && echo "/etc/rc.d/rc$runlevel.d" >/var/run/runlevel.dir
 
 # Is there an rc directory for this new runlevel?
 if [ -d /etc/rc.d/rc$runlevel.d ]; then
