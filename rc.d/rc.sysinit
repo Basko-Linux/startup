@@ -436,23 +436,6 @@ if [ X"$_RUN_QUOTACHECK" = X1 -a -x "$QUOTACHECK" ]; then
 	action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
 fi
 
-# Configure machine if necessary.
-if [ -f /.unconfigured ]; then
-	ExecIfExecutable /usr/bin/passwd root
-	ExecIfExecutable /usr/sbin/netconfig
-	ExecIfExecutable /usr/sbin/timeconfig
-	ExecIfExecutable /usr/sbin/authconfig --nostart
-	ExecIfExecutable /usr/sbin/ntsysv --level 35
-
-	# Reread in network configuration data.
-	if SourceIfNotEmpty /etc/sysconfig/network ]; then
-		# Reset the hostname.
-		action "Resetting hostname $HOSTNAME:" hostname "$HOSTNAME"
-	fi
-
-	rm -f /.unconfigured
-fi
-
 if [ -x /sbin/quotaon ]; then
 	action "Turning on user and group quotas for local filesystems:" /sbin/quotaon -a
 fi
@@ -506,6 +489,29 @@ if [ ! -e /boot/System.map -a -r /boot/System.map-`uname -r` ] ; then
 	ln -snf System.map-`uname -r` /boot/System.map 2>/dev/null
 fi
 
+if [ -x /usr/sbin/update_wms ]; then
+	action "Updating Window Manager Sessions:" /usr/sbin/update_wms
+fi
+
+# Autogenerate kernel headers.
+ExecIfExecutable /etc/rc.d/scripts/gen_kernel_headers ||
+ExecIfExecutable /etc/init.d/kheader
+
+# Check if /mnt/cdrom, /mnt/floppy and /mnt/disk are here - if not create them
+[ -d /mnt/cdrom ] || action "Creating /mnt/cdrom:" mkdir -p /mnt/cdrom
+[ -d /mnt/floppy ] || action "Creating /mnt/floppy:" mkdir -p /mnt/floppy
+[ -d /mnt/disk ] || action "Creating /mnt/disk:" mkdir -p /mnt/disk
+
+# Update alternatives for VLAN configuration program.
+ExecIfExecutable /etc/rc.d/scripts/vconfig-update
+
+if [ -x /usr/sbin/update_chrooted ]; then
+	action "Updating chrooted environments:" /usr/sbin/update_chrooted conf lib
+fi
+
+# Tune RSBAC if required.
+ExecIfExecutable /etc/rc.d/scripts/rsbac_autotune
+
 # Now that we have all of our basic modules loaded and the kernel going,
 # let's dump the syslog ring somewhere so we can find it later
 dmesg >/var/log/dmesg
@@ -524,8 +530,4 @@ fi
 
 if fgrep -iwqs "failsafe" /proc/cmdline; then
 	touch /var/run/failsafe
-fi
-
-if [ -x /etc/rc.d/scripts/mandrake_everytime ]; then 
-	/etc/rc.d/scripts/mandrake_everytime
 fi
