@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# /etc/rc.d/scripts/framebuffer - run once at boot time from rc.sysinit
+
+. /etc/init.d/functions
+
+# Parse framebuffer config.
+SourceIfNotEmpty /etc/sysconfig/framebuffer && [ "$ENABLE" != no ] || exit 0
+
+# Load framebuffer module.
+if [ -n "$MODULE" ]; then
+	action "Loading module $module:" /sbin/modprobe "$MODULE" $ARGS 2>/dev/null
+fi
+
+# fbset program
+FBSET=/usr/sbin/fbset
+
+# Setup videomode if defined
+if [ -n "$MODE" -a -x "$FBSET" ]; then
+	action "Setting framebuffer device settings:" "$FBSET" -a "$MODE"
+fi
