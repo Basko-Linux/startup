@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Source functions
+. /etc/init.d/functions
+
 uname -r |fgrep -qs rsbac || exit 0
 mkdir -p /var/lib/rsbac || exit 0
 
