@@ -22,7 +22,7 @@ change runlevels, and shut the system down cleanly.
 
 %install
 %__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc{0,1,2,3,4,5,6}.d
-%__install -p -m644 inittab adjtime sysctl.conf $RPM_BUILD_ROOT%_sysconfdir/
+%__install -p -m644 adjtime inittab modules sysctl.conf $RPM_BUILD_ROOT%_sysconfdir/
 %__install -pD -m755 setsysfont $RPM_BUILD_ROOT/sbin/setsysfont
 %__cp -a rc.d sysconfig $RPM_BUILD_ROOT%_sysconfdir/
 
@@ -110,7 +110,6 @@ fi
 %dir %_sysconfdir/sysconfig/console
 %config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/console/setterm
 %config(noreplace) %_sysconfdir/inittab
-%_sysconfdir/init.d
 %dir    %_sysconfdir/rc.d/rc?.d
 %config(missingok) %_sysconfdir/rc.d/rc?.d/*
 %dir    %_sysconfdir/rc.d/scripts
@@ -124,8 +123,6 @@ fi
 /sbin/setsysfont
 %ghost %attr(664,root,utmp) /var/log/wtmp
 %ghost %attr(664,root,utmp) /var/run/utmp
-/bin/*
-%_bindir/*
 %_mandir/man?/*
 %dir /var/run/kernel
 %ghost /var/run/kernel/*
