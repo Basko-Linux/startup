@@ -22,11 +22,6 @@ action "Building dynamic library cache:" /sbin/ldconfig
 
 action "Adjusting index.html:" /etc/rc.d/scripts/indexhtml_update
 
-# Initialize kudzu.
-if [ -x /usr/sbin/kudzu ]; then
-	action "Adjusting hardware configuration:" /usr/sbin/kudzu -q
-fi
-
 # Update menus.
 if [ -x /usr/bin/update-menus ]; then
 	action "Updating application menus:" /usr/bin/update-menus
