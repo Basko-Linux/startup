@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.4
+Version: 0.9.5
 Release: alt1
 
 Summary: The system startup scripts
@@ -13,10 +13,12 @@ BuildArch: noarch
 Source: %name-%version.tar.bz2
 
 Provides: /etc/firsttime.d
-PreReq: service >= 0.0.2-alt1, chkconfig, gawk, grep, sed, coreutils, %__subst
+PreReq: chkconfig, gawk, grep, sed, coreutils, %__subst
 # Who could remind me where these dependencies came from?
 Requires: findutils >= 0:4.0.33, mount >= 0:2.10q-ipl1mdk
 Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk, util-linux >= 0:2.10q-ipl1mdk
+# due to bootsplash functions
+PreReq: service >= 0.5.8
 # due to /sbin/kernelversion_{major,minor}
 Requires: modutils >= 0:2.4.15-alt1
 # due to /sys
@@ -149,6 +151,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Mon Mar 21 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.5-alt1
+- Initial bootsplash support, based on patch from Rider.
+
 * Thu Mar 17 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.4-alt1
 - inittab: added runlevel for install3.
 

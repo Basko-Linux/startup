@@ -22,9 +22,14 @@ export runlevel previous
 # Get first argument. Set new runlevel to this argument.
 [ -z "$argv1" ] || runlevel="$argv1"
 
-# See if we want to be in user confirmation mode
+# Initialize bootsplash subsystem.
+splash_init
+
+# See if we want to be in user confirmation mode.
 CONFIRM=
 if [ "$previous" = "N" ]; then
+	splash_update start
+
 	if [ -f /var/run/confirm ] || grep -iwqs confirm /proc/cmdline; then
 		rm -f /var/run/confirm
 		CONFIRM=yes
@@ -56,7 +61,9 @@ for i in "/etc/rc.d/rc$runlevel.d"/K*; do
 
 	# Check if the subsystem is already up.
 	[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] || continue
-	
+
+	splash_update "$subsys"
+
 	# Bring the subsystem down.
 	if egrep -qs '(action|stop_daemon|killproc|msg_) ' "$i"; then
 		"$i" stop
@@ -73,8 +80,10 @@ for i in "/etc/rc.d/rc$runlevel.d"/S*; do
 
 	# Check if the subsystem is already up.
 	[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] && continue
-	
-	# If we're in confirmation mode, get user confirmation
+
+	splash_update "$subsys"
+
+	# If we're in confirmation mode, get user confirmation.
 	if [ -n "$CONFIRM" ]; then
 		confirm "$subsys"
 		case $? in
@@ -91,3 +100,7 @@ for i in "/etc/rc.d/rc$runlevel.d"/S*; do
 		action "Starting $subsys:" "$i" start
 	fi
 done
+
+if [ "$runlevel" != 0 && "$runlevel" != 6 ]; then
+	splash_update stop
+fi

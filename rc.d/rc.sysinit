@@ -78,6 +78,11 @@ if [ "`kernelversion_major`" -eq 2 ] && [ "`kernelversion_minor`" -ge 5 ]; then
 	action "Mounting sys filesystem:" mount -n -t sysfs sysfs /sys
 fi
 
+# Initialize bootsplash subsystem.
+splash_init 5
+
+splash_update start 1
+
 # Set the system clock (when /etc/adjtime is missing)
 [ -s /etc/adjtime ] || /etc/init.d/clock start
 
@@ -182,6 +187,7 @@ if [ -x /sbin/isapnp -a -s /etc/isapnp.conf ]; then
 fi
 
 # Remount the root filesystem read-write
+splash_update remount 2
 action "Remounting root filesystem in read/write mode:" mount -n -o remount,rw /
 
 # Clear mtab
@@ -223,11 +229,13 @@ if [ -z "$USEMODULES" ]; then
 fi
 
 # Load modules where appropriate
+splash_update depmod 3
 if [ -x /sbin/depmod ] && is_yes "$USEMODULES"; then
 	INITLOG_ARGS= action "Finding module dependencies:" depmod -A
 fi
 
 # Configure kernel parameters
+splash_update kernel 4
 action "Configuring kernel parameters:" sysctl -e -p /etc/sysctl.conf
 
 if [ -f /proc/sys/kernel/modprobe ]; then
@@ -349,6 +357,8 @@ _RUN_QUOTACHECK=0
 # Check filesystems
 # (pixel) do not check loopback files, will be done later (aren't available yet)
 if [ -z "$fastboot" ]; then
+	splash_update localfs 5
+
 	STRING="Checking filesystems"
 	echo "$STRING"
 	initlog -c "fsck -TRAay -t noloop $fsckoptions"
@@ -392,6 +402,7 @@ fi
 # mounted). Contrary to standard usage,
 # filesystems are NOT unmounted in single user mode
 # (pixel) also do not mount loopback, will be done later
+splash_update mount 6
 action "Mounting local filesystems:" mount -a -t nodavfs,ftpfs,loop,ncp,ncpfs,nfs,proc,smbfs,sshfs
 
 # (pixel) Check loopback filesystems
@@ -456,6 +467,7 @@ action "Cleaning up temporary files from previous boot:" /etc/rc.d/scripts/clean
 /etc/rc.d/scripts/lang
 
 # Now turn on swap again (in case we swap to files)
+splash_update swap 7
 action "Activating swap space:" swapon -a
 
 # Initialize the serial ports
@@ -493,6 +505,7 @@ fi
 ExecIfExecutable /etc/rc.d/scripts/vconfig-update
 
 if [ -x /usr/sbin/update_chrooted ]; then
+	splash_update chrooted 8
 	action "Updating chrooted environments:" /usr/sbin/update_chrooted conf lib
 fi
 
