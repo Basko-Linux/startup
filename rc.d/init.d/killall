@@ -7,7 +7,7 @@
 
 for i in /var/lock/subsys/*; do
 	# Check if the script is there.
-	[ ! -f "$i" ] && continue
+	[ -f "$i" ] || continue
 
 	# Don't run *.rpm* and *~ scripts
 	[ "${i%.rpm*}" = "$i" -a "${i%\~}" = "$i" ] || continue
@@ -16,12 +16,12 @@ for i in /var/lock/subsys/*; do
 	subsys="${i#/var/lock/subsys/}"
 
 	# Bring the subsystem down.
-	if [ -f "/etc/init.d/$subsys.init" ]; then
-	    "/etc/init.d/$subsys.init" stop
-	elif [ -f "/etc/init.d/$subsys" ]; then
-	    "/etc/init.d/$subsys" stop
+	if [ -x "/etc/init.d/$subsys.init" ]; then
+		"/etc/init.d/$subsys.init" stop
+	elif [ -x "/etc/init.d/$subsys" ]; then
+		"/etc/init.d/$subsys" stop
 	else
-	    rm -f "$i"
+		rm -f "$i"
 	fi
 done
 :
