@@ -2,7 +2,7 @@
 
 sourced=
 for f in "$HOME/.i18n" /etc/sysconfig/i18n; do
-	if [ -f "$f" ] && . "$f"; then
+	if [ -s "$f" ] && . "$f"; then
 		sourced=1
 		break
 	fi
