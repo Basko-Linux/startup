@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.3
+Version: 0.4
 Release: alt1
 
 Summary: The system startup scripts
@@ -11,6 +11,7 @@ Packager: Dmitry V. Levin <ldv@altlinux.org>
 
 Source: %name-%version.tar.bz2
 
+Provides: /etc/firsttime.d
 PreReq: service >= 0.0.2-alt1, chkconfig, gawk, grep, sed, coreutils, %__subst
 # Who could remind me where these dependencies came from?
 Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
@@ -55,6 +56,7 @@ chmod -R +x $RPM_BUILD_ROOT%_sysconfdir/rc.d
 %__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/sysconfig/{console,harddisk}
 touch $RPM_BUILD_ROOT%_sysconfdir/sysconfig/console/setterm
 
+%__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/firsttime.d
 %__mkdir_p $RPM_BUILD_ROOT%_localstatedir/rsbac
 
 %post
@@ -132,9 +134,13 @@ done
 /sbin/setsysfont
 %ghost %attr(664,root,utmp) /var/log/wtmp
 %ghost %attr(664,root,utmp) /var/run/utmp
+%dir %_sysconfdir/firsttime.d
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed May 28 2003 Dmitry V. Levin <ldv@altlinux.org> 0.4-alt1
+- Added firsttime.d support (#0002287).
+
 * Sun May 25 2003 Dmitry V. Levin <ldv@altlinux.org> 0.3-alt1
 - init.d/fbsetfont: fixed tty initialization.
 

@@ -11,7 +11,7 @@ WITHOUT_RC_COMPAT=1
 . /etc/init.d/functions
 
 # On fail/exit erase the temporary file
-trap 'rm -f /var/lock/TMP_1ST' 0 1 2 3 15
+trap 'rm -f /var/lock/TMP_1ST' EXIT HUP INT QUIT TERM
 
 for f in /dev/cdrom*; do
 	t="/dev/dvd${f#/dev/cdrom}"
@@ -32,7 +32,7 @@ if [ -x /usr/bin/update-menus ]; then
 	action "Updating application menus:" /usr/bin/update-menus
 fi
 
-# Create new mail files if it doesn't exists.
+# Create new mbox files if they don't exist yet.
 for i in `awk -F: '{if ($3>=400) print $1}' </etc/passwd`; do
 	[ -e "/var/mail/$i" ] || action "Creating mailbox for $i:" install --owner="$i" --group=mail --mode=660 /dev/null "/var/mail/$i"
 done
@@ -54,5 +54,27 @@ fi
 find / -mindepth 1 -maxdepth 1 \( -type d -o -type f \) -name '.??*' |
 	fgrep -v /.automount |
 	xargs -r rm -rf --
+
+check_script()
+{
+	# Check if the script is there.
+	[ -x "$1" ] || return 1
+
+	# Don't run *.rpm* and *~ scripts.
+	[ "${1%.rpm*}" = "$1" -a "${1%\~}" = "$1" ] || return 1
+
+	return 0
+}
+
+# Run other first time scripts.
+for f in /etc/firsttime.d/*; do
+	check_script "$f" || continue
+
+	if egrep -qs '(action|msg_) ' "$f"; then
+		"$f"
+	else
+		action "Executing ${f##*/} first time script:" "$f"
+	fi
+done
 
 ExecIfExecutable /etc/rc.d/scripts/distribution
