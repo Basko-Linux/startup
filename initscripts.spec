@@ -2,7 +2,7 @@
 
 Name: initscripts
 Version: 5.49
-Release: ipl53mdk
+Release: ipl54mdk
 
 Summary: The inittab file and the %_sysconfdir/init.d scripts
 License: GPL
@@ -241,6 +241,18 @@ fi
 %doc sysconfig.txt sysvinitfiles ChangeLog*
 
 %changelog
+* Sat Apr 19 2003 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl54mdk
+- %_initdir/sound: don't sort aliases in LoadModule (#0001802).
+- %_initdir/clock: test $HWCLOCK_ADJUST also for "true" value (#0002351).
+- %_initdir/functions:
+  + fixed check logic in daemon() a bit (#0002407).
+  + fixed return code in killproc() (#0002412).
+- %_initdir/outformat: check argumnets being passed to tput (#0002450).
+- /etc/sysctl.conf:
+  + set "net.ipv4.icmp_echo_ignore_broadcasts = 1" by default (#0002472);
+  + added comments from Owl's sysctl.conf file.
+- usernetctl: support variable definitions quoted with single quotes.
+
 * Sun Mar 16 2003 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl53mdk
 - Scripts cleanup:
   Most of bash-specific constructions were replaced with more
