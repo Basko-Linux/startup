@@ -371,13 +371,13 @@ passed() {
 
 # Run some action. Log its output.
 action() {
-  STRING=$1
-  echo -n "$STRING "
-  shift
-  initlog $INITLOG_ARGS -c "$*" && success "$STRING" || failure "$STRING"
-  rc=$?
-  echo
-  return $rc
+	STRING=$1
+	echo -n "$STRING "
+	shift
+	initlog $INITLOG_ARGS -c "$*" && success "$STRING" || failure "$STRING"
+	rc=$?
+	echo -e '\r'
+	return $rc
 }
 
 # Confirm whether we really want to run this service
