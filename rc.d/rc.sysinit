@@ -218,16 +218,18 @@ fi
 
 echo "$HOSTNAME" >/etc/HOSTNAME
 
-if [ -f /proc/ksyms ] && ! fgrep -iwqs nomodules /proc/cmdline; then
-	USEMODULES=y
-else
-	USEMODULES=
+if [ -z "$USEMODULES" ]; then
+	if [ -f /proc/ksyms -o -f /proc/kallsyms ] && ! fgrep -iwqs nomodules /proc/cmdline; then
+		USEMODULES=y
+	else
+		USEMODULES=n
+	fi
 fi
 
 # Our modutils don't support it anymore, so we might as well remove
 # the preferred link.
 rm -f /lib/modules/{preferred,default}
-if [ -x /sbin/depmod -a -n "$USEMODULES" ]; then
+if [ -x /sbin/depmod ] && is_yes "$USEMODULES"; then
 	# If they aren't using a recent sane kernel, make a link for them
 	if [ ! -n "`uname -r |fgrep -- -`" ]; then
 		ktag="`cat /proc/version`"
@@ -250,7 +252,7 @@ fi
 action "Configuring kernel parameters:" sysctl -e -p /etc/sysctl.conf
 
 if [ -f /proc/sys/kernel/modprobe ]; then
-	if [ -n "$USEMODULES" ]; then
+	if is_yes "$USEMODULES"; then
 		sysctl -w kernel.modprobe="/sbin/modprobe" >/dev/null 2>&1
 		sysctl -w kernel.hotplug="/sbin/hotplug" >/dev/null 2>&1
 	else
@@ -459,7 +461,7 @@ done
 # since many SCSI tapes don't deal well with st being loaded and unloaded
 if [ -f /proc/scsi/scsi ] && fgrep -qs 'Type:   Sequential-Access' /proc/scsi/scsi; then
 	if fgrep -qv ' 9 st' /proc/devices ; then
-		if [ -n "$USEMODULES" ] ; then
+		if is_yes "$USEMODULES"; then
 			# Try to load the module.  If it fails, ignore it...
 			insmod -p st >/dev/null 2>&1 && modprobe st >/dev/null 2>&1
 		fi
