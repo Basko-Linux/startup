@@ -21,13 +21,13 @@ export runlevel previous
 [ -z "$argv1" ] || runlevel="$argv1"
 
 # See if we want to be in user confirmation mode
+CONFIRM=
 if [ "$previous" = "N" ]; then
 	if [ -f /var/run/confirm ] || fgrep -iwqs confirm /proc/cmdline; then
 		rm -f /var/run/confirm
 		CONFIRM=yes
 		echo $"Entering interactive startup"
 	else
-		CONFIRM=
 		echo $"Entering non-interactive startup"
 	fi
 fi
@@ -76,14 +76,14 @@ for i in "/etc/rc.d/rc$runlevel.d"/S*; do
 	if [ -n "$CONFIRM" ]; then
 		confirm "$subsys"
 		case $? in
-			0) :;;
-			2) CONFIRM=;;
-			*) continue;;
+			0) : ;;
+			2) CONFIRM= ;;
+			*) continue ;;
 		esac
 	fi
 
 	# Bring the subsystem up.
-	if [ "$subsys" = "halt" -o "$subsys" = "reboot" -o "$subsys" = "single" -o "$subsys" = "local" ] \
+	if [ "$subsys" = halt -o "$subsys" = reboot -o "$subsys" = single -o "$subsys" = local ] \
 		|| egrep -qs '(action|daemon) ' "$i"; then
 		"$i" start
 	else
