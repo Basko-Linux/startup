@@ -30,17 +30,34 @@ fi
 /sbin/setsysfont &>/dev/null && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
 OLD_COLUMNS="$COLUMNS"
 
+PrintMargin()
+{
+	if [ "$BOOTUP" != serial ]; then
+		local n=`echo -n "$*" |wc -c`
+		n=$[(COLUMNS-n)/2]
+		local s=
+		while [ $n -gt 1 ]; do
+			s="$s "
+			n=$[n-1]
+		done
+		echo -n "$s"
+	fi
+}
+
 # Print a banner. ;)
-WELCOME="\t\t\t\tWelcome to "
+WELCOME="Welcome to "
 BANNER="ALT Linux"
-if [ "$BOOTUP" != "serial" ]; then
+if [ "$BOOTUP" != serial ]; then
+	PrintMargin "$WELCOME$BANNER"
 	echo -e "$WELCOME\e[1;36m$BANNER\e[0;39m"
 else
-	echo -e "$WELCOME$BANNER"
+	echo "$WELCOME$BANNER"
 fi
 if [ -n "$PROMPT" -a "$PROMPT" != no ]; then
 	PROMPT=1
-	echo -e "\t\tPress 'I' to enter interactive startup."
+	MESSAGE="Press 'I' to enter interactive startup"
+	PrintMargin "$MESSAGE"
+	echo "$MESSAGE"
 else
 	PROMPT=
 fi
