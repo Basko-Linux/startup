@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.0.1
+Version: 0.0.2
 Release: alt1
 
 Summary: The system startup scripts
@@ -11,7 +11,7 @@ Packager: Dmitry V. Levin <ldv@altlinux.org>
 
 Source: %name-%version.tar.bz2
 
-PreReq: setup >= 0:2.1.9-ipl18mdk, chkconfig, gawk, grep, sed, coreutils
+PreReq: service >= 0.0.2-alt1, chkconfig, gawk, grep, sed, coreutils
 # Who could remind me where these requires came from?
 Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
 Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk, util-linux >= 0:2.10q-ipl1mdk
@@ -116,8 +116,6 @@ done
 %config(noreplace) %_sysconfdir/inittab
 %config(noreplace) %_sysconfdir/modules
 %config(noreplace) %_sysconfdir/sysctl.conf
-%_sysconfdir/rc?.d
-%dir    %_sysconfdir/rc.d/rc?.d
 %config(missingok) %_sysconfdir/rc.d/rc?.d/*
 %dir    %_sysconfdir/rc.d/scripts
 %config %_sysconfdir/rc.d/scripts/*
@@ -133,6 +131,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed Apr 23 2003 Dmitry V. Levin <ldv@altlinux.org> 0.0.2-alt1
+- Relocated %_sysconfdir/rc?.d and %_sysconfdir/rc.d/rc?.d
+  from this package to service package.
+
 * Mon Apr 21 2003 Dmitry V. Levin <ldv@altlinux.org> 0.0.1-alt1
 - Removed all service and networking code and packaged them separately.
 - Renamed to startup.
