@@ -9,7 +9,7 @@ attr_set_file_dir=`which attr_set_file_dir` || exit 0
 RESTRICTED_DIRS="/bin /sbin /usr/bin /usr/sbin"
 for i in $RESTRICTED_DIRS; do
 #We must set read_only to executable scripts
-    file $i/* |grep 'script.*executable' |cut -d: -f1 |xargs -r "$attr_set_fd" FILE ff_flags 1
+    file $i/* |fgrep script |cut -d: -f1 |xargs -r "$attr_set_fd" FILE ff_flags 1
 
 #    echo "FF (execute_only) - $i" 
     "$attr_set_fd" DIR ff_flags 130 $i
