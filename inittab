@@ -40,7 +40,7 @@ pn::powerfailnow:/etc/rc.d/rc.powerfail now
 po::powerokwait:/etc/rc.d/rc.powerfail stop
 
 # Things to run in every runlevel.
-ud::once:/sbin/update
+#ud::once:/sbin/update
 
 # getty invocations for the runlevels.
 #
