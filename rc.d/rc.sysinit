@@ -124,7 +124,7 @@ ROOTFSTYPE=`fgrep ' / ' /proc/mounts |tail -1 |cut -d' ' -f3`
 if [ -z "$fastboot" -a "$ROOTFSTYPE" != nfs ]; then 
 	STRING="Checking root filesystem"
 	echo "$STRING"
-	initlog -c "fsck -Tay $fsckoptions /"
+	initlog -c "fsck -Ty $fsckoptions /"
 	rc=$?
 
 	# The exit code returned by fsck is the sum of the following conditions:
@@ -361,7 +361,7 @@ if [ -z "$fastboot" ]; then
 
 	STRING="Checking filesystems"
 	echo "$STRING"
-	initlog -c "fsck -TRAay -t noloop $fsckoptions"
+	initlog -c "fsck -TRAy -t noloop $fsckoptions"
 	rc=$?
 
 	if [ $rc = 0 ]; then
@@ -409,7 +409,7 @@ action "Mounting local filesystems:" mount -a -t nodavfs,ftpfs,loop,ncp,ncpfs,nf
 if [ -z "$fastboot" ]; then
 	STRING="Checking loopback filesystems:"
 	echo -n "$STRING "
-	initlog -c "fsck -TRAay -t loop,ext2 $fsckoptions"
+	initlog -c "fsck -TRAy -t loop,ext2 $fsckoptions"
 	rc=$?
 	if [ "$rc" = "0" ]; then
 		success "$STRING"
