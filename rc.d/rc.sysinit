@@ -68,7 +68,7 @@ fi
 dmesg -n "$LOGLEVEL"
 
 # Set the system clock.
-/etc/init.d/clock
+/etc/rc.d/scripts/clock
 
 # Activate swapping.
 action "Activating swap partitions:" swapon -a
@@ -76,14 +76,7 @@ action "Activating swap partitions:" swapon -a
 # Set the hostname.
 action "Setting hostname $HOSTNAME:" hostname "$HOSTNAME"
 
-# Set the NIS domain name
-if [ -n "$NISDOMAIN" ]; then
-	action "Setting NIS domain name $NISDOMAIN:" domainname "$NISDOMAIN"
-else
-	domainname ""
-fi
-
-if [ -f /fastboot ] || fgrep -iqs fastboot /proc/cmdline; then
+if [ -f /fastboot ] || fgrep -iwqs fastboot /proc/cmdline; then
 	fastboot=yes
 else
 	fastboot=
@@ -103,6 +96,12 @@ if [ "$BOOTUP" != "serial" ]; then
 	fsckoptions="-C $fsckoptions"
 else
 	fsckoptions="-V $fsckoptions"
+fi
+
+# LVM Setting
+VGCHANGE=/sbin/vgchange
+if [ -e /proc/lvm -a -x "$VGCHANGE" ]; then
+	"$VGCHANGE" -a y
 fi
 
 _RUN_QUOTACHECK=0
@@ -173,36 +172,8 @@ mount -f /initrd/loopfs 2>/dev/null
 mount -f /
 mount -f /proc
 
-# Turn on harddisk optimization
-HDPARM=/sbin/hdparm
-if [ -x "$HDPARM" ] && SourceIfNotEmpty /etc/sysconfig/harddisks; then
-	HDFLAGS=
-	if [ -n "$MULTIPLE_IO" ] && [ "$MULTIPLE_IO" != "0" ]; then
-		HDFLAGS="-q -m$MULTIPLE_IO"
-	fi
-	if [ -n "$USE_DMA" ] && [ "$USE_DMA" != "0" ]; then
-		HDFLAGS="$HDFLAGS -q -d$USE_DMA"
-	fi
-	if [ -n "$EIDE_32BIT" ]; then
-		HDFLAGS="$HDFLAGS -q -c$EIDE_32BIT"
-	fi
-	if [ -n "$LOOKAHEAD" ]; then
-		HDFLAGS="$HDFLAGS -q -A$LOOKAHEAD"
-	fi
-	if [ -n "$EXTRA_PARAMS" ]; then
-		HDFLAGS="$HDFLAGS $EXTRA_PARAMS"
-	fi
-	if [ -n "$HDFLAGS" ]; then
-		for i in a b c d e f g h; do
-			if [ -e "/proc/ide/hd$i/media" ]; then
-				hdmedia=`cat /proc/ide/hd$i/media`
-				if [ "$hdmedia" = "disk" ]; then
-					action "Setting hard drive parameters for hd$i:" "$HDPARM" $HDFLAGS "/dev/hd$i"
-				fi
-			fi
- 		done
-	fi
-fi
+# Settin hard disk parameters
+/etc/rc.d/scripts/idetune
 
 # Update quotas if fsck was run on /.
 QUOTACHECK=/sbin/quotacheck
@@ -217,7 +188,7 @@ fi
 
 echo "$HOSTNAME" >/etc/HOSTNAME
 
-if [ -f /proc/ksyms ] && ! fgrep -iqs nomodules /proc/cmdline; then
+if [ -f /proc/ksyms ] && ! fgrep -iwqs nomodules /proc/cmdline; then
 	USEMODULES=y
 else
 	USEMODULES=
@@ -255,9 +226,7 @@ if [ -f /proc/sys/kernel/modprobe ]; then
 fi
 
 # Load modules
-if [ -x /etc/rc.d/rc.modules ]; then
-	/etc/rc.d/rc.modules
-fi
+/etc/rc.d/scripts/load_modules
 
 # Add raid devices
 if [ -f /proc/mdstat -a -s /etc/raidtab ]; then
@@ -353,12 +322,12 @@ fi
 # mounted). Contrary to standard usage,
 # filesystems are NOT unmounted in single user mode.
 # (pixel) also do not mount loopback, will be done later
-action "Mounting local filesystems" mount -a -t nonfs,smbfs,ncpfs,proc,loop
+action "Mounting local filesystems:" mount -a -t nonfs,smbfs,ncpfs,proc,loop
 
 # (pixel) Check loopback filesystems
 if [ -z "$fastboot" ]; then
-	STRING="Checking loopback filesystems"
-	echo -n "$STRING"
+	STRING="Checking loopback filesystems:"
+	echo -n "$STRING "
 	initlog -c "fsck -TRAay -t loop,ext2 $fsckoptions"
 	rc=$?
 	if [ "$rc" = "0" ]; then
@@ -397,7 +366,7 @@ action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat
 # At this point everything should be mounted.
 
 # Load keymap and system font, setup powersaver
-. /etc/init.d/console
+. /etc/rc.d/scripts/console
 
 # Try to get linuxconf profile.
 if profile=$(sed 's/.*prof=\([A-Za-z_0-9]*\).*$/\1/' /proc/cmdline) && \
@@ -409,7 +378,6 @@ if profile=$(sed 's/.*prof=\([A-Za-z_0-9]*\).*$/\1/' /proc/cmdline) && \
 	# Setting again network scripts.
 	if SourceIfNotEmpty /etc/sysconfig/network; then
 		hostname "$HOSTNAME"
-		[ -n "$NISDOMAIN" ] && domainname "$NISDOMAIN"
 		echo "$HOSTNAME" >/etc/HOSTNAME
 	fi
 fi
@@ -430,13 +398,6 @@ if [ -f /.unconfigured ]; then
 	if SourceIfNotEmpty /etc/sysconfig/network ]; then
 		# Reset the hostname.
 		action "Resetting hostname $HOSTNAME:" hostname "$HOSTNAME"
-
-		# Reset the NIS domain name.
-		if [ -n "$NISDOMAIN" ]; then
-			action "Resetting NIS domain name $NISDOMAIN:" domainname "$NISDOMAIN"
-		else
-			domainname ''
-		fi
 	fi
 
 	rm -f /.unconfigured
@@ -450,10 +411,10 @@ fi
 {
 
 # Cleanup everything :)
-action "Cleaning up temporary files from previous boot:" /etc/init.d/cleanup
+action "Cleaning up temporary files from previous boot:" /etc/rc.d/scripts/cleanup
 
 # Language fixes
-/etc/init.d/lang
+/etc/rc.d/scripts/lang
 
 # Now turn on swap again (in case we swap to files).
 swapon -a &>/dev/null
@@ -463,7 +424,7 @@ action "Enabling swap space:" /bin/true
 ExecIfExecutable /etc/rc.d/rc.serial
 
 # Initialize firewall.
-for f in /etc/rc.d/rc.firewall /etc/rc.firewall; do
+for f in /etc/rc.d/scripts/firewall /etc/rc.d/rc.firewall /etc/rc.firewall; do
 	if ExecIfExecutable "$f"; then
 		break
 	fi
@@ -509,6 +470,6 @@ if fgrep -iwqs "failsafe" /proc/cmdline; then
 	touch /var/run/failsafe
 fi
 
-if [ -x /etc/init.d/mandrake_everytime ]; then 
-	/etc/init.d/mandrake_everytime
+if [ -x /etc/rc.d/scripts/mandrake_everytime ]; then 
+	/etc/rc.d/scripts/mandrake_everytime
 fi
