@@ -1,0 +1,38 @@
+#!/bin/sh
+
+cd /usr/share/doc/HTML || exit 0
+
+. /etc/init.d/functions
+
+if SourceIfNotEmpty /etc/sysconfig/i18n; then
+	if [ -n "$LANGUAGE" ]; then
+		LISTLANG="`echo $LANGUAGE |tr ':' ' '`"
+	else
+		if [ -n "$LANG" ]; then
+			LISTLANG="$LANG"
+		else
+			LISTLANG=en
+		fi
+	fi
+	for i in $LISTLANG; do
+		if [ -r "index-$i.html" ]; then
+			cat "index-$i.html" >"index.html"
+			break
+		else
+			lang=`echo "$i" |cut -b-2`
+			if [ -r "index-$lang.html" ]; then
+				cat "index-$lang.html" >"index.html"
+				break
+			fi
+		fi
+	done
+fi
+
+PERL=/usr/bin/perl
+if [ -x "$PERL" ]; then
+	for f in index*.html; do
+		[ -w "$f" ] || continue
+		"$PERL" -pi -e "s/_RAND_/`head -c 32 /dev/urandom |md5sum |cut -d\  -f1`/" "$f"
+		"$PERL" -pi -e "s/_LOCALE_/`locale|grep ^LANG=|cut -d= -f2-`/" "$f"
+	done
+fi
