@@ -263,8 +263,16 @@ if [ "$OLD_COLUMNS" != "$COLUMNS" ]; then
 	setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
 fi
 
+# Activate EVMS
+EVMS_ACTIVE=
+STARTEVMS=/sbin/startevms
+if [ -x "$STARTEVMS" ] && ! fgrep -iwqs noevms /proc/cmdline; then
+	action "Starting up EVMS:" "$STARTEVMS" init
+	EVMS_ACTIVE=1
+fi
+
 # Add raid devices
-if [ -f /proc/mdstat -a -s /etc/raidtab ]; then
+if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat -a -s /etc/raidtab ] && ! fgrep -iwqs noraidtab /proc/cmdline; then
 	echo -n "Starting up RAID devices: " 
 
 	rc=0
