@@ -44,8 +44,9 @@ fi
 PrintMargin()
 {
 	if [ "$BOOTUP" != serial ]; then
-		local n=`echo -n "$*" |wc -c`
-		tput hpa $(( (COLUMNS - n)/2 ))
+		local n
+		n=`echo -n "$*" |wc -c` 2>/dev/null &&
+			tput hpa $(( (COLUMNS - n)/2 ))
 	fi
 }
 
@@ -421,20 +422,6 @@ action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat
 if [ -x /usr/bin/setterm -a -d /usr/share/terminfo -a -s /etc/sysconfig/console/setterm ]; then
 	action "Initializing console powersaver:" \
 		"sh -c \"/usr/bin/setterm `cat /etc/sysconfig/console/setterm` >/dev/console\""
-fi
-
-# Try to get linuxconf profile.
-if profile=$(sed 's/.*prof=\([A-Za-z_0-9]*\).*$/\1/' /proc/cmdline) && \
-	[ -d "/etc/linuxconf/archive/$profile" -o -d "/etc/linuxconf/archive/$profile-family" ] && \
-	! fgrep -qs "confver.current $profile" /etc/conf.linuxconf; then
-
-	action "Setting profile to $profile:" /bin/linuxconf --selectprofile "$profile"
-	
-	# Setting again network scripts.
-	if SourceIfNotEmpty /etc/sysconfig/network; then
-		hostname "$HOSTNAME"
-		echo "$HOSTNAME" >/etc/HOSTNAME
-	fi
 fi
 
 if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
