@@ -96,7 +96,7 @@ if [ $1 -eq 0 ]; then
 fi
 
 %files
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/*
 %config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) %_sysconfdir/adjtime
 %config(noreplace) %_sysconfdir/inittab
 %config(noreplace) %_sysconfdir/modules
