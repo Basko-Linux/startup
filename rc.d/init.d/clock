@@ -9,46 +9,42 @@
 . /etc/init.d/functions
 
 # Set the system clock.
-ARC=0
-SRM=0
-UTC=0
+ARC=false
+SRM=false
+UTC=false
 HWCLOCK_SET_AT_HALT=false
 HWCLOCK_ADJUST=false
 
+CLOCKMODE=
 if SourceIfNotEmpty /etc/sysconfig/clock; then
 	# convert old style clock config to new values
-	if [ "${CLOCKMODE}" = "GMT" ]; then
+	if [ "$CLOCKMODE" = GMT ]; then
 		UTC=true
-	elif [ "${CLOCKMODE}" = "ARC" ]; then
+	elif [ "$CLOCKMODE" = ARC ]; then
 		ARC=true
 	fi
 fi
 
+CLOCKFLAGS=
 CLOCKDEF=
 
-case "$UTC" in
-	yes|true)
-		CLOCKFLAGS="$CLOCKFLAGS -u"
-		CLOCKDEF="$CLOCKDEF (utc)"
-		;;
-	no|false)
-		CLOCKFLAGS="$CLOCKFLAGS --localtime"
-		CLOCKDEF="$CLOCKDEF (localtime)"
-esac
+if is_yes "$UTC"; then
+	CLOCKFLAGS="$CLOCKFLAGS --utc"
+	CLOCKDEF="$CLOCKDEF (utc)"
+elif is_no "$UTC"; then
+	CLOCKFLAGS="$CLOCKFLAGS --localtime"
+	CLOCKDEF="$CLOCKDEF (localtime)"
+fi
 
-case "$ARC" in
-	yes|true)
-		CLOCKFLAGS="$CLOCKFLAGS -A"
-		CLOCKDEF="$CLOCKDEF (arc)"
-		;;
-esac
+if is_yes "$ARC"; then
+	CLOCKFLAGS="$CLOCKFLAGS --arc"
+	CLOCKDEF="$CLOCKDEF (arc)"
+fi
 
-case "$SRM" in
-	yes|true)
-		CLOCKFLAGS="$CLOCKFLAGS -S"
-		CLOCKDEF="$CLOCKDEF (srm)"
-		;;
-esac
+if is_yes "$SRM"; then
+	CLOCKFLAGS="$CLOCKFLAGS --srm"
+	CLOCKDEF="$CLOCKDEF (srm)"
+fi
 
 RETVAL=0
 
@@ -58,7 +54,7 @@ case "$1" in
 		action "Setting system clock$CLOCKDEF: `date`" date
 		;;
 	start)
-		if [ "$HWCLOCK_ADJUST" = yes -o "$HWCLOCK_ADJUST" = true ] && [ -s /etc/adjtime ]; then
+		if is_yes "$HWCLOCK_ADJUST" && [ -s /etc/adjtime ]; then
 			action "Adjusting hardware clock:" /sbin/hwclock --adjust
 		fi
 		/sbin/hwclock --hctosys $CLOCKFLAGS
@@ -69,7 +65,8 @@ case "$1" in
 		RETVAL=$?
 		;;
 	stop)
-		if [ "$HWCLOCK_SET_AT_HALT" = yes ]; then
+		if is_yes "$HWCLOCK_SET_AT_HALT"; then
+			# action cannot be used in this context.
 			echo -n "Setting hardware clock$CLOCKDEF: `date` "
 			/sbin/hwclock --systohc $CLOCKFLAGS && echo_success || echo_failure
 			RETVAL=$?
@@ -77,7 +74,7 @@ case "$1" in
 		fi
 		;;
 	*)
-		echo "Usage: ${0##*/} {start|sync|stop}"
+		msg_usage "${0##*/} {set|start|sync|stop}"
 		RETVAL=1
 		;;
 esac
