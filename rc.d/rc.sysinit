@@ -6,6 +6,12 @@
 # Taken in part from Miquel van Smoorenburg's bcheckrc.
 #
 
+# Use a safe umask.
+#umask 077
+
+# Don't do coredumps.
+ulimit -Sc 0 >/dev/null 2>&1
+
 trap '' SIGPIPE
 
 # Rerun ourselves through initlog
