@@ -501,3 +501,34 @@ FindFile()
 	done
 	return 1
 }
+
+# Unmount file systems, killing processes if we have to.
+UnmountFilesystems()
+{
+	local sig=
+	local retry="$1"
+	shift
+	local delay="$1"
+	shift
+	local pattern="$1"
+	shift
+	local message1="$1"
+	shift
+	local message2="$1"
+	shift
+
+	local remaining=`awk "$pattern" /proc/mounts`
+	while [ -n "$remaining" -a "$retry" -gt 0 ]; do
+		if [ "$retry" -lt 3 ]; then
+			action "$message2" umount -f -t noproc $remaining
+		else
+			action "$message1" umount -f -t noproc $remaining
+		fi
+		local remaining=`awk "$pattern" /proc/mounts`
+		[ -n "$remaining" ] || break
+		/sbin/fuser -k -m $sig $remaining >/dev/null
+		sleep $delay
+		retry=$[retry-1]
+		sig=-9
+	done
+}
