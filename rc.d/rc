@@ -5,7 +5,7 @@
 #               responsible for the very first setup of basic
 #               things, such as setting the hostname.
 #
-# Original Author:       
+# Original Author:
 #               Miquel van Smoorenburg, <miquels@drinkel.nl.mugnet.org>
 #
 
@@ -36,14 +36,15 @@ if [ "$previous" = "N" ]; then
 		if ExecIfExecutable /sbin/askrunlevel --interactive; then
 			ASKRUNLEVEL=no
 		else
-			init 1 #jump to init 1 if not aksrunlevel.
+			# Jump to init 1 if not aksrunlevel.
+			init 1
 		fi
 	fi
 fi
 
 # See if we want to be in user confirmation mode
 if [ "$previous" = "N" ]; then
-	if [ -f /var/run/confirm ] || fgrep -iqs confirm /proc/cmdline; then
+	if [ -f /var/run/confirm ] || fgrep -iwqs confirm /proc/cmdline; then
 		rm -f /var/run/confirm
 		CONFIRM=yes
 		echo "Entering interactive startup"
@@ -62,75 +63,67 @@ runlevel="$newrunlevel"
 [ -d /var/run ] && echo "/etc/rc.d/rc$runlevel.d" >/var/run/runlevel.dir
 
 # Is there an rc directory for this new runlevel?
-if [ -d /etc/rc.d/rc$runlevel.d ]; then
+if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
 	# First, run the KILL scripts.
-	for i in /etc/rc.d/rc$runlevel.d/K*; do
+	for i in "/etc/rc.d/rc$runlevel.d"/K*; do
 		# Check if the script is there.
-		[ ! -f $i ] && continue
+		[ -f "$i" ] || continue
 
-		# Don't run [KS]??foo.{rpmsave,rpmorig} scripts
-		[ "${i%.rpmsave}" != "${i}" ] && continue
-		[ "${i%.rpmorig}" != "${i}" ] && continue
-		[ "${i%.rpmnew}" != "${i}" ] && continue
+		# Don't run *.rpm* scripts
+		[ "${i%.rpm*}" == "$i" ] || continue
 
-		if egrep -q '^#[[:space:]]+halt:[[:space:]]+yes' $i;then
-		    $i stop
+		# Don't run *~ scripts
+		[ "${i%\~}" == "$i" ] || continue
+
+		if egrep -q '^#[[:space:]]+halt:[[:space:]]+yes' "$i"; then
+			"$i" stop
 		fi
 
-		# Check if the subsystem is already up.
-		subsys=${i#/etc/rc.d/rc$runlevel.d/K??}
-		[ ! -f /var/lock/subsys/$subsys ] && \
-		    [ ! -f /var/lock/subsys/${subsys}.init ] && continue
-
 		# Bring the subsystem down.
-		if egrep -q "(killproc |action )" $i ; then
-			$i stop
+		if egrep -q '(action|killproc) ' "$i"; then
+			"$i" stop
 		else
-			action "Stopping $subsys: " $i stop
+			action "Stopping $subsys:" "$i" stop
 		fi
 	done
 
 	# Now run the START scripts.
-	for i in /etc/rc.d/rc$runlevel.d/S*; do
+	for i in "/etc/rc.d/rc$runlevel.d"/S*; do
 		# Check if the script is there.
-		[ ! -f $i ] && continue
+		[ -f "$i" ] || continue
 
-		# Don't run [KS]??foo.{rpmsave,rpmorig} scripts
-		[ "${i%.rpmsave}" != "${i}" ] && continue
-		[ "${i%.rpmorig}" != "${i}" ] && continue
-		[ "${i%.rpmnew}" != "${i}" ] && continue
+		# Don't run *.rpm* scripts
+		[ "${i%.rpm*}" == "$i" ] || continue
 
-		# Check if the subsystem is already up.
+		# Don't run *~ scripts
+		[ "${i%\~}" == "$i" ] || continue
+
 		subsys=${i#/etc/rc.d/rc$runlevel.d/S??}
-		[ -f /var/lock/subsys/$subsys ] || \
-		    [ -f /var/lock/subsys/${subsys}.init ] && continue
-		    
+		# Check if the subsystem is already up.
+		[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] && continue
+		
 		# If we're in confirmation mode, get user confirmation
-		[ -n "$CONFIRM" ]  && 
-		  { 
-		    confirm $subsys
-		    case $? in
-		      0)
-		        :
-		      ;;
-		      2)
-		        CONFIRM=
-		      ;;
-		      *)
-		        continue
-		      ;;
-		    esac 
-		  }
+		if [ -n "$CONFIRM" ]; then
+			confirm "$subsys"
+			case $? in
+				0)
+					:
+					;;
+				2)
+					CONFIRM=
+					;;
+				*)
+					continue
+					;;
+			esac
+		fi
 
 		# Bring the subsystem up.
-		if egrep -q "(daemon |action )" $i ; then
-			$i start
+		if [ "$subsys" = "halt" -o "$subsys" = "reboot" -o "$subsys" = "single" -o "$subsys" = "local" ] \
+			|| egrep -q '(action|daemon) ' "$i"; then
+			"$i" start
 		else
-			if [ "$subsys" = "halt" -o "$subsys" = "reboot" -o "$subsys" = "single" -o "$subsys" = "local" ]; then
-			    $i start
-			else
-			    action "Starting $subsys: " $i start
-			fi
+			action "Starting $subsys:" "$i" start
 		fi
 	done
 fi
