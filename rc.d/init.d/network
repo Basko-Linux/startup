@@ -131,13 +131,13 @@ stop()
 	./ifdown ifcfg-lo
 
 	if [ -d /proc/sys/net/ipv4 ]; then
-		if [ -f /proc/sys/net/ipv4/ip_forward -a "`cat /proc/sys/net/ipv4/ip_forward`" != 0 ]; then
+		if [ -f /proc/sys/net/ipv4/ip_forward ] && [ "`cat /proc/sys/net/ipv4/ip_forward`" != 0 ]; then
 			action "Disabling IPv4 packet forwarding:" sysctl -w net.ipv4.ip_forward=0
 		fi
-		if [ -f /proc/sys/net/ipv4/ip_always_defrag -a "`cat /proc/sys/net/ipv4/ip_always_defrag`" != 0 ]; then
+		if [ -f /proc/sys/net/ipv4/ip_always_defrag ] && [ "`cat /proc/sys/net/ipv4/ip_always_defrag`" != 0 ]; then
 			action "Disabling IPv4 automatic defragmentation:" sysctl -w net.ipv4.ip_always_defrag=0
 		fi
-		if [ -f /proc/sys/net/ipv4/tcp_syncookies -a "`cat /proc/sys/net/ipv4/tcp_syncookies`" != 0 ]; then
+		if [ -f /proc/sys/net/ipv4/tcp_syncookies ] && [ "`cat /proc/sys/net/ipv4/tcp_syncookies`" != 0 ]; then
 			sysctl -w net.ipv4.tcp_syncookies=0
 		fi
 	fi
