@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.5.1
+Version: 0.9.6
 Release: alt1
 
 Summary: The system startup scripts
@@ -151,6 +151,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Fri Apr 01 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.6-alt1
+- rc.sysinit: do not pass "-a" option to fsck(8), "-y" is enough.
+
 * Tue Mar 22 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.5.1-alt1
 - Additional bootsplash tweaks (#6299, #6300).
 
