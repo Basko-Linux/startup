@@ -2,7 +2,9 @@
 
 # ALT's /sbin/setsysfont.
 # Agrees with RH's initscripts-7.06-1.
-# Last change: by imz@altlinux.ru on 2003 Feb 7.
+# Last change: by imz@altlinux.ru on 2003 Feb 7;
+# 2003 Feb 10: 
+# - wrap unicode_start to hide it from dependency-seekers.
 
 # Source library functions
 . /etc/init.d/functions
@@ -58,7 +60,8 @@ readonly SYSFONT UNIMAP SYSFONTACM
 
 readonly \
     CONSOLECHARS="$(FindExec consolechars)" \
-    SETFONT="$(FindExec setfont)"
+    SETFONT="$(FindExec setfont)" \
+    UNICODE_START=unicode_start
 
 if [ -z "$CONSOLECHARS" -a -z "$SETFONT" ]; then
     echo "${0##*/}: cannot set font because no tools found." >&2
@@ -101,7 +104,7 @@ case "$LANG" in
 	# already in Unicode; the first stage is not needed.
 	# The font and SFM has been set already; 
 	# unicode_start will use the current settings
-	unicode_start || let 'RETVAL |= 2'
+	"$UNICODE_START" || let 'RETVAL |= 2'
 	exit $RETVAL
 	;;
 esac
@@ -113,7 +116,7 @@ if [ -n "$SYSFONTACM" ]; then
     "$CONSOLECHARS" "$@" "${args[@]}"
   else # if [ -n "$SETFONT" ]; then
     "$SETFONT" -m "$SYSFONTACM"
-    echo -ne '\e(K' > /dev/console
+    echo -ne '\033(K' > /dev/console
   fi
 fi || let 'RETVAL |= 2'
 
