@@ -2,7 +2,7 @@
 
 Name: initscripts
 Version: 5.49
-Release: ipl45mdk
+Release: ipl46mdk
 
 Summary: The inittab file and the %_sysconfdir/init.d scripts.
 License: GPL
@@ -21,6 +21,7 @@ PreReq: setup >= 0:2.1.9-ipl18mdk, chkconfig, gawk, grep, sed, coreutils, contro
 Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
 Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk
 Requires: util-linux >= 0:2.10q-ipl1mdk, libreadline >= 4.3-alt2
+Requires: /bin/tput
 
 # Automatically added by buildreq on Tue Oct 15 2002
 BuildRequires: glib-devel libpopt-devel
@@ -235,6 +236,16 @@ fi
 %doc sysconfig.txt sysvinitfiles ChangeLog*
 
 %changelog
+* Sun Dec 08 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl46mdk
+- network-scripts/ifup: fixed vlan_id calculation.
+- init.d/network: fixed filtering vlan interfaces.
+- init.d/outformat: new output formatting code (#0001117).
+- scripts/gen_kernel_headers: regenerate headers only if necessary (#0001537).
+- init.d/functions: fixed --bg option again (#0001600).
+- ppp/ip-up: moved "sendmail -q" code to sendmail-common package (#0001605).
+- init.d/clock: fixed "hwclock" issue (#0001611).
+- rc.sysinit: fixed fsck error code handling (#0001675).
+
 * Mon Oct 14 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl45mdk
 - network-scripts/ifup: added PEERNTP logic to dhcpcd; (#0001263).
 - init.d/single: fixed; (#0001324).
