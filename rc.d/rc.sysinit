@@ -6,10 +6,10 @@
 # Taken in part from Miquel van Smoorenburg's bcheckrc.
 #
 
-# Use a safe umask.
+# Use a safe umask
 #umask 077
 
-# Don't do coredumps.
+# Don't do coredumps
 ulimit -Sc 0 >/dev/null 2>&1
 
 trap '' SIGPIPE
@@ -21,7 +21,7 @@ fi
 
 WITHOUT_RC_COMPAT=1
 
-# Source function library.
+# Source function library
 . /etc/init.d/functions
 
 # Fix console loglevel
@@ -29,7 +29,7 @@ dmesg -n "$LOGLEVEL"
 
 HOSTNAME=`hostname`
 
-# Read in config data.
+# Read in config data
 if ! SourceIfNotEmpty /etc/sysconfig/network; then
 	NETWORKING=no
 fi
@@ -38,7 +38,7 @@ if [ -z "$HOSTNAME" -o "$HOSTNAME" = "(none)" ]; then
 	HOSTNAME=localhost
 fi
 
-# Set system font.
+# Set system font
 setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
 
 PrintMargin()
@@ -69,25 +69,25 @@ else
 	PROMPT=
 fi
 
-# Mount /proc (done here so volume labels can work with fsck).
+# Mount /proc (done here so volume labels can work with fsck)
 action "Mounting proc filesystem:" mount -n -t proc proc /proc
 chgrp proc /proc >/dev/null 2>&1 ||:
 
-# Mount /sys where appropriate.
+# Mount /sys where appropriate
 if [ "`kernelversion_major`" -eq 2 ] && [ "`kernelversion_minor`" -ge 5 ]; then
 	action "Mounting sys filesystem:" mount -n -t sysfs sysfs /sys
 fi
 
-# Set the system clock (when /etc/adjtime is missing).
+# Set the system clock (when /etc/adjtime is missing)
 [ -s /etc/adjtime ] || /etc/init.d/clock start
 
-# Activate swapping.
+# Activate swap
 action "Activating swap partitions:" swapon -a -e
 
-# Set the hostname.
+# Set the hostname
 action "Setting hostname $HOSTNAME:" hostname "$HOSTNAME"
 
-# Set the NIS domain name.
+# Set the NIS domain name
 if [ -n "$NISDOMAIN" ] && ! is_no "$NISDOMAIN"; then
 	action "Setting NIS domain name $NISDOMAIN:" domainname "$NISDOMAIN"
 fi
@@ -181,13 +181,13 @@ if [ -x /sbin/isapnp -a -s /etc/isapnp.conf ]; then
 	fi
 fi
 
-# Remount the root filesystem read-write.
+# Remount the root filesystem read-write
 action "Remounting root filesystem in read/write mode:" mount -n -o remount,rw /
 
 # Clear mtab
 [ -L /etc/mtab ] ||  >/etc/mtab
 
-# Set the system clock (when /etc/adjtime is present).
+# Set the system clock (when /etc/adjtime is present)
 [ ! -s /etc/adjtime ] || /etc/init.d/clock start
 
 # Remove stale backups
@@ -203,13 +203,13 @@ mount -f /proc
 # Settin hard disk parameters
 /etc/rc.d/scripts/idetune
 
-# Update quotas if fsck was run on /.
+# Update quotas if fsck was run on /
 QUOTACHECK=/sbin/quotacheck
 if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
 	action "Checking root filesystem quotas:" "$QUOTACHECK" -v /
 fi
 
-# The root filesystem is now read-write, so we can now log via syslog() directly.
+# The root filesystem is now read-write, so we can now log via syslog() directly
 [ -z "$IN_INITLOG" ] || IN_INITLOG=
 
 echo "$HOSTNAME" >/etc/HOSTNAME
@@ -222,7 +222,7 @@ if [ -z "$USEMODULES" ]; then
 	fi
 fi
 
-# Load modules where appropriate.
+# Load modules where appropriate
 if [ -x /sbin/depmod ] && is_yes "$USEMODULES"; then
 	INITLOG_ARGS= action "Finding module dependencies:" depmod -A
 fi
@@ -261,6 +261,7 @@ if [ ! -e /dev/.devfsd -a -e /proc/devices -a -e /proc/misc ]; then
 	MAJOR="$(sed -ne 's/^ *\([0-9]\+\) \+misc$/\1/p' /proc/devices)"
 	MINOR="$(sed -ne 's/^ *\([0-9]\+\) \+device-mapper$/\1/p' /proc/misc)"
 	if [ -n "$MAJOR" -a -n "$MINOR" ]; then
+		mkdir -p -m755 /dev/mapper
 		action "Creating device-mapper character device ($MAJOR, $MINOR):" \
 			mknod --mode=600 /dev/mapper/control c "$MAJOR" "$MINOR"
 	fi
@@ -389,7 +390,7 @@ fi
 
 # Mount all other filesystems (except for NFS and /proc, which is already
 # mounted). Contrary to standard usage,
-# filesystems are NOT unmounted in single user mode.
+# filesystems are NOT unmounted in single user mode
 # (pixel) also do not mount loopback, will be done later
 action "Mounting local filesystems:" mount -a -t nonfs,smbfs,ncpfs,proc,loop
 
@@ -432,9 +433,9 @@ fi
 # Mount loopback
 action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat
 
-# At this point everything should be mounted.
+# At this point everything should be mounted
 
-# Set system font again, if required.
+# Set system font again, if required
 [ -n "$SETSYSFONT_DONE" ] || setsysfont >/dev/null 2>&1
 
 if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
@@ -454,13 +455,13 @@ action "Cleaning up temporary files from previous boot:" /etc/rc.d/scripts/clean
 # Language fixes
 /etc/rc.d/scripts/lang
 
-# Now turn on swap again (in case we swap to files).
+# Now turn on swap again (in case we swap to files)
 action "Activating swap space:" swapon -a
 
-# Initialize the serial ports.
+# Initialize the serial ports
 ExecIfExecutable /etc/rc.d/rc.serial
 
-# Initialize firewall.
+# Initialize firewall
 for f in /etc/rc.d/scripts/firewall /etc/rc.d/rc.firewall /etc/rc.firewall; do
 	if ExecIfExecutable "$f"; then
 		break
@@ -489,14 +490,14 @@ fi
 [ -d /mnt/floppy ] || action "Creating /mnt/floppy:" mkdir -p /mnt/floppy
 [ -d /mnt/disk ] || action "Creating /mnt/disk:" mkdir -p /mnt/disk
 
-# Update alternatives for VLAN configuration program.
+# Update vconfig symlinks for VLAN configuration program
 ExecIfExecutable /etc/rc.d/scripts/vconfig-update
 
 if [ -x /usr/sbin/update_chrooted ]; then
 	action "Updating chrooted environments:" /usr/sbin/update_chrooted conf lib
 fi
 
-# Tune RSBAC if required.
+# Tune RSBAC if required
 ExecIfExecutable /etc/rc.d/scripts/rsbac_autotune
 
 # Now that we have all of our basic modules loaded and the kernel going,
