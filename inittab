@@ -64,6 +64,3 @@ ud::once:/sbin/update
 # Example how to put a getty on a modem line.
 #
 #T3:23:respawn:/sbin/mgetty -x0 -s 57600 ttyS3
-
-# Fix fonts for framebuffer.
-fb:2345:once:/etc/rc.d/scripts/framebuffer_setfont
