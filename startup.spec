@@ -123,7 +123,7 @@ done
 %files
 %config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/*
 %config(noreplace) %_sysconfdir/inittab
-%config(noreplace) %_sysconfdir/modules
+%config(noreplace) %verify(not md5 size mtime) %_sysconfdir/modules
 %config(noreplace) %_sysconfdir/sysctl.conf
 %config(missingok) %_sysconfdir/rc.d/rc?.d/*
 %dir    %_sysconfdir/rc.d/scripts
