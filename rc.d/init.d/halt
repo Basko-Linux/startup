@@ -79,6 +79,7 @@ ACCTOFF=/sbin/accton
 export LANG=C
 export LANGUAGE=C
 export LC_ALL=C
+unset TEXTDOMAIN TEXTDOMAINDIR
 
 # Unmount file systems, killing processes if we have to.
 
