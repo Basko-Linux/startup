@@ -102,6 +102,7 @@ daemon()
 	local base=
 	local bg=
 	local gotbase=
+	local checkname=
 	local user=
 	local daemon_user=
 	local nicelevel=0
@@ -110,6 +111,7 @@ daemon()
 			--check)
 				shift
 				base=$1
+				checkname=$1
 				gotbase=yes
 				shift
 				;;
@@ -137,11 +139,14 @@ daemon()
 	done
 
 	# Save basename.
-	[ -n "$gotbase" ] || base="${1##*/}"
+	if [ -z "$gotbase" ]; then
+		base="${1##*/}"
+		checkname="$1"
+	fi
 
 	# See if it's already running.
 	local pidlist
-	pidlist=`pidofproc "$1"`
+	pidlist=`pidofproc "$checkname"`
 
 	local pid= p
 	for p in $pidlist; do
