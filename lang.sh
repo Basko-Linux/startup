@@ -51,29 +51,6 @@ if [ -n "sourced" ]; then
 		Unset LINGUAS
 	fi
 
-	# some ugly back compatibility... should be removed in the future
-	if [ -z "$RPM_INSTALL_LANG" ]; then
-		if [ -n "$LANGUAGE" ]; then
-			if [ -n "$LINGUAS" ]; then
-				RPM_INSTALL_LANG="$LANGUAGE:$LINGUAS"
-			else
-				RPM_INSTALL_LANG="$LANGUAGE"
-			fi
-		else
-			if [ -n "$LINGUAS" ]; then
-				RPM_INSTALL_LANG="$LINGUAS"
-			else
-				Unset RPM_INSTALL_LANG
-			fi
-		fi
-	fi
-
-	if [ -n "$RPM_INSTALL_LANG" ]; then
-		export RPM_INSTALL_LANG
-	else
-		Unset RPM_INSTALL_LANG
-	fi
-
 	[ -n "$ENC" ] && export ENC || Unset ENC
 	[ -n "$XIM" ] && export XIM || Unset XIM
 	[ -n "$XIM_PROGRAM" ] && export XIM_PROGRAM || Unset XIM_PROGRAM
