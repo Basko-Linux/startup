@@ -36,3 +36,5 @@ if [ -x "$PERL" ]; then
 		"$PERL" -pi -e "s/_LOCALE_/`locale|grep ^LANG=|cut -d= -f2-`/" "$f"
 	done
 fi
+
+:
