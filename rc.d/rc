@@ -1,9 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 #
 # rc            This file is responsible for starting/stopping
-#               services when the runlevel changes. It is also
-#               responsible for the very first setup of basic
-#               things, such as setting the hostname.
+#               services when the runlevel changes.
 #
 # Original Author:
 #               Miquel van Smoorenburg, <miquels@drinkel.nl.mugnet.org>
@@ -12,120 +10,83 @@
 # Source function library.
 . /etc/init.d/functions
 
-# We do not want these to be recalculated, especially if Aurora is running
-# (Named pipes has same strange affectance on /sbin/consoletype).
-export BOOTUP MOVE_TO_COL SETCOLOR_SUCCESS SETCOLOR_FAILURE SETCOLOR_WARNING SETCOLOR_NORMAL LOGLEVEL
-
-# Now find out what the current and what the previous runlevel are.
+# Find out what the current and what the previous runlevel are.
 argv1="$1"
 set `/sbin/runlevel`
-runlevel=$2
-previous=$1
+runlevel="$2"
+previous="$1"
 export runlevel previous
 
 # Get first argument. Set new runlevel to this argument.
-if [ -n "$argv1" ]; then
-	newrunlevel="$argv1"
-else
-	newrunlevel="$runlevel"
-fi
-
-if [ "$previous" = "N" ]; then
-	if [ -e /var/run/failsafe ]; then
-		rm -f /var/run/failsafe
-		if ExecIfExecutable /sbin/askrunlevel --interactive; then
-			ASKRUNLEVEL=no
-		else
-			# Jump to init 1 if not aksrunlevel.
-			init 1
-		fi
-	fi
-fi
+[ -z "$argv1" ] || runlevel="$argv1"
 
 # See if we want to be in user confirmation mode
 if [ "$previous" = "N" ]; then
 	if [ -f /var/run/confirm ] || fgrep -iwqs confirm /proc/cmdline; then
 		rm -f /var/run/confirm
 		CONFIRM=yes
-		echo "Entering interactive startup"
-		if [ "$ASKRUNLEVEL" != "no" ]; then
-			ExecIfExecutable /sbin/askrunlevel --interactive
-		fi
+		echo $"Entering interactive startup"
 	else
 		CONFIRM=
-		echo "Entering non-interactive startup"
+		echo $"Entering non-interactive startup"
 	fi
 fi
 
-runlevel="$newrunlevel"
-
-# Tell linuxconf what runlevel we are in
-[ -d /var/run ] && echo "/etc/rc.d/rc$runlevel.d" >/var/run/runlevel.dir
-
 # Is there an rc directory for this new runlevel?
-if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
-	# First, run the KILL scripts.
-	for i in "/etc/rc.d/rc$runlevel.d"/K*; do
-		# Check if the script is there.
-		[ -x "$i" ] || continue
+[ -d "/etc/rc.d/rc$runlevel.d" ] || exit 0
 
-		# Don't run *.rpm* and *~ scripts
-		[ "${i%.rpm*}" = "$i" -a "${i%\~}" = "$i" ] || continue
+check_script()
+{
+	# Check if the script is there.
+	[ -x "$1" ] || return 1
 
-		subsys=${i#/etc/rc.d/rc$runlevel.d/K??}
+	# Don't run *.rpm* and *~ scripts.
+	[ "${1%.rpm*}" = "$1" -a "${1%\~}" = "$1" ] || return 1
 
-		# Hack: ignore buggy subsystems.
-		[ "$subsys" != internet ] || continue
+	return 0
+}
 
-		# Check if the subsystem is already up.
-		[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] || continue
-		
-		# Bring the subsystem down.
-		if egrep -q '(action|killproc) ' "$i"; then
-			"$i" stop
-		else
-			action "Stopping $subsys:" "$i" stop
-		fi
-	done
+# First, run the KILL scripts.
+for i in "/etc/rc.d/rc$runlevel.d"/K*; do
+	check_script "$i" || continue
 
-	# Now run the START scripts.
-	for i in "/etc/rc.d/rc$runlevel.d"/S*; do
-		# Check if the script is there.
-		[ -x "$i" ] || continue
+	subsys=${i#/etc/rc.d/rc$runlevel.d/K??}
 
-		# Don't run *.rpm* and *~ scripts
-		[ "${i%.rpm*}" = "$i" -a "${i%\~}" = "$i" ] || continue
+	# Check if the subsystem is already up.
+	[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] || continue
+	
+	# Bring the subsystem down.
+	if egrep -qs '(action|killproc) ' "$i"; then
+		"$i" stop
+	else
+		action "Stopping $subsys:" "$i" stop
+	fi
+done
 
-		subsys=${i#/etc/rc.d/rc$runlevel.d/S??}
+# Now run the START scripts.
+for i in "/etc/rc.d/rc$runlevel.d"/S*; do
+	check_script "$i" || continue
 
-		# Hack: ignore buggy subsystems.
-		[ "$subsys" != internet ] || continue
+	subsys=${i#/etc/rc.d/rc$runlevel.d/S??}
 
-		# Check if the subsystem is already up.
-		[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] && continue
-		
-		# If we're in confirmation mode, get user confirmation
-		if [ -n "$CONFIRM" ]; then
-			confirm "$subsys"
-			case $? in
-				0)
-					:
-					;;
-				2)
-					CONFIRM=
-					;;
-				*)
-					continue
-					;;
-			esac
-		fi
+	# Check if the subsystem is already up.
+	[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] && continue
+	
+	# If we're in confirmation mode, get user confirmation
+	if [ -n "$CONFIRM" ]; then
+		confirm "$subsys"
+		case $? in
+			0) :;;
+			2) CONFIRM=;;
+			*) continue;;
+		esac
+	fi
 
-		# Bring the subsystem up.
-		if [ "$subsys" = "halt" -o "$subsys" = "reboot" -o "$subsys" = "single" -o "$subsys" = "local" ] \
-			|| egrep -q '(action|daemon) ' "$i"; then
-			"$i" start
-		else
-			action "Starting $subsys:" "$i" start
-		fi
-	done
-fi
+	# Bring the subsystem up.
+	if [ "$subsys" = "halt" -o "$subsys" = "reboot" -o "$subsys" = "single" -o "$subsys" = "local" ] \
+		|| egrep -qs '(action|daemon) ' "$i"; then
+		"$i" start
+	else
+		action "Starting $subsys:" "$i" start
+	fi
+done

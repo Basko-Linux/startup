@@ -9,8 +9,8 @@
 trap '' SIGPIPE
 
 # Rerun ourselves through initlog
-if [ -z "$IN_INITLOG" ]; then
-	[ -f /sbin/initlog ] && exec /sbin/initlog $INITLOG_ARGS -r /etc/rc.d/rc.sysinit
+if [ -z "$IN_INITLOG" -a -x /sbin/initlog ]; then
+	exec /sbin/initlog $INITLOG_ARGS -r /etc/rc.d/rc.sysinit
 fi
 
 # Source functions
@@ -31,7 +31,7 @@ if [ -z "$HOSTNAME" -o "$HOSTNAME" = "(none)" ]; then
 fi
 
 # Set system font.
-/sbin/setsysfont &>/dev/null && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
+/sbin/setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
 
 PrintMargin()
 {
@@ -62,7 +62,7 @@ fi
 
 # Mount /proc (done here so volume labels can work with fsck)
 action "Mounting proc filesystem" mount -n -t proc /proc /proc
-chgrp proc /proc &>/dev/null ||:
+chgrp proc /proc >/dev/null 2>&1 ||:
 
 # Try to get devfsd
 if [ -c /dev/.devfsd -a -x /sbin/devfsd ]; then
@@ -121,7 +121,7 @@ fi
 # LVM Setting
 VGCHANGE=/sbin/vgchange
 if [ -x "$VGCHANGE" -a -s /etc/lvmtab ]; then
-	modprobe lvm-mod &>/dev/null
+	modprobe lvm-mod >/dev/null 2>&1
 	if [ -e /proc/lvm ]; then
 		action "Setting up LVM:" "$VGCHANGE" -a y
 	fi
@@ -219,10 +219,8 @@ if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
 	action "Checking root filesystem quotas:" "$QUOTACHECK" -v /
 fi
 
-# The root filesystem is now read-write, so we can now log via syslog() directly..
-if [ -n "$IN_INITLOG" ]; then
-	IN_INITLOG=
-fi
+# The root filesystem is now read-write, so we can now log via syslog() directly.
+[ -z "$IN_INITLOG" ] || IN_INITLOG=
 
 echo "$HOSTNAME" >/etc/HOSTNAME
 
@@ -259,12 +257,12 @@ action "Configuring kernel parameters:" sysctl -e -p /etc/sysctl.conf
 
 if [ -f /proc/sys/kernel/modprobe ]; then
 	if [ -n "$USEMODULES" ]; then
-		sysctl -w kernel.modprobe="/sbin/modprobe" &>/dev/null
-		sysctl -w kernel.hotplug="/sbin/hotplug" &>/dev/null
+		sysctl -w kernel.modprobe="/sbin/modprobe" >/dev/null 2>&1
+		sysctl -w kernel.hotplug="/sbin/hotplug" >/dev/null 2>&1
 	else
 		# We used to set this to NULL, but that causes 'failed to exec' messages"
-		sysctl -w kernel.modprobe="/bin/true" &>/dev/null
-		sysctl -w kernel.hotplug="/bin/true" &>/dev/null
+		sysctl -w kernel.modprobe="/bin/true" >/dev/null 2>&1
+		sysctl -w kernel.hotplug="/bin/true" >/dev/null 2>&1
 	fi
 fi
 
@@ -278,7 +276,7 @@ OLD_COLUMNS="$COLUMNS"
 
 # Set system font again, if required.
 if [ "$OLD_COLUMNS" != "$COLUMNS" ]; then
-	/sbin/setsysfont &>/dev/null && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
+	/sbin/setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
 fi
 
 # Add raid devices
@@ -424,7 +422,7 @@ action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat
 # At this point everything should be mounted.
 
 # Set system font again, if required.
-[ -n "$SETSYSFONT_DONE" ] || /sbin/setsysfont &>/dev/null
+[ -n "$SETSYSFONT_DONE" ] || /sbin/setsysfont >/dev/null 2>&1
 
 # Initialize screensaver
 if [ -x /usr/bin/setterm -a -d /usr/share/terminfo -a -s /etc/sysconfig/console/setterm ]; then
@@ -464,7 +462,7 @@ action "Cleaning up temporary files from previous boot:" /etc/rc.d/scripts/clean
 /etc/rc.d/scripts/lang
 
 # Now turn on swap again (in case we swap to files).
-swapon -a &>/dev/null
+swapon -a >/dev/null 2>&1
 action "Enabling swap space:" /bin/true
 
 # Initialize the serial ports.
@@ -483,15 +481,15 @@ if [ -f /proc/scsi/scsi ] && fgrep -qs 'Type:   Sequential-Access' /proc/scsi/sc
 	if fgrep -qv ' 9 st' /proc/devices ; then
 		if [ -n "$USEMODULES" ] ; then
 			# Try to load the module.  If it fails, ignore it...
-			insmod -p st &>/dev/null && modprobe st &>/dev/null
+			insmod -p st >/dev/null 2>&1 && modprobe st >/dev/null 2>&1
 		fi
 	fi
 fi
 
 # If they asked for ide-scsi, load it
 if fgrep -iwqs ide-scsi /proc/cmdline; then
-	modprobe ide-cd &>/dev/null
-	modprobe ide-scsi &>/dev/null
+	modprobe ide-cd >/dev/null 2>&1
+	modprobe ide-scsi >/dev/null 2>&1
 fi
 
 # Adjust symlinks as necessary in /boot to keep system services from
@@ -529,7 +527,7 @@ ExecIfExecutable /etc/rc.d/scripts/rsbac_autotune
 # Now that we have all of our basic modules loaded and the kernel going,
 # let's dump the syslog ring somewhere so we can find it later
 dmesg >/var/log/dmesg
-kill -TERM `/sbin/pidof getkey` &>/dev/null
+kill -TERM `/sbin/pidof getkey` >/dev/null 2>&1
 
 } &
 
@@ -540,8 +538,4 @@ wait
 
 if [ -n "$PROMPT" ]; then
 	touch /var/run/confirm
-fi
-
-if fgrep -iwqs "failsafe" /proc/cmdline; then
-	touch /var/run/failsafe
 fi
