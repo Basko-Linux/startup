@@ -83,7 +83,7 @@ if [ -n "sourced" ]; then
 	if [ -n "$SYSFONTACM" ]; then
 		case $SYSFONTACM in
 			iso01*|iso02*|iso15*|koi*|latin2-ucw*|cp1251*)
-				if [ "$TERM" = "linux" -a "`/sbin/consoletype`" == "vt" ]; then
+				if [ "$TERM" = "linux" -a "`/sbin/consoletype`" = "vt" ]; then
 					echo -ne '\033(K' >&0
 				fi
 				;;
