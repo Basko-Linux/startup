@@ -164,7 +164,8 @@ fi
 
 #if our loader LILO then restart it
 if [ "$LOADER" = LILO ]; then
-    /sbin/lilo &>/dev/null
+    LILO=/sbin/lilo
+    [ -x "$LILO" ] && "$LILO" &>/dev/null ||:
 fi
 
 ##########################################
