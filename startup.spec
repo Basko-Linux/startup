@@ -12,6 +12,9 @@ Packager: Dmitry V. Levin <ldv@altlinux.org>
 Source: %name-%version.tar.bz2
 
 PreReq: setup >= 0:2.1.9-ipl18mdk, chkconfig, gawk, grep, sed, coreutils
+# Who could remind me where these requires came from?
+Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
+Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk, util-linux >= 0:2.10q-ipl1mdk
 
 %description
 This package contains scripts used to boot your system,
