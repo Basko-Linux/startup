@@ -70,24 +70,6 @@ fi
 action "Mounting proc filesystem" mount -n -t proc /proc /proc
 chgrp proc /proc >/dev/null 2>&1 ||:
 
-# Try to get devfsd
-if [ -c /dev/.devfsd -a -x /sbin/devfsd ]; then
-	if action "Running DevFS daemon:" devfsd /dev; then
-		for i in /dev/cdroms/*; do 
-			ln -sf "$i" /dev/
-		done
-		if [ -e /dev/cdrom0	]; then
-			ln -sf /dev/cdrom0 /dev/cdrom
-		fi
-		if SourceIfNotEmpty /etc/sysconfig/mouse; then
-			device=`echo "$device" |sed -e 's,psaux,misc/psaux,' -e 's/ttyS\(.\)/tts\/\1/g'`
-			if [ -n "$device" ]; then
-				ln -s "/dev/$device" /dev/mouse
-			fi
-		fi
-	fi
-fi
-
 # Set the system clock.
 /etc/init.d/clock start
 
@@ -134,7 +116,7 @@ if [ -x "$VGCHANGE" -a -s /etc/lvmtab ]; then
 fi
 
 _RUN_QUOTACHECK=0
-ROOTFSTYPE=`fgrep ' / ' /proc/mounts |cut -d' ' -f3`
+ROOTFSTYPE=`fgrep ' / ' /proc/mounts |tail -1 |cut -d' ' -f3`
 if [ -z "$fastboot" -a "$ROOTFSTYPE" != nfs ]; then 
 	STRING="Checking root filesystem"
 	echo "$STRING"
