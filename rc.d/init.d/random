@@ -14,19 +14,20 @@
 . /etc/init.d/functions
 
 random_seed=/var/run/random-seed
+umask 077
 
 # See how we were called.
 case "$1" in
   start)
 	# Carry a random seed from start-up to start-up
 	# Load and then save 512 bytes, which is the size of the entropy pool
-	if [ -f $random_seed ]; then
-		cat $random_seed >/dev/urandom
+	if [ -s $random_seed ]; then
+		action $"Loading random seed:" dd if=$random_seed of=/dev/urandom count=1 bs=512 2>/dev/null
 	else
 		touch $random_seed
 	fi
 	chmod 600 $random_seed
-	action "Initializing random number generator:" dd if=/dev/urandom of=$random_seed count=1 bs=512 2>/dev/null
+	action $"Initializing random number generator:" dd if=/dev/urandom of=$random_seed count=1 bs=512 2>/dev/null
 	touch /var/lock/subsys/random
 
 	;;
@@ -35,16 +36,16 @@ case "$1" in
 	# Save 512 bytes, which is the size of the entropy pool
 	touch $random_seed
 	chmod 600 $random_seed
-	action "Saving random seed:" dd if=/dev/urandom of=$random_seed count=1 bs=512 2>/dev/null
+	action $"Saving random seed:" dd if=/dev/urandom of=$random_seed count=1 bs=512 2>/dev/null
 	
 	rm -f /var/lock/subsys/random
 	;;
   status)
 	# this is way overkill, but at least we have some status output...
 	if [ -c /dev/random ] ; then
-		echo "The random data source exists"
+		echo $"The random data source exists"
 	else
-		echo "The random data source is missing"
+		echo $"The random data source is missing"
 	fi
 	;;
   restart|reload)
@@ -54,7 +55,7 @@ case "$1" in
   *)
 	# do not advertise unreasonable commands that there is no reason
 	# to use with this device
-	echo "Usage: ${0##*/} {start|stop|status|restart|reload}"
+	msg_usage "${0##*/} {start|stop|status}"
 	exit 1
 esac
 
