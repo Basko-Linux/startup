@@ -2,9 +2,9 @@
 
 Name: initscripts
 Version: 5.49
-Release: ipl52mdk
+Release: ipl53mdk
 
-Summary: The inittab file and the %_sysconfdir/init.d scripts.
+Summary: The inittab file and the %_sysconfdir/init.d scripts
 License: GPL
 Group: System/Base
 Packager: Dmitry V. Levin <ldv@altlinux.org>
@@ -87,7 +87,7 @@ done
 [ $1 -eq 1 ] || /usr/sbin/control-dump usernetctl
 
 %post
-if [ $1 -eq 1 ]; then     
+if [ $1 -eq 1 ]; then
 	/sbin/chkconfig --add random
 	/sbin/chkconfig --add netfs
 	/sbin/chkconfig --add network
@@ -241,6 +241,12 @@ fi
 %doc sysconfig.txt sysvinitfiles ChangeLog*
 
 %changelog
+* Sun Mar 16 2003 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl53mdk
+- Scripts cleanup:
+  Most of bash-specific constructions were replaced with more
+  standard ones; all the rest were marked as bash scripts.
+- No new features were added but few old ones were removed.
+
 * Wed Mar 05 2003 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl52mdk
 - Removed /proc/progress support.
 - %_initdir/dm: keep current fgconsole.
