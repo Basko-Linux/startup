@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.6
+Version: 0.9.6.1
 Release: alt1
 
 Summary: The system startup scripts
@@ -151,6 +151,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Sun Apr 03 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.6.1-alt1
+- rc.sysinit: reverted previous change.
+
 * Fri Apr 01 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.6-alt1
 - rc.sysinit: do not pass "-a" option to fsck(8), "-y" is enough.
 
