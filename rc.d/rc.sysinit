@@ -100,8 +100,8 @@ fi
 
 # LVM Setting
 VGCHANGE=/sbin/vgchange
-if [ -e /proc/lvm -a -x "$VGCHANGE" ]; then
-	"$VGCHANGE" -a y
+if [ -e /proc/lvm -a -x "$VGCHANGE" -a -s /etc/lvmtab ]; then
+	action "Setting up LVM:" "$VGCHANGE" -a y
 fi
 
 _RUN_QUOTACHECK=0
@@ -234,9 +234,9 @@ if [ -f /proc/mdstat -a -s /etc/raidtab ]; then
 
 	rc=0
 	
-	for i in `grep "^raiddev" /etc/raidtab | awk '{print $2}'`; do
+	for i in `grep -s "^raiddev" /etc/raidtab | awk '{print $2}'`; do
 		RAIDDEV="${i##*/}"
-		RAIDSTAT=`grep "^$RAIDDEV : active" /proc/mdstat`
+		RAIDSTAT=`grep -s "^$RAIDDEV : active" /proc/mdstat`
 		if [ -z "$RAIDSTAT" ]; then
 			# Try raidstart first...if that fails then
 			# fall back to raidadd, raidrun.  If that
@@ -439,6 +439,12 @@ if [ -f /proc/scsi/scsi ] && fgrep -qs 'Type:   Sequential-Access' /proc/scsi/sc
 			insmod -p st &>/dev/null && modprobe st &>/dev/null
 		fi
 	fi
+fi
+
+# If they asked for ide-scsi, load it
+if fgrep -iwqs ide-scsi /proc/cmdline; then
+	modprobe ide-cd &>/dev/null
+	modprobe ide-scsi &>/dev/null
 fi
 
 # Adjust symlinks as necessary in /boot to keep system services from
