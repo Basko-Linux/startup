@@ -252,8 +252,12 @@ killproc()
 			fi
 		fi
 	else
+		if [ "$notset" = "1" ]; then 
+			failure "$base shutdown" 
+		else 
+			failure "$base $killlevel" 
+		fi 
 		RC=1
-		failure "$base shutdown"
 	fi
 
 	# Remove pid file if any.
