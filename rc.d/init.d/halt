@@ -8,6 +8,10 @@
 #               Modified for RHS Linux by Damien Neil
 #
 
+# Set the path.
+PATH=/sbin:/bin:/usr/bin:/usr/sbin
+export NOLOCALE=1
+
 . /etc/init.d/functions
 
 runcmd() {
@@ -37,6 +41,17 @@ case "$0" in
 	;;
 esac
 
+if [ -n "$1" ]; then
+	case "$1" in
+		*start)
+			;;
+		*)
+			echo "Usage: (halt|reboot) {start}"
+			exit 1
+			;;
+	esac
+fi
+
 # Kill all processes.
 [ "${BASH+bash}" = bash ] && enable kill
 
@@ -52,72 +67,101 @@ halt -w
 
 # Turn off swap, then unmount file systems.
 SWAPS=`awk '! /^Filename/ { print $1 }' /proc/swaps`
-[ -n "$SWAPS" ] && runcmd "Turning off swap: " swapoff $SWAPS
+[ -n "$SWAPS" ] && runcmd "Turning off swap:" swapoff $SWAPS
 
 QUOTAOFF=/sbin/quotaoff
-[ -x "$QUOTAOFF" ] && runcmd "Turning off quotas: " "$QUOTAOFF" -a
+[ -x "$QUOTAOFF" ] && runcmd "Turning off quotas:" "$QUOTAOFF" -a
 
 ACCTOFF=/sbin/accton
-[ -x "$ACCTOFF" ] && runcmd "Turning off accounting: " "$ACCTOFF"
+[ -x "$ACCTOFF" ] && runcmd "Turning off accounting:" "$ACCTOFF"
 
-# first remove entry /initrd/loopfs as it can't be unmounted :(
-mtab=$(grep -v "/initrd/loopfs[^/]" /etc/mtab)
-(IFS= ; echo $mtab >/etc/mtab)
+# Since now, we should avoid to use locale. 
+export LANG=C
+export LANGUAGE=C
+export LC_ALL=C
 
 # Unmount file systems, killing processes if we have to.
-sig=
-retry=3
-remaining=`awk '!/(^#|proc|loopfs|^none|^\/dev\/root| \/ )/ {print $2}' /proc/mounts`
-while [ -n "$remaining" -a "$retry" -gt 0 ]
-do
-	if [ "$retry" -lt 3 ]; then
-		runcmd "Unmounting file systems (retry): "  umount -a -f -t noproc
-	else
-		runcmd "Unmounting file systems: "  umount -a -f -t noproc
-	fi
-	sleep 2
-	remaining=`awk '!/(^#|proc|loopfs|^none|^\/dev\/root| \/ )/ {print $2}' /proc/mounts`
-	[ -z "$remaining" ] && break
-	/sbin/fuser -k -m $sig $remaining >/dev/null
-	sleep 5
-	retry=$(($retry-1))
-	sig=-9
-done
 
-# turn off raid
-if [ -x /sbin/raidstop -a -f /etc/raidtab ]; then
-    # we can not use raidstop -a here because this will only stop
-    # devices listed in the default config file which is not always
-    # the case. So we look only for the active raid devices
-    if [ -f /proc/mdstat ] ; then
-	mddevs=$(grep ^md /proc/mdstat | awk '{ print $1 }')
-	for mddev in $mddevs ; do
-	    runcmd "Turning off RAID for $mddev: " raidstop /dev/$mddev
+UnmountFilesystems()
+{
+	local sig=
+	local retry="$1"
+	shift
+	local delay="$1"
+	shift
+	local pattern="$1"
+	shift
+	local message1="$1"
+	shift
+	local message2="$1"
+	shift
+
+	local remaining=`awk "$pattern" /proc/mounts`
+	while [ -n "$remaining" -a "$retry" -gt 0 ]; do
+		if [ "$retry" -lt 3 ]; then
+			runcmd "$message2" umount -f -t noproc $remaining
+		else
+			runcmd "$message1" umount -f -t noproc $remaining
+		fi
+		local remaining=`awk "$pattern" /proc/mounts`
+		[ -n "$remaining" ] || break
+		/sbin/fuser -k -m $sig $remaining >/dev/null
+		local remaining=`awk "$pattern" /proc/mounts`
+		[ -n "$remaining" ] || break
+		sleep $delay
+		retry=$[retry-1]
+		sig=-9
 	done
-        unset mddev mddevs
-    fi
-    #runcmd "Turning off RAID: " /sbin/raidstop -a
+}
+
+# Unmount loopback stuff first.
+UnmountFilesystems 3 5 \
+	'$1 ~ /^\/dev\/loop/ && $2 != "/" {print $2}' \
+	"Unmounting loobpack filesystems:" \
+	"Unmounting loopback filesystems (retry):"
+
+# Unmount all the rest.
+UnmountFilesystems 3 5 \
+	'!/(proc|loopfs|autofs|^none|^\/dev\/root| \/ )/ {print $2}' \
+	"Unmounting filesystems:" \
+	"Unmounting filesystems (retry):"
+
+# Turn off raid.
+RAIDSTOP=/sbin/raidstop
+if [ -x "$RAIDSTOP" -a -f /etc/raidtab ]; then
+	# we can not use raidstop -a here because this will only stop
+	# devices listed in the default config file which is not always
+	# the case. So we look only for the active raid devices
+	if [ -f /proc/mdstat ] ; then
+		mddevs=$(grep ^md /proc/mdstat | awk '{ print $1 }')
+		for mddev in $mddevs ; do
+			runcmd "Turning off RAID for $mddev:" "$RAIDSTOP" "/dev/$mddev"
+		done
+		unset mddev mddevs
+	fi
+	#runcmd "Turning off RAID:" /sbin/raidstop -a
 fi
 
+[ -f /proc/bus/usb/devices ] && umount -n /proc/bus/usb &>/dev/null
+
 # Remount read only anything that's left mounted.
-#echo "Remounting remaining filesystems (if any) readonly"
-umount -arnf
+runcmd "Remounting remaining filesystems (if any) readonly:" umount -anrf
 mount -n -o remount,ro /
 
-runcmd "Unmounting proc file system: " umount /proc
+runcmd "Unmounting proc filesystem:" umount -n /proc
 
 # See if this is a powerfail situation.
 UPSCTL=/etc/apcupsd/apccontrol
 if [ -x "$UPSCTL" -a -f /etc/powerfail ]; then
-  echo "APCUPSD will now power off the UPS!"
-  echo
-  "$UPSCTL" killpower
-  echo
-  echo "Please ensure that the UPS has powered off before rebooting"
-  echo "Otherwise, the UPS may cut the power during the reboot!!!"
-  echo
-  sleep 120
-  exit 1
+	echo "APCUPSD will now power off the UPS!"
+	echo
+	"$UPSCTL" killpower
+	echo
+	echo "Please ensure that the UPS has powered off before rebooting"
+	echo "Otherwise, the UPS may cut the power during the reboot!!!"
+	echo
+	sleep 120
+	exit 1
 fi
 
 # Now halt or reboot.
@@ -128,9 +172,9 @@ elif [ -f /forcefsck ]; then
 	echo "On the next boot fsck will be forced."
 fi
 
-HALTARGS="-i -d -p"
-if [ -f /halt ]; then
-	HALTARGS="-i -d"
+HALTARGS="-i -d"
+if [ -f /poweroff -o ! -f /halt ]; then
+	HALTARGS="$HALTARGS -p"
 fi
 
 eval $command $HALTARGS
