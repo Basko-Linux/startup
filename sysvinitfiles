@@ -41,8 +41,9 @@ start()
 	# start daemons, perhaps with the daemon function, for example:
 	daemon <servicename>
 	RETVAL=$?
-	[ $RETVAL -eq 0 ] && touch "$LOCKFILE"
 	echo
+	[ $RETVAL -eq 0 ] && touch "$LOCKFILE"
+	return $RETVAL
 }	
 
 stop()
@@ -51,8 +52,9 @@ stop()
 	# stop daemons, perhaps with the killproc function, for example:
 	killproc <servicename>
 	RETVAL=$?
-	[ $RETVAL -eq 0 ] && rm -f "$LOCKFILE"
 	echo
+	[ $RETVAL -eq 0 ] && rm -f "$LOCKFILE"
+	return $RETVAL
 }
 
 restart()
