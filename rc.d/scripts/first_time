@@ -24,6 +24,11 @@ if [ -x /usr/sbin/kudzu ]; then
 	action "Adjusting hardware configuration:" /usr/sbin/kudzu -q
 fi
 
+# Update menus.
+if [ -x /usr/bin/update-menus ]; then
+	action "Updating application menus:" /usr/bin/update-menus
+fi
+
 action "Adjusting automounter configuration:" /etc/rc.d/scripts/adjust_autofs
 
 # Create new mail files if it doesn't exists.
