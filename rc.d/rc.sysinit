@@ -26,6 +26,12 @@ if [ -z "$HOSTNAME" -o "$HOSTNAME" = "(none)" ]; then
 	HOSTNAME=localhost
 fi
 
+# Initialize 12th console.
+echo -n >>/dev/tty12
+
+# Set system font.
+/sbin/setsysfont &>/dev/null
+
 # Print a banner. ;)
 if [ "$BOOTUP" != "serial" ]; then
 	echo -e '\t\t\tWelcome to Linux \e[1;36mMandrake \e[1;32mRE\e[0;39m'
@@ -66,9 +72,6 @@ fi
 
 # Fix console loglevel
 dmesg -n "$LOGLEVEL"
-
-# Load keymap and system font, setup powersaver
-/etc/rc.d/scripts/console
 
 # Set the system clock.
 /etc/init.d/clock start
@@ -231,6 +234,9 @@ fi
 # Load modules
 /etc/rc.d/scripts/load_modules
 
+# Set system font again.
+/sbin/setsysfont &>/dev/null
+
 # Add raid devices
 if [ -f /proc/mdstat -a -s /etc/raidtab ]; then
 	echo -n "Starting up RAID devices: " 
@@ -368,8 +374,14 @@ action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat
 
 # At this point everything should be mounted.
 
-# Again, load keymap and system font, setup powersaver.
-/etc/rc.d/scripts/console
+# Set system font again.
+/sbin/setsysfont &>/dev/null
+
+# Initialize screensaver
+if [ -x /usr/bin/setterm -a -d /usr/share/terminfo -a -s /etc/sysconfig/console/setterm ]; then
+	action "Initializing console powersaver:" \
+		"sh -c \"/usr/bin/setterm `cat /etc/sysconfig/console/setterm` >/dev/console\""
+fi
 
 # Try to get linuxconf profile.
 if profile=$(sed 's/.*prof=\([A-Za-z_0-9]*\).*$/\1/' /proc/cmdline) && \
