@@ -22,7 +22,7 @@ Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl
 Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk
 Requires: util-linux >= 0:2.10q-ipl1mdk, libreadline >= 4.3-alt2
 
-# Automatically added by buildreq on Sat Dec 02 2000
+# Automatically added by buildreq on Tue Oct 15 2002
 BuildRequires: glib-devel libpopt-devel
 
 %description
