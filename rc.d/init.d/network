@@ -11,12 +11,8 @@
 . /etc/init.d/functions
 
 # Source networking configuration.
-if ! SourceIfNotEmpty /etc/sysconfig/network ]; then
-	exit 0
-fi
-
 # Check that networking is up.
-[ "$NETWORKING" = "no" ] && exit 0
+SourceIfNotEmpty /etc/sysconfig/network && [ "$NETWORKING" != "no" ] || exit
 
 SourceIfNotEmpty /etc/sysconfig/pcmcia
 
@@ -27,6 +23,14 @@ IPX_INTERNAL_NET=/sbin/ipx_internal_net
 IPX_CONFIGURE=/sbin/ipx_configure
 [ ! -x "$IPX_INTERNAL_NET" -o ! -x "$IPX_CONFIGURE" ] && IPX=
 
+# If IPv6 is explicitly configured, make sure it's available.
+if [ "$NETWORKING_IPV6" = yes ]; then
+	alias=`modprobe -c |grep '^alias net-pf-10' |awk '{ print $3 }'`
+	if [ "$alias" != ipv6 -a ! -f /proc/net/if_inet6 ]; then
+		echo "alias net-pf-10 ipv6" >>/etc/modules.conf
+	fi
+fi
+
 LINUXCONF=/bin/linuxconf
 
 CWD=`pwd`
@@ -34,7 +38,8 @@ cd /etc/sysconfig/network-scripts
 
 # find all the interfaces besides loopback.
 # ignore aliases, alternative configurations, and editor backup files
-interfaces=`ls ifcfg* | egrep -v '(ifcfg-lo|:)' | \
+interfaces=`ls ifcfg* | egrep -v '(ifcfg-lo|:|\.rpm)' | \
+            egrep '(~|\.bak)$' | \
             egrep 'ifcfg-[a-z0-9]+$' | \
             sed 's/^ifcfg-//g'`
 
@@ -56,17 +61,33 @@ case "$1" in
 	    ;;
 	esac
 	# depreciated but we still use it.
-	if [ -f /proc/sys/net/ipv4/ip_forward ] && [ "$FORWARD_IPV4" = "yes" ] || [ "$FORWARD_IPV4" = "true" ]; 
-	    then
-		action "Enabling IPv4 packet forwarding" sysctl -w net.ipv4.ip_forward=1
+	if [ "$FORWARD_IPV4" = "yes" ] || [ "$FORWARD_IPV4" = "true" ]; then
+		[ -f /proc/sys/net/ipv4/ip_forward ] &&
+			action "Enabling IPv4 packet forwarding" sysctl -w net.ipv4.ip_forward=1
 	fi
 
 	for i in $interfaces; do
-		if egrep -L "^ONBOOT=\"?[Nn][Oo]\"?" ifcfg-$i &>/dev/null; then
+		if egrep -L "^ONBOOT=\"?[Nn][Oo]\"?" "ifcfg-$i" &>/dev/null; then
 			# Probe module to preserve interface ordering
-			/sbin/ifconfig $i &>/dev/null
+			/sbin/ifconfig "$i" &>/dev/null
 		else
-			action "Bringing up interface $i: " ./ifup $i boot
+			# If we're in confirmation mode, get user confirmation
+		    if [ -n "$CONFIRM" ]; then
+				confirm "$i"
+				case $? in
+					0)
+						:
+						;;
+					2)
+						CONFIRM=
+						;;
+					*)
+						continue
+						;;
+				esac 
+			fi
+
+			action "Bringing up interface $i: " ./ifup "$i" boot
 		fi
 	done
 	
