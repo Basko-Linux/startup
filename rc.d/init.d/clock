@@ -58,7 +58,7 @@ case "$1" in
 		action "Setting system clock$CLOCKDEF: `date`" date
 		;;
 	start)
-		if [ "$HWCLOCK_ADJUST" = yes ]; then
+		if [ "$HWCLOCK_ADJUST" = yes -a -s /etc/adjtime ]; then
 			action "Adjusting hardware clock:" /sbin/hwclock --adjust
 		fi
 		/sbin/hwclock --hctosys $CLOCKFLAGS
