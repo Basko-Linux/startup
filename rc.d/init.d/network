@@ -64,6 +64,9 @@ start()
 		action "Enabling IPv4 packet forwarding" sysctl -w net.ipv4.ip_forward=1
 	fi
 
+	oldhotplug=`sysctl kernel.hotplug 2>/dev/null| awk '{ print $3 }' 2>/dev/null`
+	sysctl -w "kernel.hotplug=/bin/true" >/dev/null 2>&1
+
 	for i in $interfaces; do
 		if egrep -L "^ONBOOT=\"?[Nn][Oo]\"?" "ifcfg-$i" &>/dev/null; then
 			# Probe module to preserve interface ordering
@@ -88,6 +91,8 @@ start()
 		fi
 	done
 
+	sysctl -w "kernel.hotplug=$oldhotplug" >/dev/null 2>&1
+	
 	# Add non interface-specific static-routes.
 	if [ -f /etc/sysconfig/static-routes ]; then
 		grep "^any" /etc/sysconfig/static-routes | while read ignore type dest netmask mask bogus args; do
