@@ -31,10 +31,12 @@ fi
 OLD_COLUMNS="$COLUMNS"
 
 # Print a banner. ;)
+WELCOME="\t\t\t\tWelcome to "
+BANNER="ALTLinux"
 if [ "$BOOTUP" != "serial" ]; then
-	echo -e '\t\t\t'"Welcome to"' Linux \e[1;36mMandrake \e[1;32mRE\e[0;39m'
+	echo -e "$WELCOME\e[1;36m$BANNER\e[0;39m"
 else
-	echo -e '\t\t\t'"Welcome to"' Linux Mandrake RE'
+	echo -e "$WELCOME$BANNER"
 fi
 if [ -n "$PROMPT" -a "$PROMPT" != no ]; then
 	PROMPT=1
