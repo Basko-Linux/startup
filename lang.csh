@@ -34,6 +34,7 @@ if ($sourced == 1) then
 	    case koi*:
 	    case latin2-ucw*:
 	    case cp1251*:
+	    case pt154*:
 	        if ( $?TERM ) then
 		    if ( "$TERM" == "linux" ) then
 		        if ( `/sbin/consoletype` == "vt" ) then
