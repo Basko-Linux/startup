@@ -30,13 +30,11 @@ for f in /var/lock/* /var/run/*; do
 	fi
 done
 
-rm -f /tmp/.X*-lock
+rm -rf /tmp/.X*-lock /tmp/.ICE-unix /tmp/.X11-unix /tmp/.esd /tmp/.font-unix
 rm -f /tmp/esrv*
 rm -f /tmp/k{fm,io}_*
 rm -f /tmp/.s.PGSQL.*
 rm -f /tmp/.MediaCon*
-rm -rf /tmp/.ICE-unix
-rm -rf /tmp/.esd*
 rm -rf /tmp/kde-*
 rm -rf /tmp/ksocket-*
 rm -rf /tmp/mcop-*
@@ -58,6 +56,9 @@ if [ -n "$CLEAN_TMP" ] && [ "$CLEAN_TMP" -ge 1 ]; then
 		    -depth -print0 |xargs -r0 rm -rf --
 	)
 fi
+
+# Recreate some directories.
+mkdir -m1777 /tmp/.ICE-unix /tmp/.X11-unix /tmp/.esd /tmp/.font-unix
 
 # Possibly create lastlog, faillog, utmp and wtmp, reset utmp and possibly utmpx.
 for f in /var/log/{lastlog,faillog}; do
