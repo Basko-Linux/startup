@@ -10,10 +10,6 @@ SourceIfNotEmpty /etc/sysconfig/system
 # Clean up /
 rm -f /fastboot /fsckoptions /forcefsck /halt /poweroff
 
-# Do we need (w|u)tmpx files? We don't set them up, but the sysadmin might...
-_NEED_XFILES=
-[ -f /var/run/utmpx -o -f /var/log/wtmpx ] && _NEED_XFILES=1
-
 # Clean up /var
 # I'd use find, but /usr may not be mounted.
 for f in /var/lock/* /var/run/*; do
@@ -54,18 +50,22 @@ if [ -n "$CLEAN_TMP" ] && [ "$CLEAN_TMP" -ge 1 ]; then
 	    ! \( -name lost+found -uid 0 \) \
 	    ! \( -name quota.user -uid 0 \) \
 	    ! \( -name quota.group -uid 0 \) \
-	    -depth -print0 | xargs -r0 rm -rf
+	    ! \( -name aquota.user -uid 0 \) \
+	    ! \( -name aquota.group -uid 0 \) \
+	    -depth -print0 | xargs -r0 rm -rf --
 	)
 fi
 
-# Clean up utmp/wtmp
-:>/var/run/utmp
-touch /var/log/wtmp
-chgrp utmp /var/run/utmp /var/log/wtmp
-chmod 0664 /var/run/utmp /var/log/wtmp
-if [ -n "$_NEED_XFILES" ]; then
-	:>/var/run/utmpx
-	touch /var/log/wtmpx
-	chgrp utmp /var/run/utmpx /var/log/wtmpx
-	chmod 0664 /var/run/utmpx /var/log/wtmpx
+# Possibly create lastlog, utmp and wtmp, reset utmp and possibly utmpx.
+f=/var/log/lastlog
+if [ ! -e $f ]; then
+	touch $f
+	chown root:root $f && chmod 644 $f
 fi
+for f in /var/log/wtmp /var/run/utmp; do
+	[ -e $f ] && continue
+	touch $f
+	chown root:utmp $f && chmod 664 $f
+done
+> /var/run/utmp
+test -f /var/run/utmpx && > /var/run/utmpx
