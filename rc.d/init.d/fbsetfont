@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# fbsetfont	Framebuffer post initialization
+#
+# chkconfig: 345 33 67
+# description:	Framebuffer post initialization.
+# config: /etc/sysconfig/framebuffer
+
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
+. /etc/init.d/functions
+
+# Default log device.
+LOGDEVICE=/dev/tty12
+
+# Path to fbset program.
+FBSET=/usr/sbin/fbset
+
+# Parse framebuffer config.
+SourceIfNotEmpty /etc/sysconfig/framebuffer && is_yes "$ENABLE" || exit 0
+
+RETVAL=0
+
+# See how we were called.
+case "$1" in
+	start|reload|restart)
+		# Setup videomode if requested.
+		if [ -n "$MODE" -a -x "$FBSET" ]; then
+			: >>"$LOGDEVICE"
+			"$FBSET" -a "$MODE" >>"$LOGDEVICE" 2>&1
+		fi
+
+		# Update system font.
+		if [ -n "$MODULE" ] || [ -n "$MODE" -a -x "$FBSET" ]; then
+			: >>"$LOGDEVICE"
+			for i in $TTYS; do
+				t="/dev/tty$i"
+				: >>"$t"
+				/sbin/setsysfont --tty="$t" >>"$LOGDEVICE" 2>&1
+			done
+		fi
+		;;
+	stop|condstop|condrestart|condreload|status)
+		;;
+	*)
+		msg_usage "${0##*/} {start}"
+		RETVAL=1
+esac
+
+exit $RETVAL
