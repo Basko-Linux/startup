@@ -70,7 +70,7 @@ if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
 		[ -f "$i" ] || continue
 
 		# Don't run *.rpm* and *~ scripts
-		[ "${i%.rpm*}" == "$i" -a "${i%\~}" == "$i" ] || continue
+		[ "${i%.rpm*}" = "$i" -a "${i%\~}" = "$i" ] || continue
 
 		subsys=${i#/etc/rc.d/rc$runlevel.d/K??}
 
@@ -95,7 +95,7 @@ if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
 		[ -f "$i" ] || continue
 
 		# Don't run *.rpm* and *~ scripts
-		[ "${i%.rpm*}" == "$i" -a "${i%\~}" == "$i" ] || continue
+		[ "${i%.rpm*}" = "$i" -a "${i%\~}" = "$i" ] || continue
 
 		subsys=${i#/etc/rc.d/rc$runlevel.d/S??}
 
