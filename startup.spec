@@ -129,7 +129,13 @@ done
 - rc.sysinit:
   + removed (never used) devfs initialization code;
   + fixed ROOTFSTYPE initialization.
-- init.d/*: use new functions from service package.
+- init.d/halt: call poweroff in halt mode by default.
+- scripts/indexhtml_update: use subst instead of perl.
+- setsysfont: use absolute() to find path.
+- scripts/lang: rewritten.
+- everywhere:
+  + use new functions from service package;
+  + set WITHOUT_RC_COMPAT=1 .
 
 * Wed Apr 23 2003 Dmitry V. Levin <ldv@altlinux.org> 0.0.2-alt1
 - Relocated %_sysconfdir/rc?.d and %_sysconfdir/rc.d/rc?.d
