@@ -201,6 +201,7 @@ fi
 %config(noreplace) %verify(not md5 mtime size) %_sysconfdir/modules
 %config(noreplace) %_sysconfdir/sysctl.conf
 %config %_sysconfdir/profile.d/*
+%config /etc/control.d/facilities/usernetctl
 %_sbindir/sys-unconfig
 /sbin/setsysfont
 %attr(4711,root,root) %_sbindir/usernetctl
@@ -236,6 +237,7 @@ fi
 - profile.d/lang.{sh,csh): removed 'C->en_US' convertion; (#0001403).
 - ppp/ip-up: added /etc/ppp/ip-up.d/ support.
 - ppp/ip-down: added /etc/ppp/ip-down.d/ support.
+- Added control support for usernetctl.
 
 * Tue Jun 18 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl44mdk
 - init.d/sound: changed chkconfig values.
