@@ -11,7 +11,7 @@
 # Set the path.
 PATH=/sbin:/bin:/usr/bin:/usr/sbin
 
-. /etc/rc.d/init.d/functions
+. /etc/init.d/functions
 
 runcmd() {
    echo -n "$1 "
@@ -28,7 +28,7 @@ runcmd() {
 case "$0" in
   *halt)
 	message="The system is halted"
-	command="halt -f"
+	command="halt"
 	;;
   *reboot)
 	message="Please stand by while rebooting the system..."
@@ -45,18 +45,18 @@ esac
 
 runcmd "Sending all processes the TERM signal..." /sbin/killall5 -15
 sleep 5
-runcmd "Sending all processes the KILL signal.."  /sbin/killall5 -9
+runcmd "Sending all processes the KILL signal..."  /sbin/killall5 -9
 
 # Write to wtmp file before unmounting /var
 halt -w
 
 # Turn off swap, then unmount file systems.
 SWAPS=`awk '! /^Filename/ { print $1 }' /proc/swaps`
-[ -n "$SWAPS" ] && runcmd "Turning off swap" swapoff $SWAPS
+[ -n "$SWAPS" ] && runcmd "Turning off swap: " swapoff $SWAPS
 
-[ -x /sbin/accton ] && runcmd "Turning off accounting" /sbin/accton
+[ -x /sbin/accton ] && runcmd "Turning off accounting: " /sbin/accton
 
-[ -x /sbin/quotaoff ] && runcmd "Turning off quotas" /sbin/quotaoff -a
+[ -x /sbin/quotaoff ] && runcmd "Turning off quotas: " /sbin/quotaoff -a
 
 # first remove entry /initrd/loopfs as it can't be unmounted :(
 mtab=$(fgrep -v "/initrd/loopfs[^/]" /etc/mtab)
@@ -68,10 +68,10 @@ retry=3
 remaining=`awk '!/(^#|proc|loopfs|^none|^\/dev\/root| \/ )/ {print $2}' /proc/mounts`
 while [ -n "$remaining" -a "$retry" -gt 0 ]
 do
-	if [ "$retry" -lt 3 ];then
-	    runcmd "Unmounting file systems (retry)"  umount -a -f -t noproc
+	if [ "$retry" -lt 3 ]; then
+		runcmd "Unmounting file systems (retry): "  umount -a -f -t noproc
 	else
-	    runcmd "Unmounting file systems"  umount -a -f -t noproc
+		runcmd "Unmounting file systems: "  umount -a -f -t noproc
 	fi
 	sleep 2
 	remaining=`awk '!/(^#|proc|loopfs|^none|^\/dev\/root| \/ )/ {print $2}' /proc/mounts`
@@ -82,32 +82,52 @@ do
 	sig=-9
 done
 
-mount -n -o remount,ro /
-
 # turn off raid
 if [ -x /sbin/raidstop -a -f /etc/raidtab ]; then
     # we can not use raidstop -a here because this will only stop
     # devices listed in the default config file which is not always
     # the case. So we look only for the active raid devices
     if [ -f /proc/mdstat ] ; then
-	mddevs=$(fgrep ^md /proc/mdstat | awk '{ print $1 }')
+	mddevs=$(grep ^md /proc/mdstat | awk '{ print $1 }')
 	for mddev in $mddevs ; do
-	    runcmd "Turning off RAID for $mddev" raidstop /dev/$mddev
+	    runcmd "Turning off RAID for $mddev: " raidstop /dev/$mddev
 	done
         unset mddev mddevs
     fi
-    #runcmd "Turning off RAID" /sbin/raidstop -a
+    #runcmd "Turning off RAID: " /sbin/raidstop -a
 fi
 
 # Remount read only anything that's left mounted.
 #echo "Remounting remaining filesystems (if any) readonly"
 umount -arnf
+mount -n -o remount,ro /
+
+runcmd "Unmounting proc file system: " umount /proc
+
+# See if this is a powerfail situation.
+if [ -f /etc/powerfail ]; then
+  echo "APCUPSD will now power off the UPS!"
+  echo
+  /etc/apcupsd/apccontrol killpower
+  echo
+  echo "Please ensure that the UPS has powered off before rebooting"
+  echo "Otherwise, the UPS may cut the power during the reboot!!!"
+  echo
+  sleep 120
+  exit 1
+fi
 
 # Now halt or reboot.
 echo "$message"
 if [ -f /fastboot ]; then
- echo "On the next boot fsck will be skipped."
+	echo "On the next boot fsck will be skipped."
 elif [ -f /forcefsck ]; then
- echo "On the next boot fsck will be forced."
+	echo "On the next boot fsck will be forced."
 fi
-eval $command -i -d -p
+
+HALTARGS="-i -d -p"
+if [ -f /halt ]; then
+	HALTARGS="-i -d"
+fi
+
+eval $command $HALTARGS

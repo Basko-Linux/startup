@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# /etc/init.d/console - run once at boot time from rc.sysinit
+#
+
+# Load keymap
+KEYMAP=
+if [ -f /etc/sysconfig/console/default.kmap ]; then
+	KEYMAP=/etc/sysconfig/console/default.kmap
+	action "Loading default keymap" \
+		"sh -c \"loadkeys $KEYMAP </dev/tty0 >/dev/tty0 2>/dev/null\""
+else
+	if [ -x etc/init.d/keytable -a -d /usr/lib/kbd/keymaps ]; then
+			/etc/init.d/keytable start
+	else
+		DELAYED_KEYMAP=y
+	fi
+fi   
+
+# Load system font
+if [ -x /sbin/setsysfont ]; then
+	if [ -f /etc/sysconfig/i18n ]; then
+		. /etc/sysconfig/i18n
+	fi
+	if [ -f /etc/sysconfig/console/$SYSFONT.psf.gz -o -f /usr/lib/kbd/consolefonts/$SYSFONT.psf.gz ]; then
+		action "Setting default font" /sbin/setsysfont
+	else
+		DELAYED_FONT=yes
+	fi
+fi
+
+# Initialize screensaver
+if [ -x /usr/bin/setterm -a -d /usr/share/terminfo -a -s /etc/sysconfig/console/setterm ]; then
+	action "Initializing console powersaver" \
+		"sh -c \"/usr/bin/setterm `cat /etc/sysconfig/console/setterm` >/dev/console\""
+fi

@@ -5,17 +5,18 @@ Unset()
 	unset "$@" ||:
 }
 
-Unset I18N_CFG_FILE
+sourced=
+for f in "$HOME/.i18n" /etc/sysconfig/i18n; do
+	if [ -f "$f" ] && . "$f"; then
+		sourced=1
+		break
+	fi
+done
 
-if [ -f $HOME/.i18n ]; then
-	I18N_CFG_FILE=$HOME/.i18n
-elif [ -f /etc/sysconfig/i18n ]; then
-	I18N_CFG_FILE=/etc/sysconfig/i18n
-fi
+Unset f
 
-if [ -f "$I18N_CFG_FILE" ]; then
-	. $I18N_CFG_FILE
-	if [ -n "$LANG" ] ; then
+if [ -n "sourced" ]; then
+	if [ -n "$LANG" ]; then
 		if [ "$LANG" = "C" ]; then LANG="en_US"; fi
 		export LANG
 	else
@@ -48,7 +49,7 @@ if [ -f "$I18N_CFG_FILE" ]; then
 		Unset LINGUAS
 	fi
 
-    # some ugly back compatibility... should be removed in the future
+	# some ugly back compatibility... should be removed in the future
 	if [ -z "$RPM_INSTALL_LANG" ]; then
 		if [ -n "$LANGUAGE" ]; then
 			if [ -n "$LINGUAS" ]; then
@@ -69,25 +70,35 @@ if [ -f "$I18N_CFG_FILE" ]; then
 		export RPM_INSTALL_LANG
 	else
 		Unset RPM_INSTALL_LANG
-    fi
+	fi
 
 	[ -n "$ENC" ] && export ENC || Unset ENC
 	[ -n "$XIM" ] && export XIM || Unset XIM
+    [ -n "$XIM_PROGRAM" ] && export XIM_PROGRAM || Unset XIM_PROGRAM
 	[ -n "$XMODIFIERS" ] && export XMODIFIERS || Unset XMODIFIERS
 	[ -n "$_XKB_CHARSET" ] && export _XKB_CHARSET || Unset _XKB_CHARSET
 
 	if [ -n "$SYSFONTACM" ]; then
 		case $SYSFONTACM in
 			iso01*|iso02*|iso15*|koi*|latin2-ucw*|cp1251*)
-			export LESSCHARSET
-			if [ "$TERM" = "linux" ] && /bin/ls -l /proc/$$/fd/0 2>/dev/null |grep -qs -- '-> /dev/tty[0-9]*$'; then
-				echo -ne '\033(K' >/proc/$$/fd/0
-			fi
-			;;
+				if [ "$TERM" = "linux" ] && /bin/ls -l /proc/self/fd/0 2>/dev/null |grep -qs -- '-> /dev/tty[0-9]*$'; then
+					echo -ne '\033(K' >/proc/self/fd/0
+				fi
+				;;
 		esac
-    fi
+	fi
 
-    Unset SYSFONTACM
+	Unset SYSFONTACM SYSFONT
+
+	# handling of special cases where localization is done
+	# only on console or only on X11.
+	if [ -n "$DISPLAY" ]; then
+		if [ "$X11_NOT_LOCALIZED" = "yes" ]; then LANGUAGE=C; fi
+	else
+		if [ "$CONSOLE_NOT_LOCALIZED" = "yes" ]; then LANGUAGE=C; fi
+	fi
+	if [ -n "$LANGUAGE" ]; then export LANGUAGE; fi
 fi
 
+Unset sourced
 unset -f Unset

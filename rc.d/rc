@@ -10,7 +10,11 @@
 #
 
 # Source function library.
-. /etc/rc.d/init.d/functions
+. /etc/init.d/functions
+
+# We do not want these to be recalculated, especially if Aurora is running
+# (Named pipes has same strange affectance on /sbin/consoletype).
+export BOOTUP MOVE_TO_COL SETCOLOR_SUCCESS SETCOLOR_FAILURE SETCOLOR_WARNING SETCOLOR_NORMAL LOGLEVEL
 
 # Now find out what the current and what the previous runlevel are.
 argv1="$1"
@@ -18,6 +22,13 @@ set `/sbin/runlevel`
 runlevel=$2
 previous=$1
 export runlevel previous
+
+# Get first argument. Set new runlevel to this argument.
+if [ "$argv1" != "" ] ; then
+ newrunlevel="$argv1"
+else
+ newrunlevel="$runlevel"
+fi
 
 if [ "$previous" = "N" ];then
     if [ -e /var/run/failsafe ];then
@@ -31,7 +42,7 @@ if [ "$previous" = "N" ];then
 fi
 
 # See if we want to be in user confirmation mode
-if [ "$previous" = "N" ]; then
+  if [ "$previous" = "N" ]; then
     if grep -i confirm /proc/cmdline >/dev/null || [ -f /var/run/confirm ] ; then
       rm -f /var/run/confirm
       CONFIRM=yes
@@ -43,18 +54,17 @@ if [ "$previous" = "N" ]; then
       CONFIRM=
       echo "Entering non-interactive startup"
     fi
-fi
+  fi
 
-# Get first argument. Set new runlevel to this argument.
-[ "$1" != "" ] && runlevel="$argv1"
+runlevel="$newrunlevel"
 
 # Tell linuxconf what runlevel we are in
-[ -d /var/run ] && echo "/etc/rc.d/rc$runlevel.d" > /var/run/runlevel.dir
+[ -d /var/run ] && echo "/etc/rc$runlevel.d" > /var/run/runlevel.dir
 
 # Is there an rc directory for this new runlevel?
-if [ -d /etc/rc.d/rc$runlevel.d ]; then
+if [ -d /etc/rc$runlevel.d ]; then
 	# First, run the KILL scripts.
-	for i in /etc/rc.d/rc$runlevel.d/K*; do
+	for i in /etc/rc$runlevel.d/K*; do
 		# Check if the script is there.
 		[ ! -f $i ] && continue
 
@@ -68,7 +78,7 @@ if [ -d /etc/rc.d/rc$runlevel.d ]; then
 		fi
 
 		# Check if the subsystem is already up.
-		subsys=${i#/etc/rc.d/rc$runlevel.d/K??}
+		subsys=${i#/etc/rc$runlevel.d/K??}
 		[ ! -f /var/lock/subsys/$subsys ] && \
 		    [ ! -f /var/lock/subsys/${subsys}.init ] && continue
 
@@ -76,12 +86,12 @@ if [ -d /etc/rc.d/rc$runlevel.d ]; then
 		if egrep -q "(killproc |action )" $i ; then
 			$i stop
 		else
-			action "Stopping $subsys" $i stop
+			action "Stopping $subsys: " $i stop
 		fi
 	done
 
 	# Now run the START scripts.
-	for i in /etc/rc.d/rc$runlevel.d/S*; do
+	for i in /etc/rc$runlevel.d/S*; do
 		# Check if the script is there.
 		[ ! -f $i ] && continue
 
@@ -91,7 +101,7 @@ if [ -d /etc/rc.d/rc$runlevel.d ]; then
 		[ "${i%.rpmnew}" != "${i}" ] && continue
 
 		# Check if the subsystem is already up.
-		subsys=${i#/etc/rc.d/rc$runlevel.d/S??}
+		subsys=${i#/etc/rc$runlevel.d/S??}
 		[ -f /var/lock/subsys/$subsys ] || \
 		    [ -f /var/lock/subsys/${subsys}.init ] && continue
 		    
@@ -119,7 +129,7 @@ if [ -d /etc/rc.d/rc$runlevel.d ]; then
 			if [ "$subsys" = "halt" -o "$subsys" = "reboot" -o "$subsys" = "single" -o "$subsys" = "local" ]; then
 			    $i start
 			else
-			    action "Starting $subsys" $i start
+			    action "Starting $subsys: " $i start
 			fi
 		fi
 	done

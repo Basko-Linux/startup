@@ -1,14 +1,16 @@
 ROOT=/
 
-VERSION=$(shell awk '/define version/ { print $$3 }' initscripts.spec)
+VERSION=$(shell awk '/Version:/ { print $$2 }' initscripts.spec)
 CVSTAG = r$(subst .,-,$(VERSION))
+
+mandir=/usr/share/man
 
 all:
 	(cd src; $(MAKE) CFLAGS="$(CFLAGS)")
 
 install:
 	mkdir -p $(ROOT)/etc/profile.d $(ROOT)/sbin $(ROOT)/usr/sbin
-	mkdir -p $(ROOT)/usr/man/man8
+	mkdir -p $(ROOT)$(mandir)/man8
 	$(INSTALL) -m644  inittab $(ROOT)/etc
 	$(INSTALL) -m644  adjtime $(ROOT)/etc
 	$(INSTALL) -m755  setsysfont $(ROOT)/sbin
@@ -16,7 +18,7 @@ install:
 	$(INSTALL) -m755  lang.csh $(ROOT)/etc/profile.d
 	$(INSTALL) -m755  service $(ROOT)/sbin
 	$(INSTALL) -m755  sys-unconfig $(ROOT)/usr/sbin
-	$(INSTALL) -m644  sys-unconfig.8 $(ROOT)/usr/man/man8
+	$(INSTALL) -m644  sys-unconfig.8 $(ROOT)$(mandir)/man8
 	( if uname -m | grep -q sparc ; then \
 	  $(INSTALL) -m644 sysctl.conf.sparc $(ROOT)/etc/sysctl.conf ; \
 	  else \
@@ -27,14 +29,16 @@ install:
 	mkdir -p $(ROOT)/etc/sysconfig
 	mkdir -p $(ROOT)/etc/sysconfig/console
 	$(INSTALL) -m644 sysconfig/init $(ROOT)/etc/sysconfig/init
+	$(INSTALL) -m644 sysconfig/rawdevices $(ROOT)/etc/sysconfig/rawdevices
 	cp -af rc.d sysconfig ppp $(ROOT)/etc
+	chmod 755 $(ROOT)/etc/rc.d/init.d/rawdevices
 	mkdir -p $(ROOT)/sbin
 	mv $(ROOT)/etc/sysconfig/network-scripts/ifup $(ROOT)/sbin
 	mv $(ROOT)/etc/sysconfig/network-scripts/ifdown $(ROOT)/sbin
 	(cd $(ROOT)/etc/sysconfig/network-scripts; \
 	  ln -sf ../../../sbin/ifup . ; \
 	  ln -sf ../../../sbin/ifdown . )
-	(cd src; $(MAKE) install ROOT=$(ROOT))
+	(cd src; $(MAKE) install ROOT=$(ROOT) mandir=$(mandir))
 	mkdir -p $(ROOT)/var/run/netreport
 	-chown root.root $(ROOT)/var/run/netreport
 	chmod og=rwx,o=rx $(ROOT)/var/run/netreport
@@ -42,16 +46,13 @@ install:
 check:
 	for afile in `find . -type f -perm +111|grep -v \.csh ` ; do \
 		if ! file $$afile | grep -s ELF  >/dev/null; then \
-		    bash -n $$afile || { echo $$afile ; exit 1 } ; \
+		    bash -n $$afile || { echo $$afile ; exit 1; } ; \
 		fi  ;\
 	done
+	make -C mandrake check
 
 changelog:
-	rcs2log | sed "s|@.*redhat\.com|@redhat.com|" | sed "s|@@|@|" | \
-	 sed "s|/mnt/devel/CVS/initscripts/||g" > changenew
-	 mv ChangeLog ChangeLog.old
-	 cat changenew ChangeLog.old > ChangeLog
-	 rm -f changenew
+	make -C mandrake changelog
 
 clean:
 	(cd src; $(MAKE) clean)

@@ -1,19 +1,15 @@
 # /etc/profile.d/lang.csh - set i18n stuff
 
-unset I18N_CFG_FILE
+set sourced=0
 
-test -f $HOME/.i18n
-if ($status == 0) then
-   set I18N_CFG_FILE = $HOME/.i18n
-else
-   test -f /etc/sysconfig/i18n
-   if ($status == 0) then
-      set I18N_CFG_FILE = /etc/sysconfig/i18n
-   endif
-endif
+foreach file ($HOME/.i18n /etc/sysconfig/i18n)
+	if ($sourced == 0 && -f $file ) then
+	    eval `sed 's|=C$|=en_US|g' $file | sed 's|^#.*||' | sed 's|\([^=]*\)=\([^=]*\)|setenv \1 \2|g' | sed 's|$|;|' `
+	set sourced=1
+	endif
+end
 
-if ($?I18N_CFG_FILE) then
-    eval `sed 's|=C$|=en_US|g' $I18N_CFG_FILE | sed 's|\([^=]*\)=\([^=]*\)|setenv \1 \2|g' | sed 's|$|;|' `
+if ($sourced == 1) then
     if ($?LC_ALL && $?LANG) then
         if ($LC_ALL == $LANG) then
             unsetenv LC_ALL
@@ -32,11 +28,16 @@ if ($?I18N_CFG_FILE) then
 
     if ($?SYSFONTACM) then
         switch ($SYSFONTACM)
-	    case iso01*|iso02*|iso15*|koi*|latin2-ucw*|cp1251*:
+	    case iso01*:
+	    case iso02*:
+	    case iso15*:
+	    case koi*:
+	    case latin2-ucw*:
+	    case cp1251*:
 	        if ( $?TERM ) then
 		    if ( "$TERM" == "linux" ) then
-		        if ( ls -l /proc/$$/fd/0 2>/dev/null | grep -- '-> /dev/tty[0-9]*$' >/dev/null 2>&1)  then
-			    echo -n -e '\033(K' > /proc/$$/fd/0
+		        if ( `/sbin/consoletype` == "vt" ) then
+			    /bin/echo -n -e '\033(K' > /proc/$$/fd/0
 		        endif
 		    endif
 		endif
@@ -44,4 +45,5 @@ if ($?I18N_CFG_FILE) then
 	endsw
     endif
     unsetenv SYSFONTACM
+    unsetenv SYSFONT
 endif
