@@ -30,6 +30,7 @@ install:
 	$(INSTALL) -p -m644 sysconfig/init $(ROOT)/etc/sysconfig/init
 	$(INSTALL) -p -m644 sysconfig/rawdevices $(ROOT)/etc/sysconfig/rawdevices
 	$(INSTALL) -p -m644 sysconfig/framebuffer $(ROOT)/etc/sysconfig/framebuffer
+	$(INSTALL) -p -m644 sysconfig/vlan $(ROOT)/etc/sysconfig/vlan
 	cp -af rc.d sysconfig ppp $(ROOT)/etc
 	chmod 755 $(ROOT)/etc/rc.d/init.d/rawdevices
 	mkdir -p $(ROOT)/sbin
