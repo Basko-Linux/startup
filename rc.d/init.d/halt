@@ -101,9 +101,7 @@ fi
 
 # Remount read only anything that's left mounted.
 #echo "Remounting remaining filesystems (if any) readonly"
-mount | awk '/ext2/ { print $3 }' | while read line; do
-    mount -n -o ro,remount $line
-done
+umount -arnf
 
 # Now halt or reboot.
 echo "$message"

@@ -93,7 +93,7 @@ daemon() {
 
 	# make sure it doesn't core dump anywhere; while this could mask
 	# problems with the daemon, it also closes some security problems
-	ulimit -c 0
+	ulimit -Sc 0
 	
 	# Echo daemon
         [ "$BOOTUP" = "verbose" ] && echo -n " $base"
@@ -102,7 +102,7 @@ daemon() {
 	if [ -z "$daemon_user" ]; then 
 	   nice -n $nicelevel initlog $INITLOG_ARGS -c "$*" && success "$base startup" || failure "$base startup"
 	else
-	   nice -n $nicelevel initlog $INITLOG_ARGS -c "su $daemon_user -c \"$*\"" && success "$base startup" || failure "$base startup"
+	   nice -n $nicelevel initlog $INITLOG_ARGS -c "su - $daemon_user -c \"$*\"" && success "$base startup" || failure "$base startup"
 	fi
 }
 

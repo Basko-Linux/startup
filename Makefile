@@ -4,29 +4,29 @@ VERSION=$(shell awk '/define version/ { print $$3 }' initscripts.spec)
 CVSTAG = r$(subst .,-,$(VERSION))
 
 all:
-	(cd src; make CFLAGS="$(CFLAGS)")
+	(cd src; $(MAKE) CFLAGS="$(CFLAGS)")
 
 install:
 	mkdir -p $(ROOT)/etc/profile.d $(ROOT)/sbin $(ROOT)/usr/sbin
 	mkdir -p $(ROOT)/usr/man/man8
-	install -m644  inittab $(ROOT)/etc
-	install -m644  adjtime $(ROOT)/etc
-	install -m755  setsysfont $(ROOT)/sbin
-	install -m755  lang.sh $(ROOT)/etc/profile.d
-	install -m755  lang.csh $(ROOT)/etc/profile.d
-	install -m755  service $(ROOT)/sbin
-	install -m755  sys-unconfig $(ROOT)/usr/sbin
-	install -m644  sys-unconfig.8 $(ROOT)/usr/man/man8
+	$(INSTALL) -m644  inittab $(ROOT)/etc
+	$(INSTALL) -m644  adjtime $(ROOT)/etc
+	$(INSTALL) -m755  setsysfont $(ROOT)/sbin
+	$(INSTALL) -m755  lang.sh $(ROOT)/etc/profile.d
+	$(INSTALL) -m755  lang.csh $(ROOT)/etc/profile.d
+	$(INSTALL) -m755  service $(ROOT)/sbin
+	$(INSTALL) -m755  sys-unconfig $(ROOT)/usr/sbin
+	$(INSTALL) -m644  sys-unconfig.8 $(ROOT)/usr/man/man8
 	( if uname -m | grep -q sparc ; then \
-	  install -m644 sysctl.conf.sparc $(ROOT)/etc/sysctl.conf ; \
+	  $(INSTALL) -m644 sysctl.conf.sparc $(ROOT)/etc/sysctl.conf ; \
 	  else \
-	  install -m644 sysctl.conf $(ROOT)/etc/sysctl.conf ; \
+	  $(INSTALL) -m644 sysctl.conf $(ROOT)/etc/sysctl.conf ; \
 	  fi )
 	mkdir -p $(ROOT)/etc/X11
-	install -m755 prefdm $(ROOT)/etc/X11/prefdm
+	$(INSTALL) -m755 prefdm $(ROOT)/etc/X11/prefdm
 	mkdir -p $(ROOT)/etc/sysconfig
 	mkdir -p $(ROOT)/etc/sysconfig/console
-	install -m644 sysconfig/init $(ROOT)/etc/sysconfig/init
+	$(INSTALL) -m644 sysconfig/init $(ROOT)/etc/sysconfig/init
 	cp -af rc.d sysconfig ppp $(ROOT)/etc
 	mkdir -p $(ROOT)/sbin
 	mv $(ROOT)/etc/sysconfig/network-scripts/ifup $(ROOT)/sbin
@@ -34,10 +34,10 @@ install:
 	(cd $(ROOT)/etc/sysconfig/network-scripts; \
 	  ln -sf ../../../sbin/ifup . ; \
 	  ln -sf ../../../sbin/ifdown . )
-	(cd src; make install ROOT=$(ROOT))
-	mkdir -p /var/run/netreport
-	chown root.root /var/run/netreport
-	chmod og=rwx,o=rx /var/run/netreport
+	(cd src; $(MAKE) install ROOT=$(ROOT))
+	mkdir -p $(ROOT)/var/run/netreport
+	-chown root.root $(ROOT)/var/run/netreport
+	chmod og=rwx,o=rx $(ROOT)/var/run/netreport
 
 check:
 	for afile in `find . -type f -perm +111|grep -v \.csh ` ; do \
@@ -54,7 +54,7 @@ changelog:
 	 rm -f changenew
 
 clean:
-	(cd src; make clean)
+	(cd src; $(MAKE) clean)
 	@rm -fv *~ changenew ChangeLog.old
 
 tag-archive:

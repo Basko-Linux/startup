@@ -32,7 +32,7 @@ if ($?I18N_CFG_FILE) then
 
     if ($?SYSFONTACM) then
         switch ($SYSFONTACM)
-	    case iso01*|iso02*|iso15*|koi*|latin2-ucw*:
+	    case iso01*|iso02*|iso15*|koi*|latin2-ucw*|cp1251*:
 	        if ( $?TERM ) then
 		    if ( "$TERM" == "linux" ) then
 		        if ( ls -l /proc/$$/fd/0 2>/dev/null | grep -- '-> /dev/tty[0-9]*$' >/dev/null 2>&1)  then

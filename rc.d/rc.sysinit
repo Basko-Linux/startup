@@ -60,90 +60,17 @@ fi
 # Mount /proc (done here so volume labels can work with fsck)
 
 action "Mounting proc filesystem" mount -n -t proc /proc /proc
+chgrp proc /proc >/dev/null 2>&1 ||:
 
 # Configure kernel parameters
 action "Configuring kernel parameters" sysctl -p /etc/sysctl.conf
 
-#
-ARCH=$(/bin/uname -m)
-
 # Set the system clock.
-ARC=0
-SRM=0
-UTC=0
+/etc/rc.d/init.d/clock
 
-if [ -f /etc/sysconfig/clock ]; then
-   . /etc/sysconfig/clock
-
-   # convert old style clock config to new values
-   if [ "${CLOCKMODE}" = "GMT" ]; then
-      UTC=true
-   elif [ "${CLOCKMODE}" = "ARC" ]; then
-      ARC=true
-   fi
-fi
-
-CLOCKDEF=""
-
-if [ "$ARCH" = "ppc" ];then
-CLOCKFLAGS="-s"
-else
-CLOCKFLAGS="--hctosys"
-fi
-
-case "$UTC" in
-   yes|true)
-    CLOCKFLAGS="$CLOCKFLAGS -u";
-    CLOCKDEF="$CLOCKDEF (utc)";
-  ;;
-  no|false)
-   CLOCKFLAGS="$CLOCKFLAGS --localtime";
-   CLOCKDEF="$CLOCKDEF (localtime)";
-esac
-
-case "$ARC" in
-     yes|true)
-     	CLOCKFLAGS="$CLOCKFLAGS -A";
-     	CLOCKDEF="$CLOCKDEF (arc)";
-     ;;
-esac
-case "$SRM" in
-     yes|true)
-	CLOCKFLAGS="$CLOCKFLAGS -S";
-	CLOCKDEF="$CLOCKDEF (srm)";
-     ;;
-esac
-
-/sbin/hwclock $CLOCKFLAGS
-
-action "Setting clock $CLOCKDEF: `date`" date
-
-# Load keymap
-KEYMAP=
-if [ -f /etc/sysconfig/console/default.kmap ]; then
-  KEYMAP=/etc/sysconfig/console/default.kmap
-  # Since this takes in/output from stdin/out, we can't use initlog
-  loadkeys $KEYMAP < /dev/tty0 > /dev/tty0 2>/dev/null && \
-     success "Loading default keymap" || failure "Loading default keymap"
-  echo
-else
-  if [ -x etc/rc.d/init.d/keytable -a -d /usr/lib/kbd/keymaps ]; then
-     /etc/rc.d/init.d/keytable start
-  else
-      DELAYED_KEYMAP=y
-  fi
-fi   
-
-# Load system font
-if [ -x /sbin/setsysfont ]; then
-    [ -f /etc/sysconfig/i18n ] && . /etc/sysconfig/i18n
-    if [ -f /etc/sysconfig/console/$SYSFONT.psf.gz -o -f /usr/lib/kbd/consolefonts/$SYSFONT.psf.gz ]; then
-       action "Setting default font" /sbin/setsysfont
-    else
-       DELAYED_FONT=yes
-    fi
-fi
-
+# Load keymap and system font
+. /etc/rc.d/init.d/console
+  
 # Start up swapping.
 action "Activating swap partitions" swapon -a
 
@@ -175,16 +102,16 @@ fi
 
 _RUN_QUOTACHECK=0
 if [ ! -f /fastboot ]; then
-        STRING="Checking root filesystem"
+	STRING="Checking root filesystem"
 	echo $STRING
-	initlog -c "fsck -T -a $fsckoptions /"
+	initlog -c "fsck -Tay $fsckoptions /"
 	rc=$?
 	
 	if [ "$rc" = "0" ]; then
 		success "$STRING"
 		echo
 	elif [ "$rc" = "1" ]; then
-	        passed "$STRING"
+		passed "$STRING"
 		echo
         fi
 	
@@ -201,8 +128,7 @@ if [ ! -f /fastboot ]; then
 		sulogin
 
 		echo "Unmounting file systems"
-		umount -a
-		mount -n -o remount,ro /
+		umount -arnf
 		echo "Automatic reboot in progress."
 		reboot -f
 	elif [ "$rc" = "1" ]; then
@@ -351,8 +277,7 @@ if [ -f /proc/mdstat -a -f /etc/raidtab ]; then
 		sulogin
 
 		echo "Unmounting file systems"
-		umount -a
-		mount -n -o remount,ro /
+		umount -arnf
 		echo "Automatic reboot in progress."
 		reboot -f
 	fi
@@ -362,21 +287,21 @@ _RUN_QUOTACHECK=0
 # Check filesystems
 # (pixel) do not check loopback files, will be done later (aren't available yet)
 if [ ! -f /fastboot ]; then
-        STRING="Checking filesystems"
+	STRING="Checking filesystems"
 	echo $STRING
-	initlog -c "fsck -T -R -A -a -t noloop $fsckoptions"
+	initlog -c "fsck -TRAay -t noloop $fsckoptions"
 	rc=$?
-        if [ "$rc" = "0" ]; then
+	if [ "$rc" = "0" ]; then
 		success "$STRING"
 		echo
 	elif [ "$rc" = "1" ]; then
-	        passed "$STRING"
+		passed "$STRING"
 		echo
 	fi
 
 	# A return of 2 or higher means there were serious problems.
 	if [ $rc -gt 1 ]; then
-	        failure "$STRING"
+		failure "$STRING"
 		echo
 		echo
 		echo "*** An error occurred during the file system check."
@@ -387,8 +312,7 @@ if [ ! -f /fastboot ]; then
 		sulogin
 
 		echo "Unmounting file systems"
-		umount -a
-		mount -n -o remount,ro /
+		umount -arnf
 		echo "Automatic reboot in progress."
 		reboot -f
 	elif [ "$rc" = "1" -a -x /sbin/quotacheck ]; then
@@ -404,21 +328,21 @@ action "Mounting local filesystems" mount -a -t nonfs,smbfs,ncpfs,proc,loop
 
 # (pixel) Check loopback filesystems
 if [ ! -f /fastboot ]; then
-        STRING="Checking loopback filesystems"
+	STRING="Checking loopback filesystems"
 	echo -n $STRING
-	initlog -c "fsck -T -R -A -a -t loop,ext2 $fsckoptions"
+	initlog -c "fsck -TRAay -t loop,ext2 $fsckoptions"
 	rc=$?
-        if [ "$rc" = "0" ]; then
+	if [ "$rc" = "0" ]; then
 		success "$STRING"
 		echo
 	elif [ "$rc" = "1" ]; then
-	        passed "$STRING"
+		passed "$STRING"
 		echo
 	fi
 
 	# A return of 2 or higher means there were serious problems.
 	if [ $rc -gt 1 ]; then
-	        failure "$STRING"
+		failure "$STRING"
 		echo
 		echo
 		echo "*** An error occurred during the file system check."
@@ -429,8 +353,7 @@ if [ ! -f /fastboot ]; then
 		sulogin
 
 		echo "Unmounting file systems"
-		umount -a
-		mount -n -o remount,ro /
+		umount -arnf
 		echo "Automatic reboot in progress."
 		reboot -f
 	elif [ "$rc" = "1" -a -x /sbin/quotacheck ]; then
@@ -519,12 +442,15 @@ _NEED_XFILES=
 # Clean up /var
 # I'd use find, but /usr may not be mounted.
 for afile in /var/lock/* /var/run/*; do
-   if [ -d "$afile" ]; then
-      [ "`basename $afile`" != "news" -a "`basename $afile`" != "sudo" ] && rm -f $afile/*
-   else
-      [ "$afile" = "/var/lock/TMP_1ST" ] && continue
-      rm -f $afile
-   fi
+	if [ -d "$afile" ]; then
+		if [ "$(basename "$afile")" != "news" ]; then
+			rm -rf -- "$afile"/*
+		fi
+	else
+		if [ "$afile" != "/var/lock/TMP_1ST" ]; then
+			rm -f -- "$afile"
+		fi
+	fi
 done
 
 {
@@ -542,6 +468,9 @@ fi
 
 # Delete X locks
 rm -f /tmp/.X*-lock
+
+# Delete KDE sockets
+rm -f /tmp/k{fm,io}_*
 
 # Delete Postgres sockets
 rm -f /tmp/.s.PGSQL.*
