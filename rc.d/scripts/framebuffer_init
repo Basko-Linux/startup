@@ -9,7 +9,7 @@ SourceIfNotEmpty /etc/sysconfig/framebuffer && [ "$ENABLE" != no ] || exit 0
 
 # Load framebuffer module.
 if [ -n "$MODULE" ]; then
-	action "Loading module $module:" /sbin/modprobe "$MODULE" $ARGS 2>/dev/null
+	action "Loading module $MODULE:" /sbin/modprobe "$MODULE" $ARGS 2>/dev/null
 fi
 
 # fbset program
