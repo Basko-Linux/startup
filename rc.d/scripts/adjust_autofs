@@ -51,4 +51,4 @@ echo "$header" >"$TABFILE"
 done
 :
 
-[ -x /etc/init.d/autofs -a -s "$TABFILE" ] && ExecIfExecutable /etc/init.d/autofs condrestart ||:
+[ -x /etc/init.d/autofs -a -s "$TABFILE" ] && ExecIfExecutable /etc/init.d/autofs skipstart ||:
