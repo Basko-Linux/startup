@@ -28,32 +28,33 @@ Files in /etc/sysconfig
 /etc/sysconfig/init:
 
   BOOTUP=<some bootup mode>
-     BOOTUP=color means new (as of RH6.0) boot display. 
-     BOOTUP=verbose means old style display
-     Anything else means new display, but without ANSI-formatting
+     BOOTUP=color means new colour boot display;
+     BOOTUP=verbose means old style display;
+     Anything else means new display, but without ANSI colors or positioning.
   LOGLEVEL=<a number>
      Sets the initial console logging level for the kernel.
      The default is 7. 8 means everything (including debugging);
      1 means nothing except kernel panics. syslogd will override
      this once it starts.
-  RES_COL=<a number>
-     Column of the screen to start status labels at. Defaults to 60
-  MOVE_TO_COL=<a command>
-     A command to move the cursor to $RES_COL. Defaults to nasty
+  RES_OFFSET=<a number>
+     Offset from right margin of the screen to start status labels at.
+     Defaults to 8.
+  MOVE_TO_COL(){ <a command>; }
+     A command to move the cursor to $RES_OFFSET. Defaults to nasty
      ANSI sequences output by echo -e.
-  SETCOLOR_SUCCESS=<a command>
+  SETCOLOR_SUCCESS(){ <a command>; }
      A command to set the color to a color indicating success.
      Defaults to nasty ANSI sequences output by echo -e setting
      the color to green.
-  SETCOLOR_FAILURE=<a command>
+  SETCOLOR_FAILURE(){ <a command>; }
      A command to set the color to a color indicating failure.
      Defaults to nasty ANSI sequences output by echo -e setting
      the color to red.
-  SETCOLOR_WARNING=<a command>
+  SETCOLOR_WARNING(){ <a command>; }
      A command to set the color to a color indicating warning.
      Defaults to nasty ANSI sequences output by echo -e setting
      the color to yellow.
-  SETCOLOR_NORMAL=<a command>
+  SETCOLOR_NORMAL(){ <a command>; }
      A command to set the color to 'normal'. Defaults to nasty
      ANSI sequences output by echo -e.
   PROMPT=yes|no
