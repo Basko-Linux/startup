@@ -96,20 +96,12 @@ if [ $1 -eq 0 ]; then
 fi
 
 %files
-%config %verify(not md5 mtime size) %attr(640,root,root) %_sysconfdir/adjtime
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/clock
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/framebuffer
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/i18n
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/init
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/keyboard
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/mouse
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/rawdevices
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/system
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/usb
-%dir %_sysconfdir/sysconfig/harddisk
-%dir %_sysconfdir/sysconfig/console
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/console/setterm
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig
+%config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) %_sysconfdir/adjtime
 %config(noreplace) %_sysconfdir/inittab
+%config(noreplace) %_sysconfdir/modules
+%config(noreplace) %_sysconfdir/sysctl.conf
+%_sysconfdir/rc?.d
 %dir    %_sysconfdir/rc.d/rc?.d
 %config(missingok) %_sysconfdir/rc.d/rc?.d/*
 %dir    %_sysconfdir/rc.d/scripts
@@ -118,8 +110,6 @@ fi
 %config %_sysconfdir/rc.d/rc
 %config %_sysconfdir/rc.d/rc.sysinit
 %config %_sysconfdir/rc.d/rc.powerfail
-%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/modules
-%config(noreplace) %_sysconfdir/sysctl.conf
 /sbin/setsysfont
 %ghost %attr(664,root,utmp) /var/log/wtmp
 %ghost %attr(664,root,utmp) /var/run/utmp
