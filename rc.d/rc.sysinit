@@ -37,7 +37,7 @@ PrintMargin()
 {
 	if [ "$BOOTUP" != serial ]; then
 		local n=`echo -n "$*" |wc -c`
-		tput hpa $(( ($(tput cols)-n)/2 ))
+		tput hpa $(( (COLUMNS - n)/2 ))
 	fi
 }
 
@@ -268,7 +268,7 @@ if [ -f /proc/sys/kernel/modprobe ]; then
 	fi
 fi
 
-OLD_COLUMNS=$(tput cols)
+OLD_COLUMNS="$COLUMNS"
 
 # Load modules
 /etc/rc.d/scripts/load_modules
@@ -277,7 +277,7 @@ OLD_COLUMNS=$(tput cols)
 /etc/rc.d/scripts/framebuffer_init
 
 # Set system font again, if required.
-if [ "$OLD_COLUMNS" != "$(tput cols)" ]; then
+if [ "$OLD_COLUMNS" != "$COLUMNS" ]; then
 	/sbin/setsysfont &>/dev/null && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
 fi
 
