@@ -1,0 +1,47 @@
+#!/bin/sh
+#
+# /etc/rc.d/scripts/idetune - run once at boot time from rc.sysinit
+#
+
+# Turn on ide device optimization.
+# There is only one file /etc/sysconfig/harddisks with default paramenetrs
+# for all disks. If you need different hdparm parameters for some of your
+# devices, copy /etc/sysconfig/harddisks to /etc/sysconfig/harddisk/hda
+# (hdb, hdc...) and modify it.
+# each device witch has no special parameters will use the defaults.
+ 
+. /etc/init.d/functions
+
+HDPARM=/sbin/hdparm
+[ -x "$HDPARM" ] || exit 0
+
+for i in a b c d e f g h; do
+	if [ -e "/proc/ide/hd$i/media" ]; then
+		hdmedia=`cat /proc/ide/hd$i/media`
+		if [ "$hdmedia" = disk ]; then
+			sourced=
+			SourceIfNotEmpty /etc/sysconfig/harddisks && sourced=1
+			SourceIfNotEmpty /etc/sysconfig/harddisk/hd$i && sourced=1
+			[ -n "$sourced" ] || continue
+			HDFLAGS=
+			if [ -n "$MULTIPLE_IO" ] && [ "$MULTIPLE_IO" != "0" ]; then
+				HDFLAGS="-q -m$MULTIPLE_IO"
+			fi
+			if [ -n "$USE_DMA" ] && [ "$USE_DMA" != "0" ]; then
+				HDFLAGS="$HDFLAGS -q -d$USE_DMA"
+			fi
+			if [ -n "$EIDE_32BIT" ]; then
+				HDFLAGS="$HDFLAGS -q -c$EIDE_32BIT"
+			fi
+			if [ -n "$LOOKAHEAD" ]; then
+				HDFLAGS="$HDFLAGS -q -A$LOOKAHEAD"
+			fi
+			if [ -n "$EXTRA_PARAMS" ]; then
+				HDFLAGS="$HDFLAGS $EXTRA_PARAMS"
+			fi
+			if [ -n "$HDFLAGS" ]; then
+				action "Setting hard drive parameters for hd$i:" "$HDPARM" $HDFLAGS /dev/hd$i
+			fi
+		fi
+	fi
+done
