@@ -47,6 +47,9 @@ runcmd "Sending all processes the KILL signal..."  /sbin/killall5 -9
 # Write to wtmp file before unmounting /var
 halt -w
 
+# Sync clock
+runcmd "Syncing hardware clock to system time" /sbin/hwclock --systohc
+
 # Turn off swap, then unmount file systems.
 SWAPS=`awk '! /^Filename/ { print $1 }' /proc/swaps`
 [ -n "$SWAPS" ] && runcmd "Turning off swap: " swapoff $SWAPS
