@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.5
+Version: 0.9.5.1
 Release: alt1
 
 Summary: The system startup scripts
@@ -151,8 +151,11 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Tue Mar 22 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.5.1-alt1
+- Additional bootsplash tweaks (#6299, #6300).
+
 * Mon Mar 21 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.5-alt1
-- Initial bootsplash support, based on patch from Rider.
+- Initial bootsplash support, based on patch from Rider (#6274).
 
 * Thu Mar 17 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.4-alt1
 - inittab: added runlevel for install3.
