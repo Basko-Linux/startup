@@ -18,7 +18,7 @@ if [ -n "$MODE" -a -x "$FBSET" ]; then
 fi
 
 # Update system font
-if [ -n "$MODULE" -o -f /proc/progress ] || [ -n "$MODE" -a -x "$FBSET" ]; then
+if [ -n "$MODULE" ] || [ -n "$MODE" -a -x "$FBSET" ]; then
 	for i in $TTYS; do
 		/sbin/setsysfont --tty=/dev/tty$i >>/dev/tty12 2>&1
 	done

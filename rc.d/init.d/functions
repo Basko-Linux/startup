@@ -375,10 +375,6 @@ echo_failure()
 	echo -n 'FAILED'
 	SETCOLOR_NORMAL
 	echo -n ']'
-	# Echo for LPP
-	if [ -f /proc/progress ]; then
-		echo f > /proc/progress
-	fi
 	return 1
 }
 
@@ -390,10 +386,6 @@ echo_passed()
 	echo -n 'PASSED'
 	SETCOLOR_NORMAL
 	echo -n ']'
-	# Echo for LPP
-	if [ -f /proc/progress ]; then
-		echo w > /proc/progress
-	fi
 	return 1
 }
 

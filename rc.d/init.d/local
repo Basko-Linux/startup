@@ -61,16 +61,4 @@ if R=$(cat /etc/altlinux-release 2>/dev/null) || R=$(cat /etc/mandrake-release 2
 	fi
 fi
 
-CHVT=/usr/bin/chvt
-if [ -f /proc/progress -a -x "$CHVT" ]; then
-	# Disable progress bar interface to avoid bugs.
-	echo d > /proc/progress
-	prev_rl=`/sbin/runlevel |cut -d' ' -f1`
-	this_rl=`/sbin/runlevel |cut -d' ' -f2`
-	if [ "$prev_rl" = N -a "$this_rl" != 5 ]; then
-		# Return to first virtual console.
-		"$CHVT" 1
-	fi
-fi
-
 ExecIfExecutable /etc/rc.d/rc.local
