@@ -135,37 +135,50 @@ fi
 
 _RUN_QUOTACHECK=0
 ROOTFSTYPE=`fgrep ' / ' /proc/mounts |cut -d' ' -f3`
-if [ -z "$fastboot" -a "$ROOTFSTYPE" != "nfs" ]; then 
+if [ -z "$fastboot" -a "$ROOTFSTYPE" != nfs ]; then 
 	STRING="Checking root filesystem"
 	echo "$STRING"
 	initlog -c "fsck -Tay $fsckoptions /"
 	rc=$?
-	
-	if [ "$rc" = "0" ]; then
+
+	# The exit code returned by fsck is the sum of the following conditions:
+	#     0    - No errors
+	#     1    - File system errors corrected
+	#     2    - System should be rebooted
+	#     4    - File system errors left uncorrected
+	#     8    - Operational error
+	#     16   - Usage or syntax error
+	#     32   - Fsck canceled by user request
+	#     128  - Shared library error
+
+	if [ $rc = 0 ]; then
 		success "$STRING"
 		echo
-	elif [ "$rc" = "1" ]; then
+	elif [ $rc = 1 ]; then
 		passed "$STRING"
 		echo
-	fi
-	
-	# A return of 2 or higher means there were serious problems.
-	if [ $rc -gt 1 ]; then
+	else
 		failure "$STRING"
 		echo
-		echo
-		echo "*** An error occurred during the file system check."
-		echo "*** Dropping you to a shell; the system will reboot"
-		echo "*** when you leave the shell."
+	fi
 
-		PS1="(Repair filesystem) \# # "; export PS1
-		sulogin
+	if [ $rc -gt 1 ]; then
+		# A return of 3 or higher means there were serious problems.
+		if [ $rc -gt 3 ]; then
+			echo
+			echo "*** An error occurred during the file system check."
+			echo "*** Dropping you to a shell; the system will reboot"
+			echo "*** when you leave the shell."
 
-		echo "Unmounting file systems"
+			PS1="(Repair filesystem) \# # "; export PS1
+			sulogin
+		fi
+
+		echo "Remounting root filesystem readonly."
 		mount -n -o remount,ro /
 		echo "Automatic reboot in progress."
 		reboot -f
-	elif [ "$rc" = "1" ]; then
+	elif [ $rc = 1 ]; then
 		_RUN_QUOTACHECK=1
 	fi
 fi
@@ -191,7 +204,7 @@ fi
 action "Remounting root filesystem in read/write mode:" mount -n -o remount,rw /
 
 # Clear mtab
->/etc/mtab
+[ -L /etc/mtab ] ||  >/etc/mtab
 
 # Remove stale backups
 rm -f /etc/mtab~ /etc/mtab~~
@@ -332,32 +345,37 @@ if [ -z "$fastboot" ]; then
 	echo "$STRING"
 	initlog -c "fsck -TRAay -t noloop $fsckoptions"
 	rc=$?
-	if [ "$rc" = "0" ]; then
+
+	if [ $rc = 0 ]; then
 		success "$STRING"
 		echo
-	elif [ "$rc" = "1" ]; then
+	elif [ $rc = 1 ]; then
 		passed "$STRING"
+		echo
+	else
+		failure "$STRING"
 		echo
 	fi
 
-	# A return of 2 or higher means there were serious problems.
 	if [ $rc -gt 1 ]; then
-		failure "$STRING"
-		echo
-		echo
-		echo "*** An error occurred during the file system check."
-		echo "*** Dropping you to a shell; the system will reboot"
-		echo "*** when you leave the shell."
+		# A return of 3 or higher means there were serious problems.
+		if [ $rc -gt 3 ]; then
+			echo
+			echo "*** An error occurred during the file system check."
+			echo "*** Dropping you to a shell; the system will reboot"
+			echo "*** when you leave the shell."
 
-		PS1="(Repair filesystem) \# # "; export PS1
-		sulogin
+			PS1="(Repair filesystem) \# # "; export PS1
+			sulogin
+		fi
 
-		echo "Unmounting file systems"
+		echo "Unmounting file systems."
 		umount -arnf
+		echo "Remounting root filesystem readonly."
 		mount -n -o remount,ro /
 		echo "Automatic reboot in progress."
 		reboot -f
-	elif [ "$rc" = "1" -a -x "$QUOTACHECK" ]; then
+	elif [ $rc = 1 ]; then
 		_RUN_QUOTACHECK=1
 	fi
 fi
@@ -432,7 +450,7 @@ if profile=$(sed 's/.*prof=\([A-Za-z_0-9]*\).*$/\1/' /proc/cmdline) && \
 	fi
 fi
 
-if [ X"$_RUN_QUOTACHECK" = X1 -a -x "$QUOTACHECK" ]; then
+if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
 	action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
 fi
 
