@@ -1,0 +1,5 @@
+# Example framebuffer config file.
+# Uncomment following lines, replacing example values with real ones.
+#ENABLE=yes
+#MODULE=radeonfb
+#MODE=800x600-80
