@@ -1,0 +1,790 @@
+2000-12-04 09:56  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Only don't update the link to
+	/boot/vmlinuz when the link egal at the what we want to install.
+
+2000-11-21 14:23  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* src/usernetctl.8: apply documentation fixes (#1268)
+
+2000-11-10 10:17  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: 5.27-38mdk
+
+2000-11-10 10:09  Pablo Saratxaga <pablo@mandrakesoft.com>
+
+	* lang.csh, setsysfont: Stefan Siegel patches
+
+2000-10-16 12:44  Pablo Saratxaga <pablo@mandrakesoft.com>
+
+	* lang.csh, lang.sh, mandrake/listhome: modified lang.sh to read
+	the i18n in the right order (user one first).
+
+2000-10-13 09:12  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/init.d/network: Remove the egrep -v 'ifcfg-ippp[0-9]+$' like
+	DarkDam's.
+
+2000-10-06 09:39  Fredrice Lepied <flepied@mandrakesoft.com>
+
+	* initscripts.spec: 5.27-37mdk
+
+2000-10-06 09:38  Fredrice Lepied <flepied@mandrakesoft.com>
+
+	* prefdm: set HOME to /root in prefdm for kdm.
+
+2000-10-06 08:56  RedHog <redhog@mandrakesoft.com>
+
+	* initscripts.spec, rc.d/init.d/halt: Chvt 1 instaed of displaying
+	a message throygh Aurora, that is, the last messages are in TEXT,
+	but they are at least displayed. Previously, a user might have
+	turned the computer off before filesystems where unmounted...
+
+2000-10-04 13:03  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Add Prereq: fileutils.
+
+2000-10-04 10:17  Guillaume Cottenceau <gc@mandrakesoft.com>
+
+	* initscripts.spec, mandrake/mandrake_firstime: [no log message]
+
+2000-10-03 20:26  Pixel <pixel@mandrakesoft.com>
+
+	* initscripts.spec: rc.modules: don't try insmod -p before modprobe
+	as insmod doesn't know about aliases and i wanna use aliases!
+
+2000-10-03 20:25  Pixel <pixel@mandrakesoft.com>
+
+	* mandrake/rc.modules: don't try insmod -p before modprobe as
+	insmod doesn't know about aliases and i wanna use aliases!
+
+2000-10-03 07:13  RedHog <redhog@mandrakesoft.com>
+
+	* initscripts.spec, rc.d/init.d/halt: Fix to differentiate between
+	reboot and halt in init.d/halt under Aurora...
+
+2000-09-29 10:07  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: 5.27-31mdk
+
+2000-09-29 09:56  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/tmpdir.sh: Set a return instead of an exist (thanks
+	cooker people).
+
+2000-09-28 11:37  RedHog <redhog@mandrakesoft.com>
+
+	* initscripts.spec, rc.d/rc.sysinit: Oupsi. Why did I try to use
+	chvt at all? Chvt is in /usr anyway...
+
+2000-09-28 04:49  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: try to get the detectloader from
+	/usr/sbin/detectload if here (if not use internal and limited one).
+
+2000-09-27 13:38  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Call usb script very early for cups.
+
+2000-09-27 13:23  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/: sound, usb: Add dummy reload) to shut the mouth of
+	rpmlint.
+
+2000-09-27 13:21  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: 5.27-29mdk
+
+2000-09-27 13:17  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/rc.sysinit: Don't load Aurora if we are in failsafe mode.
+
+2000-09-27 12:48  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/rc.sysinit: don't call mandrake_firstime here, since when
+	for example we put the mixer we need to launch which hangup the
+	sound.
+
+2000-09-27 12:47  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/rc.local: Move the call to mandrake_firstime here.
+
+2000-09-27 12:47  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/mandrake_firstime: Remove the call to sound start since
+	now mandrake_firstime is called in rc.local and not rc.sysinit
+	(sound is already started).
+
+2000-09-27 06:35  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* sysconfig/network-scripts/ifup-ppp: Add IDLETIMEOUT before
+	DEMAND=yes.
+
+2000-09-27 06:34  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* sysconfig/network-scripts/ifdown-ppp: Don't run the ifdown-post
+	in ifdown-ppp.
+
+2000-09-27 06:26  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* src/: initlog.c, netreport.c: Sync with redhat version.
+
+2000-09-27 06:25  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/rc.sysinit: Use grep -i everywhere we grep in /proc/cmdline.
+
+2000-09-27 06:23  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Mount usb interface only when usb interface is not
+	already mounted (or in builtins).
+
+2000-09-27 06:21  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/init.d/functions: add a usleep 100000 in killproc functions.
+	 use builtins shell to read the pid and not calling head.
+
+2000-09-27 06:20  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/init.d/netfs: s|nonfs|nfs|; in mount -a.
+
+2000-09-27 06:09  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/rc.sysinit: Wonder where this bug come from but remove \t
+	before display 'Press I to enter interactive startup'.
+
+2000-09-27 05:57  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/init.d/halt: Call /sbin/Monitor only if Aurora is installed.
+
+2000-09-27 05:55  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* Makefile: Call make changelog of mandrake/Makefile
+
+2000-09-27 01:05  Fredrice Lepied <flepied@mandrakesoft.com>
+
+	* initscripts.spec: 5.27-28mdk
+
+2000-09-27 01:04  Fredrice Lepied <flepied@mandrakesoft.com>
+
+	* rc.d/init.d/functions: launch via su with -s /bin/sh.
+
+2000-09-26 07:46  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/init.d/halt: Fix halt again (sic).
+
+2000-09-25 13:05  Renaud Chaillat <rchaillat@mandrakesoft.com>
+
+	* initscripts.spec: initscripts.spec : 5.27-27mdk (removed sysklogd
+	requirement)
+
+2000-09-25 09:41  RedHog <redhog@mandrakesoft.com>
+
+	* initscripts.spec, rc.d/rc.sysinit, rc.d/init.d/halt: Fix for
+	interactive bootup under Aurora and addition of a nice "system
+	succesfully taken down - it is now safe to turn it off" - message
+	to Auroraish shutdown.
+
+2000-09-24 19:36  Dam's <damien@mandrakesoft.com>
+
+	* initscripts.spec, ppp/ip-up: stc
+
+2000-09-23 17:59  Pixel <pixel@mandrakesoft.com>
+
+	* lang.csh: s|consoletype|/sbin/consoletype|
+
+2000-09-22 10:32  Fredrice Lepied <flepied@mandrakesoft.com>
+
+	* initscripts.spec: 5.27-24mdk
+
+2000-09-22 10:29  Fredrice Lepied <flepied@mandrakesoft.com>
+
+	* prefdm: kill autologin on SIGTERM.
+
+2000-09-20 14:31  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/init.d/halt: By default do poweroff (rh sux), but if /halt
+	is here do a simple halt.
+
+2000-09-20 10:15  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: 5.27-23mdk
+
+2000-09-20 10:12  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/rc: Export the aurora variable.
+
+2000-09-20 07:32  Pixel <pixel@mandrakesoft.com>
+
+	* mandrake/detectloader: patch detectloader to skip cdroms
+	(otherwise stops cd-audios)
+
+2000-09-19 07:47  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/init.d/halt: redo halt stuff like did at the first time, now
+	if you want to poweroff use the poweroff command.
+
+2000-09-18 07:01  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: 5.27-22mdk
+
+2000-09-18 06:59  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Clean up and fix the make link process.
+
+2000-09-18 06:48  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Oups remove fb stuff (there is no fb
+	stuff).
+
+2000-09-18 06:46  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: link for FB and secure  too.
+
+2000-09-18 06:44  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Correct link when using smp.
+
+2000-09-17 15:16  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: 5.27-21mdk
+
+2000-09-17 15:14  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/init.d/halt: Fix halt again.
+
+2000-09-17 14:47  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/rc.sysinit: Fix load of rc.modules.
+
+2000-09-13 10:31  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Add VISOR detection.
+
+2000-09-13 04:35  RedHog <redhog@mandrakesoft.com>
+
+	* initscripts.spec, rc.d/rc.sysinit: Fix for Aurora-disabling for
+	fb-kernels with fb currently disabled
+
+2000-09-12 14:23  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Ready to release 5.27-19mdk.
+
+2000-09-12 14:20  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: exit of the function if no /proc/bus/usb/devices.
+
+2000-09-12 14:14  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Rewrote usb devices detection and add the usb
+	printer in the train.
+
+2000-09-11 08:42  Pixel <pixel@mandrakesoft.com>
+
+	* mandrake/Makefile: oups, typo fixed
+
+2000-09-11 08:00  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/init.d/halt: By default set halt with the poweroff option
+	and if /halt exist halt witout poweroffing.
+
+2000-09-11 07:25  Pixel <pixel@mandrakesoft.com>
+
+	* initscripts.spec: remove unneeded is_depmod_necessary
+
+2000-09-11 07:25  Pixel <pixel@mandrakesoft.com>
+
+	* initscripts.spec, mandrake/Makefile,
+	mandrake/is_depmod_necessary.c, rc.d/rc.sysinit: remove
+	is_depmod_necessary (depmod -A does it nicely now)
+
+2000-09-08 11:56  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Set some sleep between interfaces to get the grep
+	correctly.
+
+2000-09-08 04:47  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Ready to release 5.27-17mdk.
+
+2000-09-08 04:36  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Correct Regexp for detecting USB storage.
+
+2000-09-08 04:19  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Be quiet when grepping. Detect USB Storage.
+	s|ZIP|Storage|;
+
+2000-09-05 07:49  Pixel <pixel@mandrakesoft.com>
+
+	* initscripts.spec, mandrake/detectloader: - modify detectloader
+	for new grub
+
+2000-09-04 06:01  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* setsysfont: Fix shell syntax for arguments.
+
+2000-09-03 15:38  RedHog <redhog@mandrakesoft.com>
+
+	* initscripts.spec: Oups. Forgot to change rev. num...
+
+2000-09-03 15:31  RedHog <redhog@mandrakesoft.com>
+
+	* rc.d/rc.sysinit, initscripts.spec: Made setsysfont working w/
+	Aurora.
+
+2000-09-02 13:08  RedHog <redhog@mandrakesoft.com>
+
+	* initscripts.spec, setsysfont, rc.d/rc.sysinit: fixes to
+	setsysfont to be able to work without switching active vt to a
+	non-graphical one (This was done to make it work nicely with
+	Aurora)
+
+2000-09-01 18:30  Pixel <pixel@mandrakesoft.com>
+
+	* rc.d/: rc, rc.sysinit: fixed typo
+
+2000-09-01 18:15  Pixel <pixel@mandrakesoft.com>
+
+	* rc.d/: rc, rc.sysinit, init.d/functions: add some checking about
+	aurora (and fb)
+
+2000-09-01 18:04  Pixel <pixel@mandrakesoft.com>
+
+	* initscripts.spec: add some checking about aurora
+
+2000-09-01 18:01  Pixel <pixel@mandrakesoft.com>
+
+	* rc.d/rc: check aurora is there before calling it
+
+2000-08-31 21:37  Pixel <pixel@mandrakesoft.com>
+
+	* initscripts.spec: make the initscripts aurora aware
+
+2000-08-31 21:37  Pixel <pixel@mandrakesoft.com>
+
+	* rc.d/: rc, rc.sysinit, init.d/functions, init.d/halt,
+	init.d/single: makes the initscripts aurora aware
+
+2000-08-30 09:59  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Start USB at level 49 (before lpd/cups)
+
+2000-08-30 09:58  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Really fix typo.
+
+2000-08-30 09:55  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Fix typo (re).
+
+2000-08-30 09:50  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Fix typo in Changelog
+
+2000-08-30 09:49  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Ready to release 5.27.11mdk.
+
+2000-08-30 09:35  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/rc: Fix typo check for /etc/rc.d/rc* not /etc/rc*.
+
+2000-08-30 09:34  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Add chkconfig rawdevices to %post %postun
+
+2000-08-30 09:14  Pablo Saratxaga <pablo@mandrakesoft.com>
+
+	* lang.sh: added support for variables allowing different
+	lmocalization in console and in X11
+
+2000-08-30 03:03  Fredrice Lepied <flepied@mandrakesoft.com>
+
+	* initscripts.spec: use (noreplace) for config files.
+
+2000-08-30 02:56  Fredrice Lepied <flepied@mandrakesoft.com>
+
+	* Makefile: remove strange first line (cvs server output ???)
+
+2000-08-29 09:09  Fredrice Lepied <flepied@mandrakesoft.com>
+
+	* initscripts.spec: 5.27-10mdk
+
+2000-08-28 18:07  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/mandrake_everytime: Remove hard drive optimisations (now
+	handle via autotune arg to the kernel).
+
+2000-08-28 18:06  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/tmpdir.sh: Only set to TMPDIR when SECURE_TMP = yes in
+	/etc/sysconfig/system.
+
+2000-08-28 10:36  Fredrice Lepied <flepied@mandrakesoft.com>
+
+	* prefdm: don't exit after autologin to launch a real display
+	manager.
+
+2000-08-28 10:32  Fredrice Lepied <flepied@mandrakesoft.com>
+
+	* mandrake/: kheader, sound, usb: use /var/lock/subsys file to
+	avoid the reload when changing run levels.
+
+2000-08-27 07:12  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/Makefile: Put rc.modules in /etc/rc.d/
+
+2000-08-27 07:12  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* Makefile: chmod 755 only rawdevices (and not +x and not */*).
+
+2000-08-26 18:17  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* Makefile: Fix install of rawdevices again chmod +x forever all
+	init.d/ files.
+
+2000-08-26 18:12  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* Makefile: +x to rawdevices.
+
+2000-08-25 18:12  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Add config file parser of
+	/etc/sysconfig/kernel (not really using it yet)
+
+2000-08-24 14:48  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Add tmpdir script to %files.
+
+2000-08-24 14:47  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/tmpdir.sh: Fix comment :-\, chmod 700 if we have created
+	the dir.
+
+2000-08-23 11:59  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Fix rc.d problem.
+
+2000-08-23 11:55  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/init.d/rawdevices, sysconfig/rawdevices: A new greatest hit.
+
+2000-08-23 00:51  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Remove some FHS unused stuff.
+
+2000-08-23 00:48  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/init.d/halt: Remove USB Red Hat stuff (we have our own
+	initscripts stuff).
+
+2000-08-23 00:47  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* Makefile, initscripts.spec, lang.csh, service, sysconfig.txt,
+	mandrake/Makefile, rc.d/rc, rc.d/rc.sysinit, rc.d/init.d/functions,
+	rc.d/init.d/halt, rc.d/init.d/killall, rc.d/init.d/netfs,
+	rc.d/init.d/network, rc.d/init.d/random, rc.d/init.d/single,
+	src/Makefile, src/ppp-watch.c, src/shvar.c, src/testdinit,
+	sysconfig/network-scripts/ifdown-ppp,
+	sysconfig/network-scripts/ifup, sysconfig/network-scripts/ifup-ppp,
+	sysconfig/network-scripts/ifup-routes,
+	sysconfig/network-scripts/network-functions: Upgrade to 5.44 and
+	big move to FHS.
+
+2000-08-21 10:48  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/detectloader: Fix the print of the loader type.
+
+2000-08-05 13:15  Pixel <pixel@mandrakesoft.com>
+
+	* initscripts.spec, mandrake/detectloader: no_comment
+
+2000-08-02 11:35  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: exit if we see the DURING_INSTALL
+	variable.
+
+2000-08-01 13:38  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Using bootloader:: library from libDrakx
+	instead of lilo::.
+
+2000-08-01 13:01  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* ppp/ip-up: Launch sendmail -q in background...
+
+2000-08-01 08:05  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* ppp/ip-up: Launch /usr/sbin/sendmail when connecting.
+
+2000-07-31 21:56  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Release.
+
+2000-07-31 21:26  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Rename some functions to avoid conflicts
+	with drakxtool functions.  Correct initrd= (it's on a different
+	line not on the same of kernel).
+
+2000-07-31 21:25  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* sysconfig/network-scripts/ifup: Don't add a -i to DHCPCD for
+	$DEVICE.
+
+2000-07-31 16:53  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* sysconfig.txt: Doc upgrade.
+
+2000-07-31 16:51  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Ready to release 5.27-7mdk for comsuption.
+
+2000-07-31 16:46  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* sysconfig/network-scripts/ifup: Fix dhcp (s|DHCP|DYNCONFIG|) set
+	DYNCONFIG when detecting BOOTPROT=DHCP Set pump as second preferred
+	dhcp client after dhcpcd.
+
+2000-07-31 13:42  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* sysconfig.txt, rc.d/init.d/network: Upgrade doc about depreciated
+	option FORWARD_IPV4=.
+
+2000-07-31 12:35  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Ready to release 5.27-5mdk for comsuption.
+
+2000-07-31 12:06  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Only import libDrakX when using with
+	grub.  Detect where is the /boot partition when using grub (if not
+	use the /)
+
+2000-07-31 10:45  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Ready to release 5.27-5mdk for comsuption.
+
+2000-07-31 09:14  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: correct the symlink for the current
+	initrd.
+
+2000-07-30 20:01  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Mount /proc/bus/usb/ interfaces before detecting
+	devices.
+
+2000-07-30 14:28  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Check if we have /proc/bus/usb/devices first and if
+	we detect check if $VARIABLE != no.
+
+2000-07-30 14:19  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Still try to see if MOUSE|KEYBOARD=yes if auto
+	detecting fails.
+
+2000-07-30 05:29  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Ready to release 5.27-4mdk for comsuption.
+
+2000-07-30 05:28  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/Makefile: cosmetic changes when display date.
+
+2000-07-30 05:19  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Add initrd support.
+
+2000-07-30 04:45  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Grub != Lilo, grub don't have a = for
+	default.
+
+2000-07-30 04:33  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Ready to release 5.27-3mdk for comsuption.
+
+2000-07-30 04:30  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Ask for boot image and System.map only on
+	copy mode.
+
+2000-07-30 04:28  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Fix very stupid typo when checking if we
+	are root.
+
+2000-07-30 04:22  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: cosmetics clean-up.
+
+2000-07-30 04:17  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Ready to release 5.27-2mdk for comsuption.
+
+2000-07-30 04:14  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* Makefile, sysconfig.txt, ppp/ip-up, rc.d/init.d/functions: Merge
+	with rh5.35.
+
+2000-07-30 04:10  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: If nousb on the command line exit 0;
+
+2000-07-30 03:57  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Ready to release 5.27 for comsuption.
+
+2000-07-30 03:52  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/usb: Don't use USB mouse and keyboard anymore, try to
+	detect them like RH does.
+
+2000-07-30 03:43  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/rc: Set to /etc/rc.d/
+
+2000-07-30 03:43  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* rc.d/rc.sysinit: Cleaning code and set /etc/rc.d/.
+
+2000-07-30 03:29  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* inittab: Stay to /etc/rc.d for a while.
+
+2000-07-30 01:55  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: Remove /etc/rc.d/, conflict with chkconfig
+
+2000-07-30 01:52  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec: 5.27 and BM.
+
+2000-07-30 01:45  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/Makefile: Don't be racist get the same output for check
+	of perl for shell.
+
+2000-07-30 01:43  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* Makefile: Check also in the mandrake directory.
+
+2000-07-30 01:41  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* service, sysvinitfiles, rc.d/rc, rc.d/rc.sysinit,
+	rc.d/init.d/functions, rc.d/init.d/halt, rc.d/init.d/killall,
+	rc.d/init.d/netfs, rc.d/init.d/network, rc.d/init.d/random,
+	rc.d/init.d/single, src/Makefile, src/testdinit: stay to /etc/rc.d/
+	for a while right now.
+
+2000-07-30 01:28  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/Makefile: make mandir dynamic and set it as /usr/share
+	by default.
+
+2000-07-30 01:17  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/Makefile: Define diff TAG to rh5_27.
+
+2000-07-30 01:16  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/Makefile: Now installkernel is in perl.
+
+2000-07-30 01:15  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/installkernel: Complete rewrite in perl, guess i'll have
+	some bugs 8\
+
+2000-07-30 01:07  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* mandrake/: .cvsignore, Makefile, detectloader, detectloader.8,
+	inputrc.csh, inputrc.sh, installkernel, is_depmod_necessary.c,
+	kheader, listhome, mandrake_everytime, mandrake_firstime, modules,
+	rc.modules, sound, supermount, supermount.8, tmpdir.csh, tmpdir.sh,
+	usb: Initial revision
+
+2000-07-30 01:07  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* initscripts.spec, lang.csh, lang.sh, prefdm, service,
+	sysconfig.txt, sysctl.conf, ppp/ip-up, rc.d/rc, rc.d/rc.local,
+	rc.d/rc.sysinit, rc.d/init.d/halt, rc.d/init.d/netfs,
+	rc.d/init.d/network, sysconfig/network-scripts/ifdown,
+	mandrake/.cvsignore, mandrake/Makefile, mandrake/detectloader,
+	mandrake/detectloader.8, mandrake/inputrc.csh, mandrake/inputrc.sh,
+	mandrake/installkernel, mandrake/is_depmod_necessary.c,
+	mandrake/kheader, mandrake/listhome, mandrake/mandrake_everytime,
+	mandrake/mandrake_firstime, mandrake/modules, mandrake/rc.modules,
+	mandrake/sound, mandrake/supermount, mandrake/supermount.8,
+	mandrake/tmpdir.csh, mandrake/tmpdir.sh, mandrake/usb,
+	sysconfig/network-scripts/ifdown-ppp,
+	sysconfig/network-scripts/ifup,
+	sysconfig/network-scripts/ifup-aliases,
+	sysconfig/network-scripts/ifup-plip: First_import
+
+2000-07-30 01:01  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* .cvsignore, Makefile, adjtime, initscripts.spec, inittab,
+	lang.csh, lang.sh, prefdm, service, setsysfont, sys-unconfig,
+	sys-unconfig.8, sysconfig.txt, sysctl.conf, sysctl.conf.sparc,
+	sysvinitfiles, ppp/ip-down, ppp/ip-up, rc.d/rc, rc.d/rc.local,
+	rc.d/rc.sysinit, rc.d/init.d/functions, rc.d/init.d/halt,
+	rc.d/init.d/killall, rc.d/init.d/netfs, rc.d/init.d/network,
+	rc.d/init.d/random, rc.d/init.d/single, src/.cvsignore,
+	src/Makefile, src/consoletype.1, src/consoletype.c, src/doexec.1,
+	src/doexec.c, src/getkey.c, src/initlog.1, src/initlog.c,
+	src/initlog.conf, src/initlog.h, src/ipcalc.1, src/ipcalc.c,
+	src/minilogd.c, src/netreport.1, src/netreport.c, src/ppp-watch.8,
+	src/ppp-watch.c, src/process.c, src/process.h, src/shvar.c,
+	src/shvar.h, src/testd.c, src/testdinit, src/usernetctl.8,
+	src/usernetctl.c, src/usleep.1, src/usleep.c, sysconfig/init,
+	sysconfig/network-scripts/ifcfg-lo,
+	sysconfig/network-scripts/ifdown,
+	sysconfig/network-scripts/ifdown-aliases,
+	sysconfig/network-scripts/ifdown-post,
+	sysconfig/network-scripts/ifdown-ppp,
+	sysconfig/network-scripts/ifdown-sl,
+	sysconfig/network-scripts/ifup,
+	sysconfig/network-scripts/ifup-aliases,
+	sysconfig/network-scripts/ifup-ipx,
+	sysconfig/network-scripts/ifup-plip,
+	sysconfig/network-scripts/ifup-post,
+	sysconfig/network-scripts/ifup-ppp,
+	sysconfig/network-scripts/ifup-routes,
+	sysconfig/network-scripts/ifup-sl,
+	sysconfig/network-scripts/network-functions: Initial revision
+
+2000-07-30 01:01  Chmouel Boudjnah <chmouel@mandrakesoft.com>
+
+	* .cvsignore, Makefile, adjtime, initscripts.spec, inittab,
+	lang.csh, lang.sh, prefdm, service, setsysfont, sys-unconfig,
+	sys-unconfig.8, sysconfig.txt, sysctl.conf, sysctl.conf.sparc,
+	sysvinitfiles, ppp/ip-down, ppp/ip-up, rc.d/rc, rc.d/rc.local,
+	rc.d/rc.sysinit, rc.d/init.d/functions, rc.d/init.d/halt,
+	rc.d/init.d/killall, rc.d/init.d/netfs, rc.d/init.d/network,
+	rc.d/init.d/random, rc.d/init.d/single, src/.cvsignore,
+	src/Makefile, src/consoletype.1, src/consoletype.c, src/doexec.1,
+	src/doexec.c, src/getkey.c, src/initlog.1, src/initlog.c,
+	src/initlog.conf, src/initlog.h, src/ipcalc.1, src/ipcalc.c,
+	src/minilogd.c, src/netreport.1, src/netreport.c, src/ppp-watch.8,
+	src/ppp-watch.c, src/process.c, src/process.h, src/shvar.c,
+	src/shvar.h, src/testd.c, src/testdinit, src/usernetctl.8,
+	src/usernetctl.c, src/usleep.1, src/usleep.c, sysconfig/init,
+	sysconfig/network-scripts/ifcfg-lo,
+	sysconfig/network-scripts/ifdown,
+	sysconfig/network-scripts/ifdown-aliases,
+	sysconfig/network-scripts/ifdown-post,
+	sysconfig/network-scripts/ifdown-ppp,
+	sysconfig/network-scripts/ifdown-sl,
+	sysconfig/network-scripts/ifup,
+	sysconfig/network-scripts/ifup-aliases,
+	sysconfig/network-scripts/ifup-ipx,
+	sysconfig/network-scripts/ifup-plip,
+	sysconfig/network-scripts/ifup-post,
+	sysconfig/network-scripts/ifup-ppp,
+	sysconfig/network-scripts/ifup-routes,
+	sysconfig/network-scripts/ifup-sl,
+	sysconfig/network-scripts/network-functions: First_import
+

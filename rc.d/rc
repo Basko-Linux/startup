@@ -24,10 +24,10 @@ previous=$1
 export runlevel previous
 
 # Get first argument. Set new runlevel to this argument.
-if [ "$argv1" != "" ] ; then
- newrunlevel="$argv1"
+if [ -n "$argv1" ]; then
+	newrunlevel="$argv1"
 else
- newrunlevel="$runlevel"
+	newrunlevel="$runlevel"
 fi
 
 if [ "$previous" = "N" ];then

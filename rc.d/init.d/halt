@@ -51,15 +51,15 @@ halt -w
 SWAPS=`awk '! /^Filename/ { print $1 }' /proc/swaps`
 [ -n "$SWAPS" ] && runcmd "Turning off swap: " swapoff $SWAPS
 
-ACCTOFF=/sbin/accton
-[ -x "$ACCTOFF" ] && runcmd "Turning off accounting: " "$ACCTOFF"
-
 QUOTAOFF=/sbin/quotaoff
 [ -x "$QUOTAOFF" ] && runcmd "Turning off quotas: " "$QUOTAOFF" -a
 
+ACCTOFF=/sbin/accton
+[ -x "$ACCTOFF" ] && runcmd "Turning off accounting: " "$ACCTOFF"
+
 # first remove entry /initrd/loopfs as it can't be unmounted :(
-mtab=$(fgrep -v "/initrd/loopfs[^/]" /etc/mtab)
-(IFS= ; echo $mtab > /etc/mtab)
+mtab=$(grep -v "/initrd/loopfs[^/]" /etc/mtab)
+(IFS= ; echo $mtab >/etc/mtab)
 
 # Unmount file systems, killing processes if we have to.
 sig=

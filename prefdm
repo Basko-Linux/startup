@@ -25,7 +25,7 @@ if [ -s /etc/sysconfig/autologin -a -x "$AUTOLOGIN" ]; then
 fi
 
 preferred=
-if [ -f /etc/sysconfig/desktop ]; then
+if [ -s /etc/sysconfig/desktop ]; then
 	if fgrep -qs GNOME /etc/sysconfig/desktop; then
 		preferred=gdm
 	elif fgrep -qs KDE /etc/sysconfig/desktop; then
@@ -38,15 +38,16 @@ if [ -n "$preferred" ] && which $preferred &>/dev/null; then
 	exec $preferred $*
 fi
 
-	if which kdm &>/dev/null; then
-		preferred=kdm
-	elif which gdm &>/dev/null; then
-		preferred=gdm
-	elif which xdm &>/dev/null; then
-		preferred=xdm
-	fi
+if which kdm &>/dev/null; then
+	preferred=kdm
+elif which gdm &>/dev/null; then
+	preferred=gdm
+elif which xdm &>/dev/null; then
+	preferred=xdm
+fi
 
 if [ -n "$preferred" ] && which $preferred &>/dev/null; then 
 	exec `which $preferred` $*
 fi
-exit 1								
+
+exit 1

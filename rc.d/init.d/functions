@@ -236,35 +236,35 @@ pidofproc() {
 }
 
 status() {
-	base="${1##*/}"
-
 	# Test syntax.
 	if [ $# = 0 ] ; then
 		echo "Usage: status {program}"
 		return 1
 	fi
 
+	base="${1##*/}"
+
 	# First try "pidof"
-	pid=`pidof -o $$ -o $PPID -o %PPID -x ${base}`
+	pid=`pidof -o $$ -o $PPID -o %PPID -x "$base"`
 	if [ "$pid" != "" ] ; then
-	        echo "${base} (pid $pid) is running..."
+	        echo "$base (pid $pid) is running..."
 	        return 0
 	fi
 
 	# Next try "/var/run/*.pid" files
-	if [ -f /var/run/${base}.pid ] ; then
-	    pid=`cat /var/run/${base}.pid | { read foo ; echo $foo ; }`
-	        if [ "$pid" != "" ] ; then
-	                echo "${base} dead but pid file exists"
-	                return 1
-	        fi
+	if [ -s "/var/run/$base.pid" ]; then
+		pid=`cat "/var/run/$base.pid" | { read foo ; echo "$foo"; }`
+		if [ -n "$pid" ]; then
+			echo "$base dead but pid file exists"
+			return 1
+		fi
 	fi
-	# See if /var/lock/subsys/${base} exists
-	if [ -f /var/lock/subsys/${base} ]; then
-		echo "${base} dead but subsys locked"
+	# See if /var/lock/subsys/$base exists
+	if [ -f "/var/lock/subsys/$base" ]; then
+		echo "$base dead but subsys locked"
 		return 2
 	fi
-	echo "${base} is stopped"
+	echo "$base is stopped"
 	return 3
 }
 

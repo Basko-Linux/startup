@@ -56,11 +56,24 @@ Files in /etc/sysconfig
   SETCOLOR_NORMAL=<a command>
      A command to set the color to 'normal'. Defaults to nasty
      ANSI sequences output by echo -e.
-  MAGIC_SYSRQ=yes|no
-     Set to 'no' to disable the magic sysrq key, and Stop-A (break
-     on serial console.) on SPARC.
   PROMPT=yes|no
      Set to 'no' to disable the key check for interactive mode.
+
+  obsoleted values from earlier releases:
+
+    MAGIC_SYSRQ=yes|no
+       Setting this to 'no' used to disable the magic sysrq key and
+       Stop-A (break on serial console) on SPARC. This setting has been
+       moved into kernel.sysrq and kernel.stop-a settings respectively in
+       /etc/sysctl.conf. Setting either of them there to 0 disables it,
+       setting it to 1 enables it.
+    STOP_A=yes|no
+       Setting this to 'no' used to disable the Stop-A (break on
+       serial console) key on SPARC.
+       This setting has been moved into kernel.stop-a setting in
+       /etc/sysctl.conf. Setting it there to 0 disables it,
+       setting it to 1 enables it. The setting should be present
+       on SPARC only.
 
 /etc/sysconfig/keyboard:
 
@@ -108,18 +121,6 @@ Files in /etc/sysconfig
 
   NETWORKING=yes|no
   HOSTNAME=<fqdn by default, but whatever hostname you want>
-    Note: for compatibility with some old software people might
-    install (like trn), the /etc/HOSTNAME file should contain the
-    same value as here.
-  FORWARD_IPV4=yes|no (The current Red Hat Linux installation
-    sets this to no by default for RFC compliance, but if
-    FORWARD_IPV4 is not set at all, forwarding is *enabled*
-    for compatibility with the configuration files used on
-    Red Hat Linux versions 4.2 and earlier.)
-  DEFRAG_IPV4=yes|no
-    Set this if you want to automatically defragment IPv4
-    packets. This is a good idea for masquerading, and
-    a bad idea otherwise. It defaults to 'no'.
   GATEWAY=<gateway IP>
   GATEWAYDEV=<gateway device> (e.g. eth0)
   NISDOMAIN=<nis domain name>
@@ -131,20 +132,55 @@ Files in /etc/sysconfig
 
   All the IPX stuff is optional, and should default to off.
 
+  obsoleted values from earlier releases:
+
+    FORWARD_IPV4=yes|no
+      This setting has been moved into net.ipv4.ip_forward setting
+      in /etc/sysctl.conf. Setting it to 1 there enables IP forwarding,
+      setting it to 0 disables it (which is the default for RFC
+      compliance). Note this options can be still used for
+      compatibilties but you really have to swith to /etc/sysctl.conf
+      facilities.-
+    DEFRAG_IPV4=yes|no
+      Setting this to yes used to automatically defragment IPv4
+      packets. This is a good idea for masquerading, and
+      a bad idea otherwise. This setting has been moved into
+      net.ipv4.ip_always_defrag setting in /etc/sysctl.conf.
+
 /etc/sysconfig/static-routes:
 
   Contains lines of the form:
 
-    <device> net <network> netmask <netmask> gw <gateway>
+    <device> host|net <arguments to route command>
 
   <device> may be a device name to have the route brought up and
   down with the device, or "any" to have the correct devices calculated
   at run time.
-
+  
+  For example:
+  
+  eth0 host 192.168.2.2 eth0
+  
+  adds a host route through eth0 to 192.168.2.2, while
+  
+  any net 192.168.2.0 netmask 255.255.255.0 ppp0
+  
+  adds a network route to the 192.168.2.0 network through ppp0.
+  
 /etc/sysconfig/routed:
 
   SILENT=yes|no
   EXPORT_GATEWAY=yes|no
+  
+/etc/sysconfig/rawdevices:
+
+  This is used for setting up raw device to block device mappings.
+  It has the format:
+  	<rawdev> <major> <minor>
+        <rawdev> <blockdev>
+  For example: 
+     /dev/raw/raw1 /dev/sda1
+     /dev/raw/raw2 8 5
 
 /etc/sysconfig/pcmcia:
 
@@ -213,7 +249,7 @@ Files in /etc/sysconfig
 
 /etc/sysconfig/sendmail:
   DAEMON=yes|no
-    yes implies -bd
+    yes implies -bd (i.e., listen on port 25 for new mail)
   QUEUE=1h
     given to sendmail as -q$QUEUE
     -q option is not given to sendmail if /etc/sysconfig/sendmail
@@ -252,6 +288,36 @@ Files in /etc/sysconfig
   The above is used by the /sbin/setsysfont command (which is run
   by rc.sysinit at boot time.)
 
+/etc/sysconfig/harddisks
+  These options are used to tune (E)IDE hard drives -
+  read the hdparm man page for more information
+
+  USE_DMA=1
+    Set this to 1 to enable DMA. This might cause some 
+    data corruption on certain chipset / hard drive
+    combinations. USE WITH CAUTION AND BACKUP.
+    This is used with the "-d" option
+  
+  MULTIPLE_IO=16
+    Multiple sector I/O. a feature of most modern IDE hard drives,
+    permitting the transfer of multiple sectors per I/O interrupt,
+    rather than the usual one sector per interrupt.  When this feature
+    is enabled, it typically reduces operating system overhead for disk
+    I/O by 30-50%.  On many systems, it also provides increased data
+    throughput of anywhere from 5% to 50%.  Some drives, however (most
+    notably the WD Caviar series), seem to run slower with multiple mode
+    enabled. Under rare circumstances, such failures can result in
+    massive filesystem corruption. USE WITH CAUTION AND BACKUP.
+    This is the sector count for multiple sector I/O - the "-m" option
+  
+  EIDE_32BIT=3
+    (E)IDE 32-bit I/O support (to interface card). USE WITH CAUTION.
+  
+  LOOKAHEAD=1
+    Enable drive read-lookahead (safe)
+
+  EXTRA_PARAMS=<anything>
+    Add any extra parameters you want to pass to hdparm here.
 
 Files in /etc/sysconfig/network-scripts/
 ========================================
@@ -280,14 +346,14 @@ Files in /etc/sysconfig/network-scripts/
   and interface change notification through netreport.
 
 /etc/sysconfig/network-scripts/ifcfg-<interface-name> and
-/etc/sysconfig/network-scripts/ifcfg-<interface-name>-<clone-name>:
+/etc/sysconfig/network-scripts/ifcfg-<interface-name>:<alias-name>:
 
   The first defines an interface, and the second contains
   only the parts of the definition that are different in a
-  "clone" (or alternative) interface.  For example, the
+  "alias" (or alternative) interface.  For example, the
   network numbers might be different, but everything else
   might be the same, so only the network numbers would be
-  in the clone file, but all the device information would
+  in the alias file, but all the device information would
   be in the base ifcfg file.
 
   The items that can be defined in an ifcfg file depend on the
@@ -305,8 +371,14 @@ Files in /etc/sysconfig/network-scripts/
     GATEWAY=
     ONBOOT=yes|no
     USERCTL=yes|no
+    DEMAND=yes|no
+      Only used for PPP.  Switches on demand-dialing mode.
+    IDLETIMEOUT=600
+      Only used for PPP.  The amount of time the link needs to be inactive
+      before pppd will bring it down automatically.
     BOOTPROTO=none|bootp|dhcp|pump
     DHCP_CLIENT=
+    MTU=
     PEERDNS=yes|no
       modify /etc/resolv.conf if peer uses msdns extension (PPP only) or
       DNS{1,2} are set, default to "yes".
@@ -381,6 +453,12 @@ default)
     RETRYTIMEOUT=<number of seconds, default currently 60>
       (time to wait before re-attempting to establish a connection
       after a previous attempt fails.)
+    RETRYCONNECT=yes|no (defaults to yes)
+      If this is yes, then we will re-run pppd if it exits with a 
+      "connect script failed" status.  Otherwise, only one attempt
+      is made to bring up the connection.  Note that some connect
+      scripts (for example, wvdial) might do their own retries (such
+      as BUSY or NO DIALTONE conditions).
       
 /etc/sysconfig/network-scripts/chat-<interface-name>:
 
