@@ -26,14 +26,14 @@ CondSet()
 if [ -n "sourced" ]; then
 	CondSet LANGUAGE LC_ADDRESS LC_COLLATE LC_CTYPE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE
 	if [ -n "$LANG" ]; then
-		if [ "$LANG" = "C" ]; then LANG="en_US"; fi
+		if [ "$LANG" = C ]; then LANG="en_US"; fi
 		export LANG
 	else
 		Unset LANG
 	fi
 	if [ -n "$LC_ALL" ]; then
 		if [ "$LC_ALL" != "$LANG" ]; then
-			if [ "$LC_ALL" = "C" ]; then LC_ALL="en_US"; fi
+			if [ "$LC_ALL" = C ]; then LC_ALL="en_US"; fi
 			export LC_ALL
 		else
 			Unset LC_ALL
@@ -76,14 +76,14 @@ if [ -n "sourced" ]; then
 
 	[ -n "$ENC" ] && export ENC || Unset ENC
 	[ -n "$XIM" ] && export XIM || Unset XIM
-    [ -n "$XIM_PROGRAM" ] && export XIM_PROGRAM || Unset XIM_PROGRAM
+	[ -n "$XIM_PROGRAM" ] && export XIM_PROGRAM || Unset XIM_PROGRAM
 	[ -n "$XMODIFIERS" ] && export XMODIFIERS || Unset XMODIFIERS
 	[ -n "$_XKB_CHARSET" ] && export _XKB_CHARSET || Unset _XKB_CHARSET
 
 	if [ -n "$SYSFONTACM" ]; then
 		case $SYSFONTACM in
-			iso01*|iso02*|iso15*|koi*|latin2-ucw*|cp1251*|pt154*)
-				if [ "$TERM" = "linux" -a "`/sbin/consoletype`" = "vt" ]; then
+			iso01*|iso02*|iso08*|iso15*|koi*|latin2-ucw*|cp1251*|pt154*)
+				if [ "$TERM" = linux -a "`/sbin/consoletype`" = vt ]; then
 					echo -ne '\033(K' >&0
 				fi
 				;;
@@ -95,9 +95,9 @@ if [ -n "sourced" ]; then
 	# handling of special cases where localization is done
 	# only on console or only on X11.
 	if [ -n "$DISPLAY" ]; then
-		if [ "$X11_NOT_LOCALIZED" = "yes" ]; then LANGUAGE=C; fi
+		if [ "$X11_NOT_LOCALIZED" = yes ]; then LANGUAGE=C; fi
 	else
-		if [ "$CONSOLE_NOT_LOCALIZED" = "yes" ]; then LANGUAGE=C; fi
+		if [ "$CONSOLE_NOT_LOCALIZED" = yes ]; then LANGUAGE=C; fi
 	fi
 	if [ -n "$LANGUAGE" ]; then export LANGUAGE; fi
 fi
