@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.2
+Version: 0.9.3
 Release: alt1
 
 Summary: The system startup scripts
@@ -15,8 +15,10 @@ Source: %name-%version.tar.bz2
 Provides: /etc/firsttime.d
 PreReq: service >= 0.0.2-alt1, chkconfig, gawk, grep, sed, coreutils, %__subst
 # Who could remind me where these dependencies came from?
-Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
+Requires: findutils >= 0:4.0.33, mount >= 0:2.10q-ipl1mdk
 Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk, util-linux >= 0:2.10q-ipl1mdk
+# due to /sbin/kernelversion_{major,minor}
+Requires: modutils >= 0:2.4.15-alt1
 # due to /sys
 Requires: filesystem >= 0:2.1.7-alt1
 # due to %_sysconfdir/adjtime
@@ -26,6 +28,8 @@ Requires: hwclock >= 2.23-alt1
 Conflicts: xinitrc < 0:2.4.13-alt1
 # due to gen_kernel_headers
 Conflicts: kernel-headers-common < 0:1.1
+# due to netfs
+Conflicts: net-scripts < 0:0.5.4-alt1
 
 %description
 This package contains scripts used to boot your system,
@@ -67,6 +71,7 @@ touch $RPM_BUILD_ROOT%_sysconfdir/sysconfig/console/setterm
 %post
 if [ $1 -eq 1 ]; then
 	/sbin/chkconfig --add fbsetfont
+	/sbin/chkconfig --add netfs
 	/sbin/chkconfig --add random
 	/sbin/chkconfig --add rawdevices
 fi
@@ -99,6 +104,7 @@ fi
 %preun
 if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del fbsetfont
+	/sbin/chkconfig --del netfs
 	/sbin/chkconfig --del random
 	/sbin/chkconfig --del rawdevices
 fi
@@ -114,11 +120,15 @@ for f in %_sysconfdir/{inittab,modules,sysctl.conf,sysconfig/{clock,console/sett
 	fi
 done
 /sbin/chkconfig --add fbsetfont
+/sbin/chkconfig --add netfs
 /sbin/chkconfig --add random
 /sbin/chkconfig --add rawdevices
 
 %triggerpostun -- startup < 0:0.2-alt1
 /sbin/chkconfig --add fbsetfont
+
+%triggerpostun -- startup < 0:0.9.3-alt1
+/sbin/chkconfig --add netfs
 
 %files
 %config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/*
@@ -139,6 +149,15 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed Mar 09 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.3-alt1
+- vconfig-update: do not produce dangling symlink (closes #6146).
+- rc.sysinit:
+  + do not create /mnt/disk (closes #6166);
+  + extended list of non-local filesystems (closes #3403).
+- sysconfig/clock: set UTC=true by default.
+- init.d/netfs: moved from net-scripts back to this package (closes #5857).
+- sysctl.conf: moved net.ipv4 options to separate config file (closes #5857).
+
 * Sun Oct 03 2004 Dmitry V. Levin <ldv@altlinux.org> 0.9.2-alt1
 - rc.sysinit:
   + enhanced LVM support, based on patch from Vladimir Kholmanov.
