@@ -11,6 +11,8 @@
 # description: Mounts and unmounts all Network File System (NFS), \
 #	SMB (Lan Manager/Windows), and NCP (NetWare) mount points.
 
+WITHOUT_RC_COMPAT=1
+
 # Source function library.
 . /etc/init.d/functions
 
@@ -23,11 +25,11 @@ LOCKFILE=/var/lock/subsys/netfs
 NFSFSTAB=`grep -vs '^#' /etc/fstab |awk '{ if (($3 == "nfs") && ($4 !~ /noauto/)) print $2}'`
 SMBFSTAB=`grep -vs '^#' /etc/fstab |awk '{ if (($3 == "smbfs") && ($4 !~ /noauto/)) print $2}'`
 CIFSFSTAB=`grep -vs '^#' /etc/fstab |awk '{ if (($3 == "cifs") && ($4 !~ /noauto/)) print $2}'`
-NCPFSTAB=`grep -vs '^#' /etc/fstab |awk '{ if (($3 == "ncpfs") && ($4 !~ /noauto/)) print $2}'`
+NCPFSTAB=`grep -vs '^#' /etc/fstab |awk '{ if ((($3 == "ncp") || ($3 == "ncpfs")) && ($4 !~ /noauto/)) print $2}'`
 NFSMTAB=`grep -vs '^#' /proc/mounts |awk '{ if (($3 == "nfs") && ($2 != "/")) print $2}'`
 SMBMTAB=`grep -vs '^#' /proc/mounts |awk '{ if (($3 == "smbfs") && ($2 != "/")) print $2}'`
 CIFSMTAB=`grep -vs '^#' /proc/mounts |awk '{ if (($3 == "cifs") && ($2 != "/")) print $2}'`
-NCPMTAB=`grep -vs '^#' /proc/mounts |awk '{ if (($3 == "ncpfs") && ($2 != "/")) print $2}'`
+NCPMTAB=`grep -vs '^#' /proc/mounts |awk '{ if ((($3 == "ncp") || ($3 == "ncpfs")) && ($2 != "/")) print $2}'`
 
 start()
 {
@@ -41,8 +43,7 @@ start()
 	fi
 	[ -z "$SMBFSTAB" ] || action "Mounting SMB filesystems:" mount -a -t smbfs
 	[ -z "$CIFSFSTAB" ] || action "Mounting CIFS filesystems:" mount -a -t cifs
-	[ -z "$NCPFSTAB" ] || action "Mounting NCP filesystems:" mount -a -t ncpfs
-#	action "Mounting other filesystems (if any):" mount -a -t noproc,nfs,smbfs,ncpfs
+	[ -z "$NCPFSTAB" ] || action "Mounting NCP filesystems:" mount -a -t ncp,ncpfs
 
 	touch "$LOCKFILE"
 }
@@ -51,28 +52,28 @@ stop()
 {
 	if [ -n "$NFSMTAB" ]; then
 		UnmountFilesystems 3 5 \
-			'$3 == "nfs" && $2 != "/" {print $2}' \
+			'($3 == "nfs") && ($2 != "/") {print $2}' \
 			"Unmounting NFS filesystem" \
 			"Unmounting NFS filesystem (retry)"
 	fi
 
 	if [ -n "$SMBMTAB" ]; then
 		UnmountFilesystems 3 5 \
-			'$3 == "smbfs" && $2 != "/" {print $2}' \
+			'($3 == "smbfs") && ($2 != "/") {print $2}' \
 			"Unmounting SMB filesystem" \
 			"Unmounting SMB filesystem (retry)"
 	fi
 
 	if [ -n "$CIFSMTAB" ]; then
 		UnmountFilesystems 3 5 \
-			'$3 == "cifs" && $2 != "/" {print $2}' \
+			'($3 == "cifs") && ($2 != "/") {print $2}' \
 			"Unmounting CIFS filesystem" \
 			"Unmounting CIFS filesystem (retry)"
 	fi
 
 	if [ -n "$NCPMTAB" ]; then
 		UnmountFilesystems 3 5 \
-			'$3 == "ncpfs" && $2 != "/" {print $2}' \
+			'(($3 == "ncp") || ($3 == "ncpfs")) && $2 != "/" {print $2}' \
 			"Unmounting NCP filesystem" \
 			"Unmounting NCP filesystem (retry)"
 	fi
