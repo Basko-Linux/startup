@@ -56,9 +56,10 @@ if R=$(cat /etc/altlinux-release 2>/dev/null) || R=$(cat /etc/mandrake-release 2
 	fi
 fi
 
-if [ -f /proc/progress ]; then
+CHVT=/usr/bin/chvt
+if [ -f /proc/progress -a -x "$CHVT" ]; then
 	# Disable progress bar interface to avoid bugs.
 	echo d > /proc/progress
 	# Return to first virtual console.
-	/usr/bin/chvt 1
+	"$CHVT" 1
 fi

@@ -66,9 +66,10 @@ runlevel="$newrunlevel"
 if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
 
 	# Show logo when we're halting or rebooting.
-	if [ $runlevel -eq 6 -o $runlevel -eq 0 ] && [ -f /proc/progress ]; then
+	CHVT=/usr/bin/chvt
+	if [ $runlevel -eq 6 -o $runlevel -eq 0 ] && [ -f /proc/progress -a -x "$CHVT" ]; then
 		echo -e '\033[?1;0c' >/dev/tty11
-		/usr/bin/chvt 11
+		"$CHVT" 11
 		# Enable progress bar interface
 		echo e > /proc/progress
 		echo s > /proc/progress
