@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.3
+Version: 0.9.4
 Release: alt1
 
 Summary: The system startup scripts
@@ -149,6 +149,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Thu Mar 17 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.4-alt1
+- inittab: added runlevel for install3.
+
 * Wed Mar 09 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.3-alt1
 - vconfig-update: do not produce dangling symlink (closes #6146).
 - rc.sysinit:
@@ -157,6 +160,7 @@ done
 - sysconfig/clock: set UTC=true by default.
 - init.d/netfs: moved from net-scripts back to this package (closes #5857).
 - sysctl.conf: moved net.ipv4 options to separate config file (closes #5857).
+- inittab: commented out execution of /sbin/update.
 
 * Sun Oct 03 2004 Dmitry V. Levin <ldv@altlinux.org> 0.9.2-alt1
 - rc.sysinit:
