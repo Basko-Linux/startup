@@ -51,4 +51,4 @@ echo "$header" >"$TABFILE"
 done
 :
 
-[ -s "$TABFILE" ] && ExecIfExecutable /etc/init.d/autofs start ||:
+[ ! -f /var/lock/subsys/autofs -a -s "$TABFILE" ] && ExecIfExecutable /etc/init.d/autofs start ||:
