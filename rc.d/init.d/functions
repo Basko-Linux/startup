@@ -93,9 +93,11 @@ checkpid() {
 # A function to start a program.
 daemon() {
 	# Test syntax.
-	gotbase=
-	user=
-	nicelevel=0
+	local base=
+	local gotbase=
+	local user=
+	local daemon_user=
+	local nicelevel=0
 	while [ "$1" != "${1##-}" -o "$1" != "${1##+}" ]; do 
 	  case $1 in
 	    '')    echo '$0: Usage: daemon [+/-nicelevel] {program}'
@@ -123,11 +125,12 @@ daemon() {
 	[ -n "$gotbase" ] || base="${1##*/}"
 
 	# See if it's already running.
-	pidlist=`pidofproc $1`
+	local pidlist=`pidofproc $1`
 	
-	pid=
+	local pid=
+	local apid=
 	for apid in $pidlist; do
-		if [ -d /proc/$apid ]; then
+		if [ -d "/proc/$apid" ]; then
 			pid="$pid $apid"
 		fi
 	done
@@ -171,29 +174,30 @@ wait_pid()
 
 # A function to stop a program.
 killproc() {
-	RC=0
+	local RC=0
 	# Test syntax.
 	if [ $# = 0 ]; then
 		echo "Usage: killproc {program} [signal]"
 		return 1
 	fi
 
-	notset=0
+	local notset=0
+	local killlevel='-9'
 	# check for second arg to be kill level
 	if [ -n "$2" ]; then
 		killlevel=$2
 	else
 		notset=1
-		killlevel="-9"
 	fi
 
 	# Save basename.
-	base="${1##*/}"
+	local base="${1##*/}"
 
 	# Find pid.
-	pidlist=`pidofproc $1`
+	local pidlist=`pidofproc $1`
 	
-	pid=
+	local pid=
+	local apid=
 	for apid in $pidlist; do
 		if [ -d "/proc/$apid" ]; then
 			pid="$pid $apid"
@@ -204,7 +208,7 @@ killproc() {
 	if [ -n "$pid" ]; then
 		if [ "$BOOTUP" = "verbose" ]; then echo -n "$base "; fi
 		if [ "$notset" = "1" ] ; then
-			if checkpid $pid 2>&1; then
+			if checkpid $pid &>/dev/null; then
 				# TERM first, then KILL if not dead
 				kill -TERM -- $pid
 				if ! wait_pid "$pid" 30 100000; then
@@ -237,7 +241,8 @@ killproc() {
 
 # A function to find the pid of a program.
 pidofproc() {
-	base="${1##*/}"
+	local base="${1##*/}"
+	local pid=
 
 	# Test syntax.
 	if [ $# = 0 ] ; then
@@ -255,11 +260,21 @@ pidofproc() {
 	fi
 
 	# Next try "pidof"
-	pid=`pidof -o $$ -o $PPID -o %PPID -x "$base"`
-	if [ -n "$pid" -a -d "/proc/$pid" ]; then
-		echo -E "$pid"
-		return 0
+	local pids=`pidof -o $$ -o $PPID -o %PPID -x "$base"`
+	if [ -n "$pids" ]; then
+		local found=
+		for pid in $pids; do
+			if checkpid $pid; then
+				found="$found $pid"
+			fi
+		done
+		if [ -n "$found" ]; then
+			echo -E $found
+			return 0
+		fi
 	fi
+
+	return 1
 }
 
 status() {
@@ -269,10 +284,10 @@ status() {
 		return 1
 	fi
 
-	base="${1##*/}"
+	local base="${1##*/}"
 
 	# First try "pidof"
-	pid=`pidof -o $$ -o $PPID -o %PPID -x "$base"`
+	local pid=`pidof -o $$ -o $PPID -o %PPID -x "$base"`
 	if [ -n "$pid" -a -d "/proc/$pid" ]; then
 	        echo "$base (pid $pid) is running..."
 	        return 0
@@ -356,7 +371,7 @@ failure() {
 
 # Log that something passed, but may have had errors. Useful for fsck
 passed() {
-	rc=$?
+	local rc=$?
 	if [ -z "$IN_INITLOG" ]; then
 		initlog $INITLOG_ARGS -n $0 -s "$1" -e 1
 	else
@@ -371,11 +386,11 @@ passed() {
 
 # Run some action. Log its output.
 action() {
-	STRING=$1
+	local STRING=$1
 	echo -n "$STRING "
 	shift
 	initlog $INITLOG_ARGS -c "$*" && success "$STRING" || failure "$STRING"
-	rc=$?
+	local rc=$?
 	echo -e '\r'
 	return $rc
 }
@@ -383,6 +398,7 @@ action() {
 # Confirm whether we really want to run this service
 confirm() {
   echo -n "Start service $1 (Y)es/(N)o/(C)ontinue? [Y] "
+  local answer=
   read answer
   case $answer in
     y|Y|"")
