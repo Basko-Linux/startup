@@ -23,7 +23,7 @@ change runlevels, and shut the system down cleanly.
 %install
 %__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc{0,1,2,3,4,5,6}.d
 %__install -p -m644 inittab adjtime sysctl.conf $RPM_BUILD_ROOT%_sysconfdir/
-%__instapp -pD -m755 setsysfont $RPM_BUILD_ROOT/sbin/setsysfont
+%__install -pD -m755 setsysfont $RPM_BUILD_ROOT/sbin/setsysfont
 %__cp -a rc.d sysconfig $RPM_BUILD_ROOT%_sysconfdir/
 
 # these services do not support chkconfig:
