@@ -2,7 +2,7 @@
 
 Name: initscripts
 Version: 5.49
-Release: ipl49mdk
+Release: ipl50mdk
 
 Summary: The inittab file and the %_sysconfdir/init.d scripts.
 License: GPL
@@ -236,6 +236,9 @@ fi
 %doc sysconfig.txt sysvinitfiles ChangeLog*
 
 %changelog
+* Mon Feb 10 2003 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl50mdk
+- /sbin/setsyfont: new version from imz (#0001048, #0002083).
+
 * Mon Feb 03 2003 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl49mdk
 - network-scripts/ifup-post:
   + fixed PEERDNS/RESOLV_MODS support (at);
