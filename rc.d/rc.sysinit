@@ -73,7 +73,7 @@ action "Mounting proc filesystem" mount -n -t proc /proc /proc
 chgrp proc /proc >/dev/null 2>&1 ||:
 
 # Set the system clock (when /etc/adjtime is missing).
-[ ! -s /etc/adjtime ] || /etc/init.d/clock start
+[ -s /etc/adjtime ] || /etc/init.d/clock start
 
 # Activate swapping.
 action "Activating swap partitions:" swapon -a
@@ -191,7 +191,7 @@ action "Remounting root filesystem in read/write mode:" mount -n -o remount,rw /
 [ -L /etc/mtab ] ||  >/etc/mtab
 
 # Set the system clock (when /etc/adjtime is present).
-[ -s /etc/adjtime ] || /etc/init.d/clock start
+[ ! -s /etc/adjtime ] || /etc/init.d/clock start
 
 # Remove stale backups
 rm -f /etc/mtab~ /etc/mtab~~
