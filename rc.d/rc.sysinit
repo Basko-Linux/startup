@@ -32,8 +32,11 @@ if [ "$BOOTUP" != "serial" ]; then
 else
 	echo -e '\t\t\tWelcome to Linux Mandrake RE'
 fi
-if [ "$PROMPT" != "no" ]; then
+if [ -n "$PROMPT" -a "$PROMPT" != 'no' ]; then
+	PROMPT=1
 	echo -e "\t\tPress 'I' to enter interactive startup."
+else
+	PROMPT=
 fi
 
 # Mount /proc (done here so volume labels can work with fsck)
@@ -491,10 +494,15 @@ dmesg >/var/log/dmesg
 kill -TERM `/sbin/pidof getkey` &>/dev/null
 
 } &
-if [ "$PROMPT" != "no" ]; then
-   /sbin/getkey i && touch /var/run/confirm
+
+if [ -n "$PROMPT" ]; then
+	/sbin/getkey i || PROMPT=
 fi
 wait
+
+if [ -n "$PROMPT" ]; then
+	touch /var/run/confirm
+fi
 
 if fgrep -iqs "failsafe" /proc/cmdline; then
 	touch /var/run/failsafe
