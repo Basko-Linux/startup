@@ -2,7 +2,7 @@
 
 Name: initscripts
 Version: 5.49
-Release: ipl48mdk
+Release: ipl49mdk
 
 Summary: The inittab file and the %_sysconfdir/init.d scripts.
 License: GPL
@@ -236,6 +236,11 @@ fi
 %doc sysconfig.txt sysvinitfiles ChangeLog*
 
 %changelog
+* Mon Feb 03 2003 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl49mdk
+- network-scripts/ifup-post:
+  + fixed PEERDNS/RESOLV_MODS support (at);
+  + fixed POSTFIX_CONFIG update support.
+
 * Sat Dec 28 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl48mdk
 - init.d/outformat: fixed MOVE_TO_COL (#0001767).
 - scripts/adjust_autofs: relocated to autofs package.
