@@ -17,7 +17,7 @@ Conflicts: kernel <= 2.2, timeconfig < 0:3.0, ppp < 0:2.3.9, wvdial < 0:1.40
 Conflicts: sysklogd < 0:1.3.33, lilo < 0:21.5, e2fsprogs < 0:1.19-ipl2mdk
 Conflicts: shadow-utils < 0:19990827-ipl9mdk
 
-PreReq: setup >= 0:2.1.9-ipl18mdk, chkconfig, gawk, grep, sed, coreutils
+PreReq: setup >= 0:2.1.9-ipl18mdk, chkconfig, gawk, grep, sed, coreutils, control
 Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
 Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk
 Requires: util-linux >= 0:2.10q-ipl1mdk, libreadline >= 4.3-alt2
@@ -82,8 +82,11 @@ for f in {autoconf,modversions,version}.{h,ph} _h2ph_pre.ph; do
 	touch "$RPM_BUILD_ROOT/var/run/kernel/$f"
 done
 
+%pre
+[ $1 -eq 1 ] || /usr/sbin/control-dump usernetctl
+
 %post
-if [ $1 = 1 ]; then     
+if [ $1 -eq 1 ]; then     
 	/sbin/chkconfig --add random
 	/sbin/chkconfig --add netfs
 	/sbin/chkconfig --add network
@@ -92,6 +95,8 @@ if [ $1 = 1 ]; then
 %ifnarch sparc sparc64
 	/sbin/chkconfig --add usb
 %endif
+else
+	/usr/sbin/control-restore usernetctl
 fi
 
 for f in /var/{log/wtmp,run/utmp}; do
@@ -115,7 +120,7 @@ if [ -L %_sysconfdir/localtime ]; then
 fi
 
 %preun
-if [ $1 = 0 ]; then
+if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del random
 	/sbin/chkconfig --del netfs
 	/sbin/chkconfig --del network
@@ -126,7 +131,7 @@ if [ $1 = 0 ]; then
 %endif
 fi
 
-%triggerpostun -- initscripts < %version
+%triggerpostun -- initscripts < 5.49
 /sbin/chkconfig --add random
 /sbin/chkconfig --add netfs
 /sbin/chkconfig --add network
