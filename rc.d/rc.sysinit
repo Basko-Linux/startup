@@ -125,8 +125,11 @@ fi
 
 # LVM Setting
 VGCHANGE=/sbin/vgchange
-if [ -e /proc/lvm -a -x "$VGCHANGE" -a -s /etc/lvmtab ]; then
-	action "Setting up LVM:" "$VGCHANGE" -a y
+if [ -x "$VGCHANGE" -a -s /etc/lvmtab ]; then
+	modprobe lvm-mod &>/dev/null
+	if [ -e /proc/lvm ]; then
+		action "Setting up LVM:" "$VGCHANGE" -a y
+	fi
 fi
 
 _RUN_QUOTACHECK=0
