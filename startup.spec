@@ -146,7 +146,16 @@ done
 %changelog
 * Sat Feb 07 2004 Dmitry V. Levin <ldv@altlinux.org> 0.8.3-alt1
 - Requires: filesystem >= 0:2.1.7-alt1 (due to /sys).
-- Mount /sys where appropriate.
+- rc.d/rc.sysinit:
+  + mount /sys where appropriate;
+  + use "swapon -a -e" to activate swap partitions (#3781);
+  + removed support for obsolete /lib/modules/default;
+  + removed support for obsolete /boot/System.map;
+  + added evms support (#3647).
+- init.d/halt:
+  + added nut support (#3701).
+- sysctl.conf:
+  + removed net.ipv4.ip_always_defrag key.
 
 * Thu Jan 29 2004 Dmitry V. Levin <ldv@altlinux.org> 0.8.2-alt1
 - rc.d/rc.sysinit: do not initialize console powersaver so early.
