@@ -7,16 +7,19 @@
 # chkconfig: 2345 04 91
 # description: This startup script try to load your modules for your usb devices.
 
+if fgrep -iwqs nousb /proc/cmdline; then
+	exit 0
+fi
+
+/sbin/modprobe -c >/dev/null 2>&1 || exit
+
+# FIXME
 if [ -f /etc/modules.conf ]; then
 	conf_file=/etc/modules.conf
 elif [ -f /etc/conf.modules ]; then
 	conf_file=/etc/conf.modules
 else
 	exit 1
-fi
-
-if fgrep -iwqs nousb /proc/cmdline; then
-	exit 0
 fi
 
 WITHOUT_RC_COMPAT=1
@@ -247,7 +250,7 @@ case $1 in
 		start
 		;;
 	*)
-		msg_usage "${0##*/} {start|stop|restart|status}"
+		msg_usage "${0##*/} {start|stop|restart|reload|status}"
 		;;
 esac
 
