@@ -23,7 +23,7 @@ start()
 stop()
 {
 	local FGCONSOLE=/usr/bin/fgconsole
-	locat CHVT=/usr/bin/chvt
+	local CHVT=/usr/bin/chvt
 	local fgconsole=
 	if [ -x "$FGCONSOLE" ]; then
 		fgconsole=`$FGCONSOLE`
