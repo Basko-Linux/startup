@@ -155,7 +155,7 @@ daemon()
 	[ -n "$gotbase" ] || base="${1##*/}"
 
 	# See if it's already running.
-	local pidlist=`pidofproc $1`
+	local pidlist=`pidofproc "$1"`
 
 	local pid= p
 	for p in $pidlist; do
@@ -222,7 +222,7 @@ killproc()
 	local base="${1##*/}"
 
 	# Find pid.
-	local pidlist=`pidofproc $1`
+	local pidlist=`pidofproc "$1"`
 
 	local pid= p
 	for p in $pidlist; do
@@ -272,7 +272,7 @@ pidfileofproc()
 	local base="${1##*/}"
 
 	# Test syntax.
-	if [ $# = 0 ]; then
+	if [ $# != 1 ]; then
 		echo "Usage: pidfileofproc {program}" >&2
 		return 1
 	fi
@@ -297,7 +297,7 @@ pidfileofproc()
 pidofproc()
 {
 	# Test syntax.
-	if [ $# = 0 ]; then
+	if [ $# != 1 ]; then
 		echo "Usage: pidofproc {program}" >&2
 		return 1
 	fi
