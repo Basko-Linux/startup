@@ -16,6 +16,7 @@ SRM=false
 UTC=false
 HWCLOCK_SET_AT_HALT=false
 HWCLOCK_ADJUST=false
+ZONEDIR=/usr/share/zoneinfo
 
 CLOCKMODE=
 if SourceIfNotEmpty /etc/sysconfig/clock; then
@@ -56,6 +57,15 @@ case "$1" in
 		action "Setting system clock$CLOCKDEF: `date`" date
 		;;
 	start)
+		if [ ! -s /etc/localtime ] && [ -n "$ZONE" -a -f "$ZONEDIR/$ZONE" ]; then
+			action "Setting timezone information ($ZONE):" cp -p "$ZONEDIR/$ZONE" /etc/localtime
+		fi
+		if [ ! -s /etc/localtime ]; then
+			echo -n 'Setting system clock: timezone not configured'
+			passed 'clock startup'
+			echo
+			exit 1
+		fi
 		if is_yes "$HWCLOCK_ADJUST" && [ -s /etc/adjtime ]; then
 			action "Adjusting hardware clock:" /sbin/hwclock --adjust
 		fi
