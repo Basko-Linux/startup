@@ -448,6 +448,9 @@ fi
 # Cleanup everything :)
 /etc/init.d/cleanup
 
+# Language fixes
+/etc/init.d/lang
+
 # Now turn on swap again (in case we swap to files).
 swapon -a &>/dev/null
 action "Enabling swap space: " /bin/true

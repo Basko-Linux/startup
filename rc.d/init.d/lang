@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# /etc/init.d/lang - run once at boot time
+#
+
+# Source function library.
+. /etc/init.d/functions
+
+SourceIfNotEmpty /etc/sysconfig/i18n
+
+# Set template for skel
+# For shadow-utils >= 19990827-ipl7mdk only.
+for n in "$LANG" "$(expr substr "$LANG" 1 2)"; do
+	d="/etc/skel.$n"
+	if [ -d "$d" ]; then
+		useradd -D -k "$d" &>/dev/null
+		chmod 600 /etc/default/useradd
+		break;
+	fi
+done
