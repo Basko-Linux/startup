@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# /etc/rc.sysinit - run once at boot time
+# /etc/rc.d/rc.sysinit - run once at boot time
 #
 # Taken in part from Miquel van Smoorenburg's bcheckrc.
 #
@@ -9,7 +9,7 @@ trap '' SIGPIPE
 
 # Rerun ourselves through initlog
 if [ -z "$IN_INITLOG" ]; then
-	[ -f /sbin/initlog ] && exec /sbin/initlog $INITLOG_ARGS -r /etc/rc.sysinit
+	[ -f /sbin/initlog ] && exec /sbin/initlog $INITLOG_ARGS -r /etc/rc.d/rc.sysinit
 fi
 
 # Set the path
@@ -225,8 +225,8 @@ if [ -f /proc/sys/kernel/modprobe ]; then
 fi
 
 # Load modules
-if [ -x /etc/rc.modules ]; then
-	/etc/rc.modules
+if [ -x /etc/rc.d/rc.modules ]; then
+	/etc/rc.d/rc.modules
 fi
 
 # Add raid devices
@@ -442,12 +442,14 @@ swapon -a &>/dev/null
 action "Enabling swap space: " /bin/true
 
 # Initialize the serial ports.
-if [ -f /etc/rc.serial ]; then
-	. /etc/rc.serial
+if [ -f /etc/rc.d/rc.serial ]; then
+	. /etc/rc.d/rc.serial
 fi
 
 if [ -r /etc/rc.firewall ]; then
 	. /etc/rc.firewall
+elif [ -r /etc/rc.d/rc.firewall ]; then
+	. /etc/rc.d/rc.firewall
 fi
 
 # If a SCSI tape has been detected, load the st module unconditionally
