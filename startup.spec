@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.4
+Version: 0.5
 Release: alt1
 
 Summary: The system startup scripts
@@ -138,6 +138,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Tue Jun 03 2003 Dmitry V. Levin <ldv@altlinux.org> 0.5-alt1
+- init.d/*: fixed lockfiles handling.
+- init.d/killall: if first argument is not "start", exit.
+
 * Wed May 28 2003 Dmitry V. Levin <ldv@altlinux.org> 0.4-alt1
 - Added firsttime.d support (#0002287).
 
