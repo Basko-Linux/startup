@@ -102,5 +102,5 @@ if [ -n "sourced" ]; then
 	if [ -n "$LANGUAGE" ]; then export LANGUAGE; fi
 fi
 
-Unset sourced
-unset -f Unset
+unset sourced
+unset -f Unset CondSet
