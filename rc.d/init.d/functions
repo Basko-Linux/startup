@@ -8,6 +8,10 @@
 # Author:	Miquel van Smoorenburg, <miquels@drinkel.nl.mugnet.org>
 # Hacked by:    Greg Galloway and Marc Ewing
 #
+# i18n originally by: 	Arnaldo Carvalho de Melo <acme@conectiva.com.br>,
+#			Wanderlei Antonio Cavassin
+TEXTDOMAIN=initscripts
+TEXTDOMAINDIR=/etc/locale
 
 # First set up a default search path.
 export PATH="/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin"
@@ -89,59 +93,61 @@ fi
 [ -n "$LOGLEVEL" ] && [ "$LOGLEVEL" -ge 0 ] 2>/dev/null || LOGLEVEL=1
 
 # Check if $pid (could be plural) are running
-checkpid() {
-	while [ "$1" ]; do
+checkpid()
+{
+	while [ -n "$1" ]; do
 		[ -d "/proc/$1" ] && return 0 || shift
 	done
 	return 1
 }
 
 # A function to start a program.
-daemon() {
+daemon()
+{
 	# Test syntax.
 	local base=
+	local bg=
 	local gotbase=
 	local user=
 	local daemon_user=
 	local nicelevel=0
-	while [ "$1" != "${1##-}" -o "$1" != "${1##+}" ]; do 
-	  case $1 in
-	    '')    echo '$0: Usage: daemon [+/-nicelevel] {program}'
-	           return 1;;
-	    --check)
-	           shift
-		   base=$1
-		   gotbase="yes"
-		   shift
-		   ;;
-	    --user)
-	    	   shift
-		   daemon_user=$1
-		   shift
-		   ;;
-	    -*|+*) nicelevel=$1
-	           shift
-		   ;;
-	     *)    nicelevel=0
-	     	   ;;
-	  esac
+	while [ "$1" != "${1##[-+]}" ]; do
+		case $1 in
+			--check)
+				shift
+				base=$1
+				gotbase=yes
+				shift
+				;;
+			--user)
+				shift
+				daemon_user=$1
+				shift
+				;;
+			--bg|--background)
+				bg=''&''
+				shift
+				;;
+			[-+][0-9]*)
+				nicelevel=$1
+				shift
+				;;
+			'')
+				break
+				;;
+			*)
+				echo '$0: Usage: daemon [+/-nicelevel] {program}'
+				return 1
+				;;
+		esac
 	done
 
 	# Save basename.
 	[ -n "$gotbase" ] || base="${1##*/}"
 
 	# See if it's already running.
-	local pidlist=`pidofproc $1`
-	
-	local pid=
-	local apid=
-	for apid in $pidlist; do
-		if [ -d "/proc/$apid" ]; then
-			pid="$pid $apid"
-		fi
-	done
+	local pid=`pidofproc $1`
 
-	
 	# Echo daemon
 	if [ "$BOOTUP" = "verbose" ]; then echo -n "$base "; fi
 
@@ -150,13 +156,14 @@ daemon() {
 	# make sure it doesn't core dump anywhere; while this could mask
 	# problems with the daemon, it also closes some security problems
 	ulimit -Sc 0 &>/dev/null
-	
+
 	# And start it up.
-	if [ -z "$daemon_user" ]; then 
-		nice -n $nicelevel initlog $INITLOG_ARGS -c "$*" && success "$base startup" || failure "$base startup"
+	if [ -z "$daemon_user" ]; then
+		nice -n $nicelevel initlog $INITLOG_ARGS -c "$*$bg"
 	else
-		nice -n $nicelevel initlog $INITLOG_ARGS -n "$base" -c "su - $daemon_user -c \"$*\" -s /bin/sh" && success "$base startup" || failure "$base startup"
+		nice -n $nicelevel initlog $INITLOG_ARGS -n "$base" -c "su -s /bin/sh -l $daemon_user -c \"$*$bg\""
 	fi
+	[ $? = 0 ] && success "$base startup" || failure "$base startup"
 }
 
 # usage: wait_pid <w_pid> <w_times> <w_delay>
@@ -179,7 +186,8 @@ wait_pid()
 }
 
 # A function to stop a program.
-killproc() {
+killproc()
+{
 	local RC=0
 	# Test syntax.
 	if [ $# = 0 ]; then
@@ -200,20 +208,12 @@ killproc() {
 	local base="${1##*/}"
 
 	# Find pid.
-	local pidlist=`pidofproc $1`
-	
-	local pid=
-	local apid=
-	for apid in $pidlist; do
-		if [ -d "/proc/$apid" ]; then
-			pid="$pid $apid"
-		fi
-	done
+	local pid=`pidofproc $1`
 
 	# Kill it.
 	if [ -n "$pid" ]; then
-		if [ "$BOOTUP" = "verbose" ]; then echo -n "$base "; fi
-		if [ "$notset" = "1" ] ; then
+		[ "$BOOTUP" != "verbose" ] || echo -n "$base "
+		if [ "$notset" = "1" ]; then
 			if checkpid $pid &>/dev/null; then
 				# TERM first, then KILL if not dead
 				kill -TERM -- $pid
@@ -235,7 +235,7 @@ killproc() {
 			fi
 		fi
 	else
-	    failure "$base shutdown"
+		failure "$base shutdown"
 	fi
 
 	# Remove pid file if any.
@@ -246,36 +246,25 @@ killproc() {
 }
 
 # A function to find the pid of a program.
-pidofproc() {
+pidfileofproc()
+{
 	local base="${1##*/}"
-	local pid=
 
 	# Test syntax.
-	if [ $# = 0 ] ; then
-		echo "Usage: pidofproc {program}"
+	if [ $# = 0 ]; then
+		echo "Usage: pidfileofproc {program}"
 		return 1
 	fi
 
 	# First try "/var/run/*.pid" files
-	if [ -f "/var/run/$base.pid" ]; then
-		pid=`cat "/var/run/$base.pid" | { read foo; echo -E "$foo"; }`
-		if [ -n "$pid" -a -d "/proc/$pid" ]; then
-			echo -E "$pid"
-			return 0
-		fi
-	fi
-
-	# Next try "pidof"
-	local pids=`pidof -o $$ -o $PPID -o %PPID -x "$base"`
-	if [ -n "$pids" ]; then
-		local found=
-		for pid in $pids; do
-			if checkpid $pid; then
-				found="$found $pid"
-			fi
+	if [ -s "/var/run/$base.pid" ]; then
+		local line p pid=
+		read line <"/var/run/$base.pid"
+		for p in $line; do
+			[ -z "${p//[0-9]}" -a -d "/proc/$p" ] && pid="$pid $p"
 		done
-		if [ -n "$found" ]; then
-			echo -E $found
+		if [ -n "$pid" ]; then
+			echo "$pid"
 			return 0
 		fi
 	fi
@@ -283,7 +272,43 @@ pidofproc() {
 	return 1
 }
 
-status() {
+# A function to find the pid of a program.
+pidofproc()
+{
+	local base="${1##*/}"
+
+	# Test syntax.
+	if [ $# = 0 ]; then
+		echo "Usage: pidofproc {program}"
+		return 1
+	fi
+
+	# First try "/var/run/*.pid" files.
+	if [ -s "/var/run/$base.pid" ]; then
+		local line p pid=
+		read line <"/var/run/$base.pid"
+		for p in $line; do
+			[ -z "${p//[0-9]}" -a -d "/proc/$p" ] && pid="$pid $p"
+		done
+		if [ -n "$pid" ]; then
+			echo "$pid"
+			return 0
+		fi
+	fi
+
+	# Next try "pidof".
+	local p pid=
+	for p in `pidof -o $$ -o $PPID -o %PPID -x "$1" || pidof -o $$ -o $PPID -o %PPID -x "$base"`; do
+		if [ -d "/proc/$p" ]; then
+			[ -z "$pid" ] && pid="$p" || pid="$pid $p"
+		fi
+	done
+
+	[ -n "$pid" ] && echo "$pid"
+}
+
+status()
+{
 	# Test syntax.
 	if [ $# = 0 ]; then
 		echo "Usage: status {program}"
@@ -293,31 +318,35 @@ status() {
 	local base="${1##*/}"
 
 	# First try "pidof"
-	local pids=`pidof -o $$ -o $PPID -o %PPID -x "$base"`
-	if [ -n "$pids" ]; then
-		local found=
-		for pid in $pids; do
-			if checkpid $pid; then
-				found="$found $pid"
-			fi
-		done
-		if [ -n "$found" ]; then
-			echo "$base (pid$found) is running..."
-			return 0
+	local pid=`pidof -o $$ -o $PPID -o %PPID -x "$1" || pidof -o $$ -o $PPID -o %PPID -x "$base"`
+	if [ -n "$pid" ]; then
+		if [ "$pid" = "${pid// }" ]; then
+			echo "$base (pid $pid) is running..."
+		else
+			echo "$base (pids $pid) are running..."
 		fi
+		return 0
 	fi
 
 	# Next try "/var/run/*.pid" files
 	if [ -s "/var/run/$base.pid" ]; then
-		pid=`cat "/var/run/$base.pid" | { read foo; echo -E "$foo"; }`
-		if [ -n "$pid" ]; then
-			if [ -d "/proc/$pid" ]; then
-				echo "$base (pid $pid) is running..."
-				return 0
-			else
-				echo "$base dead but pid file exists"
-				return 1
+		local line p pid=
+		read line <"/var/run/$base.pid"
+		for p in $line; do
+			if [ -z "${p//[0-9]}" -a -d "/proc/$p" ]; then
+				[ -z "$pid" ] && pid="$p" || pid="$pid $p"
 			fi
+		done
+		if [ -n "$pid" ]; then
+			if [ "$pid" = "${pid// }" ]; then
+				echo "$base (pid $pid) is running..."
+			else
+				echo "$base (pids $pid) are running..."
+			fi
+			return 0
+		else
+			echo "$base dead but pid file exists"
+			return 1
 		fi
 	fi
 
@@ -331,7 +360,8 @@ status() {
 	return 3
 }
 
-echo_success() {
+echo_success()
+{
 	MOVE_TO_COL
 	echo -n '[  '
 	SETCOLOR_SUCCESS
@@ -341,7 +371,8 @@ echo_success() {
 	return 0
 }
 
-echo_failure() {
+echo_failure()
+{
 	MOVE_TO_COL
 	echo -n '['
 	SETCOLOR_FAILURE
@@ -351,7 +382,8 @@ echo_failure() {
 	return 1
 }
 
-echo_passed() {
+echo_passed()
+{
 	MOVE_TO_COL
 	echo -n '['
 	SETCOLOR_WARNING
@@ -362,7 +394,8 @@ echo_passed() {
 }
 
 # Log that something succeeded
-success() {
+success()
+{
 	if [ -z "$IN_INITLOG" ]; then
 		initlog $INITLOG_ARGS -n $0 -s "$1" -e 1
 	else
@@ -376,7 +409,8 @@ success() {
 }
 
 # Log that something failed
-failure() {
+failure()
+{
 	rc=$?
 	if [ -z "$IN_INITLOG" ]; then
 		initlog $INITLOG_ARGS -n $0 -s "$1" -e 2
@@ -391,7 +425,8 @@ failure() {
 }
 
 # Log that something passed, but may have had errors. Useful for fsck
-passed() {
+passed()
+{
 	local rc=$?
 	if [ -z "$IN_INITLOG" ]; then
 		initlog $INITLOG_ARGS -n $0 -s "$1" -e 1
@@ -403,11 +438,12 @@ passed() {
 	fi
 	echo_passed
 	return $rc
-}  
+}
 
 # Run some action. Log its output.
-action() {
-	local STRING=$1
+action()
+{
+	local STRING="$1"
 	echo -n "$STRING "
 	shift
 	initlog $INITLOG_ARGS -c "$*" && success "$STRING" || failure "$STRING"
@@ -416,24 +452,31 @@ action() {
 	return $rc
 }
 
-# Confirm whether we really want to run this service
-confirm() {
-  echo -n "Start service $1 (Y)es/(N)o/(C)ontinue? [Y] "
-  local answer=
-  read answer
-  case $answer in
-    y|Y|"")
-      return 0
-    ;;
-    c|C)
-      return 2
-    ;;
-    n|N)
-      return 1
-    ;;
-    *)
-      confirm $1
-      return $?
-    ;;
-    esac
+# Returns OK if $1 contains $2.
+strstr()
+{
+	[ "$1" = "$2" ] && return 0
+	slice=${1#*$2*}
+	[ "$slice" != "$1" ]
+}
+
+# Confirm whether we really want to run this service.
+confirm()
+{
+	local YES="yY"
+	local NO="nN"
+	local CONT="cC"
+
+	while :; do
+		local answer
+		echo -n "Start service $1 (Y)es/(N)o/(C)ontinue? [Y] "
+		read answer
+		if strstr "$YES" "$answer" || [ -z "$answer" ]; then
+			return 0
+		elif strstr "$CONT" "$answer"; then
+			return 2
+		elif strstr "$NO" "$answer"; then
+			return 1
+		fi
+	done
 }
