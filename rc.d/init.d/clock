@@ -54,7 +54,7 @@ case "$1" in
 		action "Setting system clock$CLOCKDEF: `date`" date
 		;;
 	sync)
-		action "Syncing hwclock to system time$CLOCKDEF: `date`" /sbin/hwclock --systohc $CLOCKFLAGS
+		action "Syncing system time to hwclock$CLOCKDEF: `date`" /sbin/hwclock --systohc $CLOCKFLAGS
 		RETVAL=$?
 		;;
 	stop)
