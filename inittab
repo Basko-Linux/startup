@@ -25,6 +25,10 @@ l3:3:wait:/etc/rc.d/rc 3
 l4:4:wait:/etc/rc.d/rc 4
 l5:5:wait:/etc/rc.d/rc 5
 l6:6:wait:/etc/rc.d/rc 6
+
+# ALT installer, 3rd stage.
+l7:7:wait:/usr/sbin/install3
+
 # Normally not reached, but fallthrough in case of emergency.
 z6:6:respawn:/sbin/sulogin
 
