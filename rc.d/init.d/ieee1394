@@ -1,0 +1,108 @@
+#!/bin/sh
+# $Id$	
+#
+# ieee1394	This shell script takes care of starting and stopping
+#               your ieee1394 devices.
+#
+# chkconfig: 2345 05 92
+# description: This startup script try to load your modules for your ieee1394 devices.
+
+if fgrep -iwqs noieee /proc/cmdline; then
+	exit 0
+fi
+
+/sbin/modprobe -c >/dev/null 2>&1 || exit
+
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
+. /etc/init.d/functions
+
+LOCKFILE=/var/lock/subsys/ieee1394
+PKLVL=
+exit_handler()
+{
+	local rc=$?
+	trap - EXIT
+	[ -z "$PKLVL" ] || sysctl -w "kernel.printk=$PKLVL"
+	PKLVL=
+	exit $rc
+}
+
+set_pklvl()
+{
+	PKLVL=`cut -f1 /proc/sys/kernel/printk` &&
+		trap exit_handler SIGHUP SIGINT SIGQUIT SIGTERM EXIT &&
+		sysctl -w kernel.printk=0
+}
+
+ARCH="$(uname -m)"
+
+load_interfaces ()
+{
+	local key name value
+	# Loop over every ieee1394-controller line in modutils configuration.
+	/sbin/modprobe -c |grep -w ^alias |while read key name value; do
+		[ -z "${name##ieee1394-controller*}" ] || continue
+
+		if /sbin/modprobe "$name"; then
+			action "Loading IEEE1394 interface ($value):" /bin/true
+		else
+			action "Disabling IEEE1394 interface ($value):" /bin/true
+		fi
+	done
+}
+
+unload_interfaces ()
+{
+	local key name value
+	# Loop over every ieee1394-controller line in modutils configuration.
+	/sbin/modprobe -c |grep -w ^alias |while read key name value; do
+		[ -z "${name##ieee1394-controller*}" ] || continue
+
+		action "Unloading IEEE1394 interface ($value):" /sbin/modprobe -r "$name"
+	done
+}
+
+start()
+{
+	set_pklvl
+	load_interfaces
+	fgrep -qs ieee1394 /proc/devices || exit
+	touch "$LOCKFILE"
+	sleep 1
+}
+
+stop()
+{
+	set_pklvl
+	unload_interfaces
+
+	rm -f "$LOCKFILE"
+	sleep 1
+}
+
+case $1 in 
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	status)
+		if [ -e /proc/bus/ieee1394/devices ]; then
+			echo "IEEE1394 is loaded."
+		else
+			echo "IEEE1394 is not loaded."
+		fi
+		;;
+	restart|reload)
+		stop
+		start
+		;;
+	*)
+		msg_usage "${0##*/} {start|stop|restart|reload|status}"
+		;;
+esac
+
+exit 0
