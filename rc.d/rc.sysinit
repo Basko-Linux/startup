@@ -27,7 +27,7 @@ WITHOUT_RC_COMPAT=1
 # Fix console loglevel
 dmesg -n "$LOGLEVEL"
 
-HOSTNAME=`/bin/hostname`
+HOSTNAME=`hostname`
 
 # Read in config data.
 if ! SourceIfNotEmpty /etc/sysconfig/network; then
@@ -39,7 +39,7 @@ if [ -z "$HOSTNAME" -o "$HOSTNAME" = "(none)" ]; then
 fi
 
 # Set system font.
-/sbin/setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
+setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
 
 PrintMargin()
 {
@@ -69,9 +69,14 @@ else
 	PROMPT=
 fi
 
-# Mount /proc (done here so volume labels can work with fsck)
-action "Mounting proc filesystem" mount -n -t proc /proc /proc
+# Mount /proc (done here so volume labels can work with fsck).
+action "Mounting proc filesystem" mount -n -t proc proc /proc
 chgrp proc /proc >/dev/null 2>&1 ||:
+
+# Mount /sys where appropriate.
+if [ "`kernelversion_major`" -eq 2 ] && [ "`kernelversion_minor`" -ge 5 ]; then
+	action "Mounting sys filesystem" mount -n -t sysfs sysfs /sys
+fi
 
 # Set the system clock (when /etc/adjtime is missing).
 [ -s /etc/adjtime ] || /etc/init.d/clock start
@@ -272,7 +277,7 @@ OLD_COLUMNS="$COLUMNS"
 
 # Set system font again, if required.
 if [ "$OLD_COLUMNS" != "$COLUMNS" ]; then
-	/sbin/setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
+	setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
 fi
 
 # Add raid devices
@@ -418,7 +423,7 @@ action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat
 # At this point everything should be mounted.
 
 # Set system font again, if required.
-[ -n "$SETSYSFONT_DONE" ] || /sbin/setsysfont >/dev/null 2>&1
+[ -n "$SETSYSFONT_DONE" ] || setsysfont >/dev/null 2>&1
 
 if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
 	action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
@@ -495,12 +500,12 @@ ExecIfExecutable /etc/rc.d/scripts/rsbac_autotune
 # Now that we have all of our basic modules loaded and the kernel going,
 # let's dump the syslog ring somewhere so we can find it later
 dmesg >/var/log/dmesg
-kill -TERM `/sbin/pidof getkey` >/dev/null 2>&1
+kill -TERM `pidof getkey` >/dev/null 2>&1
 
 } &
 
 if [ -n "$PROMPT" ]; then
-	/sbin/getkey i || PROMPT=
+	getkey i || PROMPT=
 fi
 wait
 

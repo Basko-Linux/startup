@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.8.2
+Version: 0.8.3
 Release: alt1
 
 Summary: The system startup scripts
@@ -17,6 +17,8 @@ PreReq: service >= 0.0.2-alt1, chkconfig, gawk, grep, sed, coreutils, %__subst
 # Who could remind me where these dependencies came from?
 Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
 Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk, util-linux >= 0:2.10q-ipl1mdk
+# due to /sys
+Requires: filesystem >= 0:2.1.7-alt1
 # due to %_sysconfdir/adjtime
 Requires: hwclock >= 2.23-alt1
 
@@ -142,6 +144,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Sat Feb 07 2004 Dmitry V. Levin <ldv@altlinux.org> 0.8.3-alt1
+- Requires: filesystem >= 0:2.1.7-alt1 (due to /sys).
+- Mount /sys where appropriate.
+
 * Thu Jan 29 2004 Dmitry V. Levin <ldv@altlinux.org> 0.8.2-alt1
 - rc.d/rc.sysinit: do not initialize console powersaver so early.
 - setsysfont: source /etc/sysconfig/consolefont.
