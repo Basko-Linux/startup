@@ -27,9 +27,7 @@ do
           cd "${SERVICEDIR}"
           for SERVICE in *; do
             case "${SERVICE}" in
-              functions | halt | killall | single| linuxconf| kudzu | \
-	       mandrake_firstime | mandrake_everytime | \
-                  *rpmorig | *rpmnew | *rpmsave | *~ | *.orig)
+              functions|halt|killall|single|linuxconf|kudzu|*.rpm* |*~|*.orig)
                   ;;
               *)
                 if [ -x "${SERVICEDIR}/${SERVICE}" ]; then
