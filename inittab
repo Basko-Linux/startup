@@ -29,7 +29,7 @@ l6:6:wait:/etc/rc.d/rc 6
 z6:6:respawn:/sbin/sulogin
 
 # What to do when CTRL-ALT-DEL is pressed.
-ca:012345:ctrlaltdel:/sbin/shutdown -t3 -a -r now
+ca:012345:ctrlaltdel:/sbin/shutdown -t3 -r now
 
 # Action on special keypress (ALT-UpArrow).
 kb::kbrequest:/bin/echo "Keyboard Request -- edit /etc/inittab to let this work."
