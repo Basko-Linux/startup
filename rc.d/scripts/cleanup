@@ -44,24 +44,25 @@ rm -rf /tmp/ssh-*
 if [ -n "$CLEAN_TMP" ] && [ "$CLEAN_TMP" -ge 1 ]; then
 	(
 		cd /tmp &&
-	    find . -xdev \
-	    ! -ctime -$CLEAN_TMP \
-	    ! -name . \
-	    ! \( -name lost+found -uid 0 \) \
-	    ! \( -name quota.user -uid 0 \) \
-	    ! \( -name quota.group -uid 0 \) \
-	    ! \( -name aquota.user -uid 0 \) \
-	    ! \( -name aquota.group -uid 0 \) \
-	    -depth -print0 | xargs -r0 rm -rf --
+		    find . -xdev \
+		    ! -ctime -$CLEAN_TMP \
+		    ! -name . \
+		    ! \( -name lost+found -uid 0 \) \
+		    ! \( -name quota.user -uid 0 \) \
+		    ! \( -name quota.group -uid 0 \) \
+		    ! \( -name aquota.user -uid 0 \) \
+		    ! \( -name aquota.group -uid 0 \) \
+		    -depth -print0 |xargs -r0 rm -rf --
 	)
 fi
 
-# Possibly create lastlog, utmp and wtmp, reset utmp and possibly utmpx.
-f=/var/log/lastlog
-if [ ! -e $f ]; then
-	touch $f
-	chown root:root $f && chmod 644 $f
-fi
+# Possibly create lastlog, faillog, utmp and wtmp, reset utmp and possibly utmpx.
+for f in /var/log/{lastlog,faillog}; do
+	if [ ! -e $f ]; then
+		touch $f
+		chown root:root $f && chmod 644 $f
+	fi
+done
 for f in /var/log/wtmp /var/run/utmp; do
 	[ -e $f ] && continue
 	touch $f
