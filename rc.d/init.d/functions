@@ -155,7 +155,7 @@ daemon() {
 	if [ -z "$daemon_user" ]; then 
 		nice -n $nicelevel initlog $INITLOG_ARGS -c "$*" && success "$base startup" || failure "$base startup"
 	else
-		nice -n $nicelevel initlog $INITLOG_ARGS -c "su - $daemon_user -c \"$*\" -s /bin/sh" && success "$base startup" || failure "$base startup"
+		nice -n $nicelevel initlog $INITLOG_ARGS -n "$base" -c "su - $daemon_user -c \"$*\" -s /bin/sh" && success "$base startup" || failure "$base startup"
 	fi
 }
 
