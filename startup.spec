@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.8.4
+Version: 0.9.0
 Release: alt1
 
 Summary: The system startup scripts
@@ -69,8 +69,6 @@ if [ $1 -eq 1 ]; then
 	/sbin/chkconfig --add fbsetfont
 	/sbin/chkconfig --add random
 	/sbin/chkconfig --add rawdevices
-	/sbin/chkconfig --add usb
-	/sbin/chkconfig --add ieee1394
 fi
 
 for f in /var/{log/wtmp,run/utmp}; do
@@ -103,12 +101,10 @@ if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del fbsetfont
 	/sbin/chkconfig --del random
 	/sbin/chkconfig --del rawdevices
-	/sbin/chkconfig --del usb
-	/sbin/chkconfig --del ieee1394
 fi
 
 %triggerpostun -- initscripts < 1:5.49.1-alt1
-for f in %_sysconfdir/{inittab,modules,sysctl.conf,sysconfig/{clock,console/setterm,framebuffer,i18n,init,keyboard,mouse,rawdevices,system,usb}}; do
+for f in %_sysconfdir/{inittab,modules,sysctl.conf,sysconfig/{clock,console/setterm,framebuffer,i18n,init,keyboard,mouse,rawdevices,system}}; do
 	if [ ! -f "$f" ]; then
 	        if [ -f "$f".rpmsave ]; then
 	                %__cp -pf "$f".rpmsave "$f"
@@ -120,7 +116,6 @@ done
 /sbin/chkconfig --add fbsetfont
 /sbin/chkconfig --add random
 /sbin/chkconfig --add rawdevices
-/sbin/chkconfig --add usb
 
 %triggerpostun -- startup < 0:0.2-alt1
 /sbin/chkconfig --add fbsetfont
@@ -144,6 +139,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed May 26 2004 Dmitry V. Levin <ldv@altlinux.org> 0.9.0-alt1
+- Removed scripts: init.d/ieee1394, init.d/usb.
+
 * Wed May 26 2004 Dmitry V. Levin <ldv@altlinux.org> 0.8.4-alt1
 - init.d/fbsetfont: fixed (#3120).
 - sysconfig/clock: added missing desriptions (#3496).
