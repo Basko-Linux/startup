@@ -392,7 +392,7 @@ fi
 # mounted). Contrary to standard usage,
 # filesystems are NOT unmounted in single user mode
 # (pixel) also do not mount loopback, will be done later
-action "Mounting local filesystems:" mount -a -t nonfs,smbfs,ncpfs,proc,loop
+action "Mounting local filesystems:" mount -a -t nodavfs,ftpfs,loop,ncp,ncpfs,nfs,proc,smbfs,sshfs
 
 # (pixel) Check loopback filesystems
 if [ -z "$fastboot" ]; then
