@@ -152,6 +152,7 @@ done
 - init.d/clock:
   + check for /etc/localtime before 'clock start';
   + try to set timezone if not set.
+  + new mode: tzset.
 - rc.d/rc.sysinit:
   When /etc/adjtime is present and non-empty, run
   "clock start" after root filesystem is mounted read-write.
