@@ -1,3 +1,5 @@
+# $Id$
+
 Name: initscripts
 Version: 5.49
 Release: ipl45mdk
