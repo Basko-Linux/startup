@@ -134,6 +134,13 @@ if [ -x "$UPSCTL" -a -f /etc/apcupsd/powerfail ]; then
 	command=/sbin/poweroff
 fi
 
+UPSCTL=/sbin/upsdrvctl
+if [ -x "$UPSCTL" -a -f /etc/killpower ]; then
+	action "Attempting to turn the UPS off:" "$UPSCTL" shutdown
+	message="The system is halted"
+	command=/sbin/poweroff
+fi
+
 if [ "$command" = /sbin/poweroff ]; then
 	# Modprobe apm for automatic poweroff at ATX cases.
 	/sbin/modprobe apm >/dev/null 2>&1
