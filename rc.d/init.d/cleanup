@@ -46,7 +46,7 @@ rm -f /tmp/k{fm,io}_*
 rm -f /tmp/.s.PGSQL.*
 
 # Clean up /tmp.
-if [ -n "$CLEAN_TMP" -a "$CLEAN_TMP" -ge 1 ]; then
+if [ -n "$CLEAN_TMP" ] && [ "$CLEAN_TMP" -ge 1 ]; then
     find /tmp/ -xdev \
     ! -ctime -$CLEAN_TMP \
     ! -name . \
