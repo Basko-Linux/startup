@@ -446,7 +446,7 @@ fi
 {
 
 # Cleanup everything :)
-/etc/init.d/cleanup
+action "Cleaning up temporary files from previous boot: " /etc/init.d/cleanup
 
 # Language fixes
 /etc/init.d/lang

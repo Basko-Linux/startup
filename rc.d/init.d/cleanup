@@ -5,8 +5,6 @@
 
 . /etc/init.d/functions
 
-echo -n "Cleaning up temporary files from previous boot: "
-
 SourceIfNotEmpty /etc/sysconfig/system
 
 # Clean up /
@@ -67,6 +65,3 @@ if [ -n "$_NEED_XFILES" ]; then
 	chgrp utmp /var/run/utmpx /var/log/wtmpx
 	chmod 0664 /var/run/utmpx /var/log/wtmpx
 fi
-
-echo_success
-echo
