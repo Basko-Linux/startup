@@ -10,8 +10,6 @@
 #
 # i18n originally by: 	Arnaldo Carvalho de Melo <acme@conectiva.com.br>,
 #			Wanderlei Antonio Cavassin
-TEXTDOMAIN=initscripts
-TEXTDOMAINDIR=/etc/locale
 
 # First set up a default search path.
 export PATH="/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin"
@@ -43,6 +41,10 @@ ExecIfExecutable()
 	shift
 	[ -x "$f" ] && "$f" "$@"
 }
+
+TEXTDOMAIN=initscripts
+TEXTDOMAINDIR=/etc/locale
+[ -z "$NOLOCALE" ] && SourceIfNotEmpty /etc/sysconfig/i18n
 
 # Get a sane screen width
 [ -n "$COLUMNS" ] || COLUMNS=80

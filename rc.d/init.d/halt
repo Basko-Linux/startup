@@ -11,34 +11,35 @@
 # Set the path.
 PATH=/sbin:/bin:/usr/bin:/usr/sbin
 export NOLOCALE=1
-
 . /etc/init.d/functions
+unset TEXTDOMAIN TEXTDOMAINDIR
 
-runcmd() {
-   echo -n "$1 "
-   shift
-   if [ "$BOOTUP" = "color" ]; then
-      $* && echo_success || echo_failure
-   else
-      $*
-   fi
-   echo
+runcmd()
+{
+	echo -n "$1 "
+	shift
+	if [ "$BOOTUP" = "color" ]; then
+		$* && echo_success || echo_failure
+	else
+		$*
+	fi
+	echo
 }
 
 # See how we were called.
 case "$0" in
-  *halt)
-	message="The system is halted"
-	command="halt"
-	;;
-  *reboot)
-	message="Please stand by while rebooting the system..."
-	command="reboot"
-	;;
-  *)
-	echo "$0: call me as \"rc.halt\" or \"rc.reboot\" please!"
-	exit 1
-	;;
+	*halt)
+		message="The system is halted"
+		command="halt"
+		;;
+	*reboot)
+		message="Please stand by while rebooting the system..."
+		command="reboot"
+		;;
+	*)
+		echo "$0: call me as \"rc.halt\" or \"rc.reboot\" please!"
+		exit 1
+		;;
 esac
 
 if [ -n "$1" ]; then
@@ -74,12 +75,6 @@ QUOTAOFF=/sbin/quotaoff
 
 ACCTOFF=/sbin/accton
 [ -x "$ACCTOFF" ] && runcmd "Turning off accounting:" "$ACCTOFF"
-
-# Since now, we should avoid to use locale. 
-export LANG=C
-export LANGUAGE=C
-export LC_ALL=C
-unset TEXTDOMAIN TEXTDOMAINDIR
 
 # Unmount file systems, killing processes if we have to.
 
