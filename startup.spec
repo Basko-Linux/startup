@@ -1,13 +1,14 @@
 # $Id$
 
 Name: startup
-Version: 0.8
+Version: 0.8.1
 Release: alt1
 
 Summary: The system startup scripts
 License: GPL
 Group: System/Base
 Packager: Dmitry V. Levin <ldv@altlinux.org>
+BuildArch: noarch
 
 Source: %name-%version.tar.bz2
 
@@ -141,6 +142,11 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Sun Jan 18 2004 Dmitry V. Levin <ldv@altlinux.org> 0.8.1-alt1
+- sysctl.conf: fixed comment for net.ipv4.tcp_timestamps,
+  thanks to Solar for the hint.
+- Packaged as noarch (#3407).
+
 * Wed Dec 24 2003 Dmitry V. Levin <ldv@altlinux.org> 0.8-alt1
 - rc.sysinit:
   + removed old bits of linuxconf support;
