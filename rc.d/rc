@@ -59,10 +59,10 @@ for i in "/etc/rc.d/rc$runlevel.d"/K*; do
 
 	subsys=${i#/etc/rc.d/rc$runlevel.d/K??}
 
+	splash_update "$subsys"
+
 	# Check if the subsystem is already up.
 	[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] || continue
-
-	splash_update "$subsys"
 
 	# Bring the subsystem down.
 	if egrep -qs '(action|stop_daemon|killproc|msg_) ' "$i"; then
@@ -78,10 +78,10 @@ for i in "/etc/rc.d/rc$runlevel.d"/S*; do
 
 	subsys=${i#/etc/rc.d/rc$runlevel.d/S??}
 
+	splash_update "$subsys"
+
 	# Check if the subsystem is already up.
 	[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] && continue
-
-	splash_update "$subsys"
 
 	# If we're in confirmation mode, get user confirmation.
 	if [ -n "$CONFIRM" ]; then
@@ -101,6 +101,6 @@ for i in "/etc/rc.d/rc$runlevel.d"/S*; do
 	fi
 done
 
-if [ "$runlevel" != 0 && "$runlevel" != 6 ]; then
+if [ "$runlevel" != 0 -a "$runlevel" != 6 ]; then
 	splash_update stop
 fi
