@@ -37,6 +37,7 @@ addLoadableData() {
 
 if [ "$LANG" = POSIX -o "$LANGUAGE" = POSIX ]; then
 	SourceIfNotEmpty /etc/sysconfig/i18n
+	SourceIfNotEmpty /etc/sysconfig/consolefont
 fi
 
 # Our parameters:
