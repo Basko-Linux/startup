@@ -1,0 +1,34 @@
+#!/bin/sh
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin
+
+# We need to source this so that the login screens get translated
+. /etc/profile.d/lang.sh
+
+# Run preferred X display manager
+preferred=
+if [ -f /etc/sysconfig/desktop ]; then
+	if grep -q GNOME /etc/sysconfig/desktop 2>/dev/null; then
+		preferred=gdm
+	elif grep -q KDE /etc/sysconfig/desktop 2> /dev/null; then
+		preferred=kdm
+	elif grep -q AnotherLevel /etc/sysconfig/desktop 2> /dev/null; then
+                preferred=xdm
+	fi
+fi
+if [ -n "$preferred" ] && which $preferred >/dev/null 2>&1; then 
+	exec $preferred $*
+fi
+
+	if which kdm >/dev/null 2>&1; then
+		preferred=kdm
+	elif which gdm >/dev/null 2>&1; then
+		preferred=gdm
+	elif which xdm >/dev/null 2>&1; then
+		preferred=xdm
+	fi
+
+if [ -n "$preferred" ] && which $preferred >/dev/null 2>&1; then 
+	exec $preferred $*
+fi
+exit 1								
