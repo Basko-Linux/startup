@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 
 export PATH=/sbin:/usr/sbin:/bin:/usr/bin
 
@@ -8,7 +8,7 @@ SERVICEDIR="/etc/init.d"
 
 Fatal()
 {
-	echo "${0##*/}: $@" >&2
+	echo "${0##*/}: $*" >&2
 	exit 1
 }
 
@@ -20,7 +20,7 @@ Usage()
 
 CheckService()
 {
-	if [ -z "${SERVICE//*\/*/}" ]; then
+	if [ -z "${SERVICE##*/*}" ]; then
 		Fatal "invalid service: $SERVICE"
 	fi
 }
