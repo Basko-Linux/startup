@@ -15,6 +15,9 @@ fi
 # Source functions
 . /etc/init.d/functions
 
+# Fix console loglevel
+dmesg -n "$LOGLEVEL"
+
 HOSTNAME=`/bin/hostname`
 
 # Read in config data.
@@ -83,9 +86,6 @@ if [ -c /dev/.devfsd -a -x /sbin/devfsd ]; then
 		fi
 	fi
 fi
-
-# Fix console loglevel
-dmesg -n "$LOGLEVEL"
 
 # Set the system clock.
 /etc/init.d/clock start
@@ -257,6 +257,9 @@ fi
 
 # Load modules
 /etc/rc.d/scripts/load_modules
+
+# Load framebuffer device settings
+/etc/rc.d/scripts/framebuffer_init
 
 # Set system font again, if required.
 if [ "$OLD_COLUMNS" != "$COLUMNS" ]; then
