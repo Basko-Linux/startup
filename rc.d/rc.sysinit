@@ -82,6 +82,11 @@ action "Activating swap partitions:" swapon -a
 # Set the hostname.
 action "Setting hostname $HOSTNAME:" hostname "$HOSTNAME"
 
+# Set the NIS domain name.
+if [ -n "$NISDOMAIN" -a "$NISDOMAIN" != no ]; then
+	action "Setting NIS domain name $NISDOMAIN:" domainname "$NISDOMAIN"
+fi
+
 if [ -f /fastboot ] || fgrep -iwqs fastboot /proc/cmdline; then
 	fastboot=yes
 else
