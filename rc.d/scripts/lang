@@ -3,18 +3,26 @@
 # /etc/rc.d/scripts/lang - run once at boot time
 #
 
+WITHOUT_RC_COMPAT=1
+
 # Source function library.
 . /etc/init.d/functions
 
 SourceIfNotEmpty /etc/sysconfig/i18n
 
+umask 077
+
 # Set template for skel
-# For shadow-utils >= 19990827-ipl7mdk only.
-for n in "$LANG" "$(expr substr "$LANG" 1 2)"; do
-	d="/etc/skel.$n"
-	if [ -d "$d" ]; then
-		useradd -D -k "$d" >/dev/null 2>&1
-		chmod 600 /etc/default/useradd
-		break;
-	fi
+# Requires shadow-utils >= 19990827-ipl7mdk
+# Uses "useradd -D -k <skeldir>".
+for n in `echo "$LANG" |tr : ' '`; do
+	n1="${n%.*}"
+	n2="${n1%_*}"
+
+	for d in "/etc/skel.$n" "/etc/skel.$n1" "/etc/skel.$n2"; do
+		if [ -d "$d" ]; then
+			useradd -D -k "$d" >/dev/null 2>&1 &&
+				break 2
+		fi
+	done
 done
