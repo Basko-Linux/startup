@@ -4,49 +4,53 @@
 # You can put your own initialization stuff in here if you don't
 # want to do the full Sys V style init stuff.
 
-[ -f /etc/sysconfig/system ] && source /etc/sysconfig/system
+[ -f /etc/sysconfig/system ] && . /etc/sysconfig/system
 [ -z "$SECURITY" ] && SECURITY=0
 
+if [ -f /var/lock/TMP_1ST ]; then
+	if [ -f /etc/init.d/mandrake_firstime ]; then
+		/bin/sh /etc/init.d/mandrake_firstime
+	fi
+fi
+
 if [ -f /etc/mandrake-release ]; then
-    R=$(cat /etc/mandrake-release)
+	R=$(cat /etc/mandrake-release)
 
-    arch=$(uname -m)
-    a="a"
-    case "_$arch" in
-	    _a*) a="an";;
-	    _i*) a="an";;
-    esac
-    
-    NUMPROC=`egrep -c "^cpu[0-9]+" /proc/stat`
-    if [ "$NUMPROC" -gt "1" ]; then
-        SMP="$NUMPROC-processor "
-	[ "$NUMPROC" = "2" ] && \
-	SMP="Bi-processor "
-        if [ "$NUMPROC" = "8" -o "$NUMPROC" = "11" ]; then
-            a="an"
+	arch=$(uname -m)
+	a="a"
+	case "_$arch" in
+		_a*) a="an";;
+		_i*) a="an";;
+	esac
+
+	NUMPROC=`egrep -c "^cpu[0-9]+" /proc/stat`
+	if [ "$NUMPROC" -gt "1" ]; then
+		SMP="$NUMPROC-processor "
+		if [ "$NUMPROC" = "2" ]; then
+			SMP="Bi-processor "
+		elif [ "$NUMPROC" = "8" -o "$NUMPROC" = "11" ]; then
+			a="an"
+		fi
+	fi
+
+	# This will overwrite /etc/issue at every boot. So, make any changes you
+	# want to make to /etc/issue here or you will lose them when you reboot.
+
+	if [ -x /usr/bin/linux_logo ]; then
+		/usr/bin/linux_logo -c -n -f >/etc/issue
+		echo >>/etc/issue
 	else
-	    a="a"
-        fi
-    fi
+		:>/etc/issue
+	fi
+	echo "$R" >>/etc/issue
+	echo "Kernel $(uname -r) on $a $SMP$(uname -m) / \l" >>/etc/issue
 
-    # This will overwrite /etc/issue at every boot.  So, make any changes you
-    # want to make to /etc/issue here or you will lose them when you reboot.
-
-    if [ -x /usr/bin/linux_logo ];then
-	/usr/bin/linux_logo -c -n -f > /etc/issue
-	echo "" >> /etc/issue
-    else
-	> /etc/issue
-    fi
-    echo "$R" >> /etc/issue
-    echo "Kernel $(uname -r) on $a $SMP$(uname -m) / \l" >> /etc/issue
-    
-    if [ "$SECURITY" -le 3 ];then
-	echo "Welcome to %h" > /etc/issue.net
-	echo "$R" >> /etc/issue.net
-	echo "Kernel $(uname -r) on $a $SMP$(uname -m)" >> /etc/issue.net
-    else	
-	echo "Welcome to Linux-Mandrake" > /etc/issue.net
-	echo "-------------------------" >> /etc/issue.net
-    fi
+	if [ "$SECURITY" -le 3 ]; then
+		echo "Welcome to %h" >/etc/issue.net
+		echo "$R" >>/etc/issue.net
+		echo "Kernel $(uname -r) on $a $SMP$(uname -m)" >>/etc/issue.net
+	else	
+		echo "Welcome to Linux-Mandrake" >/etc/issue.net
+		echo "-------------------------" >>/etc/issue.net
+	fi
 fi

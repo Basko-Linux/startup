@@ -27,6 +27,18 @@ for f in /var/lock/* /var/run/*; do
 	fi
 done
 
+# Delete X locks
+rm -f /tmp/.X*-lock
+
+# Esrv...
+rm -f /tmp/esrv*
+
+# Delete KDE sockets
+rm -f /tmp/k{fm,io}_*
+
+# Delete Postgres sockets
+rm -f /tmp/.s.PGSQL.*
+
 # Clean up utmp/wtmp
 :>/var/run/utmp
 touch /var/log/wtmp
@@ -38,12 +50,3 @@ if [ -n "$_NEED_XFILES" ]; then
 	chgrp utmp /var/run/utmpx /var/log/wtmpx
 	chmod 0664 /var/run/utmpx /var/log/wtmpx
 fi
-
-# Delete X locks
-rm -f /tmp/.X*-lock
-
-# Delete KDE sockets
-rm -f /tmp/k{fm,io}_*
-
-# Delete Postgres sockets
-rm -f /tmp/.s.PGSQL.*
