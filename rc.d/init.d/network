@@ -39,35 +39,23 @@ cd /etc/sysconfig/network-scripts
 # ignore aliases, alternative configurations, and editor backup files
 interfaces=`ls ifcfg* | \
 	egrep -v '(ifcfg-lo|:|\.rpm)' | \
+	egrep -v 'ifcfg-vlan[0-9]*' | \
 	egrep -v '(~|\.bak)$' | \
 	egrep 'ifcfg-[a-z0-9]+$' | \
 	sed 's/^ifcfg-//g'`
 
+vlan_interfaces=`ls ifcfg* | \
+	egrep -v '(ifcfg-lo|:|\.rpm)' | \
+	egrep -v '(~|\.bak)$' | \
+	egrep 'ifcfg-[a-z0-9]+\.[0-9]{1,4}$|ifcfg-vlan[0-9]{1,4}$' | \
+	sed 's/^ifcfg-//g'`
+
 LOCKFILE=/var/lock/subsys/network
 
-start()
+ifup_interfaces()
 {
-	action "Setting network parameters:" sysctl -e -p /etc/sysctl.conf
-	action "Bringing up interface lo:" ./ifup ifcfg-lo
-
-	case "$IPX" in
-		yes|true)
-			"$IPX_CONFIGURE" --auto_primary="$IPXAUTOPRIMARY" --auto_interface="$IPXAUTOFRAME"
-			if [ "$IPXINTERNALNETNUM" != 0 ]; then
-				"$IPX_INTERNAL_NET" add "$IPXINTERNALNETNUM" "$IPXINTERNALNODENUM"
-			fi
-			;;
-	esac
-
-	# depreciated but we still use it.
-	if [ "$FORWARD_IPV4" = yes -o "$FORWARD_IPV4" = true ] && [ -f /proc/sys/net/ipv4/ip_forward ]; then
-		action "Enabling IPv4 packet forwarding" sysctl -w net.ipv4.ip_forward=1
-	fi
-
-	oldhotplug=`sysctl kernel.hotplug 2>/dev/null| awk '{ print $3 }' 2>/dev/null`
-	sysctl -w "kernel.hotplug=/bin/true" >/dev/null 2>&1
-
-	for i in $interfaces; do
+	local i
+	for i in "$@"; do
 		if egrep -L "^ONBOOT=\"?[Nn][Oo]\"?" "ifcfg-$i" &>/dev/null; then
 			# Probe module to preserve interface ordering
 			/sbin/ifconfig "$i" &>/dev/null
@@ -90,17 +78,62 @@ start()
 			action "Bringing up interface $i:" ./ifup "$i" boot
 		fi
 	done
+}
+
+start()
+{
+	action "Setting network parameters:" sysctl -e -p /etc/sysctl.conf
+	action "Bringing up interface lo:" ./ifup ifcfg-lo
+
+	case "$IPX" in
+		yes|true)
+			"$IPX_CONFIGURE" --auto_primary="$IPXAUTOPRIMARY" --auto_interface="$IPXAUTOFRAME"
+			if [ "$IPXINTERNALNETNUM" != 0 ]; then
+				"$IPX_INTERNAL_NET" add "$IPXINTERNALNETNUM" "$IPXINTERNALNODENUM"
+			fi
+			;;
+	esac
+
+	# depreciated but we still use it.
+	if [ "$FORWARD_IPV4" = yes -o "$FORWARD_IPV4" = true ] && [ -f /proc/sys/net/ipv4/ip_forward ]; then
+		action "Enabling IPv4 packet forwarding" sysctl -w net.ipv4.ip_forward=1
+	fi
+
+	# Fireup VLAN subsystem.
+	SourceIfNotEmpty /etc/sysconfig/vlan
+	BIN_VCONFIG=/usr/bin/vconfig
+	PROC_VLAN_CONFIG=/proc/net/vlan/config
+
+	# Turn ON vlan subsystem and set vlans naming schema.
+	if [ "$DOT1Q_VLANS" = yes -a -x "$BIN_VCONFIG" ]; then
+		if [ ! -e "$PROC_VLAN_CONFIG" ]; then
+			# No vlan support in the kernel, trying modprobe.
+			action "Loading VLAN module:" modprobe vlan_module
+		fi
+
+		if [ -e "$PROC_VLAN_CONFIG" ]; then
+			"$BIN_VCONFIG" set_name_type $VLAN_NAMING >/dev/null 2>&1
+		fi
+	fi
+
+	oldhotplug=`sysctl kernel.hotplug 2>/dev/null| awk '{print $3}' 2>/dev/null`
+	sysctl -w "kernel.hotplug=/bin/true" >/dev/null 2>&1
+
+	ifup_interfaces $interfaces
+	
+	# Fireup VLAN interfaces.
+	# It must be started up AFTER all REAL real interfaces.
+	# Otherwise vlans won't work.
+	ifup_interfaces $vlan_interfaces
 
 	sysctl -w "kernel.hotplug=$oldhotplug" >/dev/null 2>&1
 	
 	# Add non interface-specific static-routes.
 	if [ -f /etc/sysconfig/static-routes ]; then
+		local ignore type dest netmask mask bogus args
 		grep "^any" /etc/sysconfig/static-routes | while read ignore type dest netmask mask bogus args; do
-			if [ "$bogus" = gw ]; then
-				/sbin/route add -$type $dest $netmask $mask $args
-			else
-				/sbin/route add -$type $dest $netmask $mask $bogus $args
-			fi
+			[ "$bogus" != gw ] || bogus=
+			/sbin/route add -$type $dest $netmask $mask $bogus $args
 		done
 	fi
 
