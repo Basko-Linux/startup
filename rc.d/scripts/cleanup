@@ -31,27 +31,31 @@ for f in /var/lock/* /var/run/*; do
 	fi
 done
 
-# Delete X locks
 rm -f /tmp/.X*-lock
-
-# Esrv...
 rm -f /tmp/esrv*
-
-# Delete KDE sockets
 rm -f /tmp/k{fm,io}_*
-
-# Delete Postgres sockets
 rm -f /tmp/.s.PGSQL.*
+rm -f /tmp/.MediaCon*
+rm -rf /tmp/.ICE-unix
+rm -rf /tmp/.esd*
+rm -rf /tmp/kde-*
+rm -rf /tmp/ksocket-*
+rm -rf /tmp/mcop-*
+rm -rf /tmp/orbit-*
+rm -rf /tmp/ssh-*
 
 # Clean up /tmp.
 if [ -n "$CLEAN_TMP" ] && [ "$CLEAN_TMP" -ge 1 ]; then
-    find /tmp/ -xdev \
-    ! -ctime -$CLEAN_TMP \
-    ! -name . \
-    ! \( -name lost+found -uid 0 \) \
-    ! \( -name quota.user -uid 0 \) \
-    ! \( -name quota.group -uid 0 \) \
-    -depth -exec rm -rf -- {} \; 
+	(
+		cd /tmp &&
+	    find . -xdev \
+	    ! -ctime -$CLEAN_TMP \
+	    ! -name . \
+	    ! \( -name lost+found -uid 0 \) \
+	    ! \( -name quota.user -uid 0 \) \
+	    ! \( -name quota.group -uid 0 \) \
+	    -depth -print0 | xargs -r0 rm -rf
+	)
 fi
 
 # Clean up utmp/wtmp
