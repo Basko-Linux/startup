@@ -39,27 +39,14 @@ if [ -x "$MOZILLA_REGXPCOM" -a -x "$MOZILLA_REGCHROME" ]; then
 	action "Registering Mozilla chrome:" "$MOZILLA_REGCHROME" 2>>$FLO
 fi
 
-# Next try to find the applications installed on system and give a nice entries
-# in kde menus # TODO: Gnomefinder4root
-KAPPFINDER=/usr/sbin/kappfinder4root
-if [ -x "$KAPPFINDER" ]; then
-	action "Building your KDE menu:" "$KAPPFINDER" 2>> "$FLO"
-fi
-
-# perform charset conversions for some translation files if needed
-#{
-#	touch /usr/share/locale/*/LC_MESSAGES
-#	for i in /etc/cron.hourly/mdk_convert_translations* ; do
-#		[ -r "$i" ] && nice -20 /bin/sh "$i" 2>> $FLO
-#	done
-#} &
-
 # Set the mixer to 80%
 AUMIX=/usr/bin/aumix
 if [ -x "$AUMIX" ] && egrep -qs '(sparcaudio|sound)' /proc/devices; then
 	"$AUMIX" -v80 -w80 -c80 &>/dev/null
 fi
 
-find / -mindepth 1 -maxdepth 1 \( -type d -o -type f \) -name '.??*' |fgrep -v /.automount |xargs -r rm -rf
+find / -mindepth 1 -maxdepth 1 \( -type d -o -type f \) -name '.??*' |
+	fgrep -v /.automount |
+	xargs -r rm -rf --
 
 ExecIfExecutable /etc/rc.d/scripts/distribution
