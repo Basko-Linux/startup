@@ -27,10 +27,7 @@ install:
 	mkdir -p $(ROOT)/etc/X11
 	$(INSTALL) -p -m755 prefdm $(ROOT)/etc/X11/prefdm
 	mkdir -p $(ROOT)/etc/sysconfig/console
-	$(INSTALL) -p -m644 sysconfig/init $(ROOT)/etc/sysconfig/init
-	$(INSTALL) -p -m644 sysconfig/rawdevices $(ROOT)/etc/sysconfig/rawdevices
-	$(INSTALL) -p -m644 sysconfig/framebuffer $(ROOT)/etc/sysconfig/framebuffer
-	$(INSTALL) -p -m644 sysconfig/vlan $(ROOT)/etc/sysconfig/vlan
+	$(INSTALL) -p -m644 sysconfig/[a-z]* $(ROOT)/etc/sysconfig/
 	cp -af rc.d sysconfig ppp $(ROOT)/etc
 	chmod 755 $(ROOT)/etc/rc.d/init.d/rawdevices
 	mkdir -p $(ROOT)/sbin

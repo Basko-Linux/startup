@@ -12,6 +12,8 @@
 ARC=0
 SRM=0
 UTC=0
+HWCLOCK_SET_AT_HALT=false
+HWCLOCK_ADJUST=false
 
 if SourceIfNotEmpty /etc/sysconfig/clock; then
 	# convert old style clock config to new values
@@ -51,19 +53,28 @@ esac
 RETVAL=0
 
 case "$1" in
+	set)
+		/sbin/hwclock --hctosys $CLOCKFLAGS
+		action "Setting system clock$CLOCKDEF: `date`" date
+		;;
 	start)
+		if [ "$HWCLOCK_ADJUST" = yes ]; then
+			action "Adjusting hardware clock:" /sbin/hwclock --adjust
+		fi
 		/sbin/hwclock --hctosys $CLOCKFLAGS
 		action "Setting system clock$CLOCKDEF: `date`" date
 		;;
 	sync)
-		action "Syncing system time to hwclock$CLOCKDEF: `date`" /sbin/hwclock --systohc $CLOCKFLAGS
+		action "Setting hardware clock$CLOCKDEF: `date`" /sbin/hwclock --systohc $CLOCKFLAGS
 		RETVAL=$?
 		;;
 	stop)
-		echo -n "Syncing hwclock to system time$CLOCKDEF: `date` "
-		/sbin/hwclock --systohc $CLOCKFLAGS && echo_success || echo_failure
-		RETVAL=$?
-		echo -e '\r'
+		if [ "$HWCLOCK_SET_AT_HALT" = yes ]; then
+			echo -n "Setting hardware clock$CLOCKDEF: `date` "
+			/sbin/hwclock --systohc $CLOCKFLAGS && echo_success || echo_failure
+			RETVAL=$?
+			echo -e '\r'
+		fi
 		;;
 	*)
 		echo "Usage: ${0##*/} {start|sync|stop}"

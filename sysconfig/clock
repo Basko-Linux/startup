@@ -1,0 +1,8 @@
+# Whether Hardware Clock should be set to system time
+# at reboot/halt/poweroff.
+HWCLOCK_SET_AT_HALT=false
+
+# Whether to add or subtract time from the Hardware Clock
+# at startup to account for systematic drift since the
+# last time the clock was set or adjusted at startup.
+HWCLOCK_ADJUST=false
