@@ -293,25 +293,40 @@ status() {
 	local base="${1##*/}"
 
 	# First try "pidof"
-	local pid=`pidof -o $$ -o $PPID -o %PPID -x "$base"`
-	if [ -n "$pid" -a -d "/proc/$pid" ]; then
-	        echo "$base (pid $pid) is running..."
-	        return 0
+	local pids=`pidof -o $$ -o $PPID -o %PPID -x "$base"`
+	if [ -n "$pids" ]; then
+		local found=
+		for pid in $pids; do
+			if checkpid $pid; then
+				found="$found $pid"
+			fi
+		done
+		if [ -n "$found" ]; then
+			echo "$base (pid$found) is running..."
+			return 0
+		fi
 	fi
 
 	# Next try "/var/run/*.pid" files
 	if [ -s "/var/run/$base.pid" ]; then
 		pid=`cat "/var/run/$base.pid" | { read foo; echo -E "$foo"; }`
 		if [ -n "$pid" ]; then
-			echo "$base dead but pid file exists"
-			return 1
+			if [ -d "/proc/$pid" ]; then
+				echo "$base (pid $pid) is running..."
+				return 0
+			else
+				echo "$base dead but pid file exists"
+				return 1
+			fi
 		fi
 	fi
+
 	# See if /var/lock/subsys/$base exists
 	if [ -f "/var/lock/subsys/$base" ]; then
 		echo "$base dead but subsys locked"
 		return 2
 	fi
+
 	echo "$base is stopped"
 	return 3
 }
