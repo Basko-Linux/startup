@@ -1,0 +1,72 @@
+#!/bin/sh
+#
+# /etc/init.d/clock - initialize system clock / sync hardware clock
+#
+
+# Source function library.
+. /etc/init.d/functions
+
+# Set the system clock.
+ARC=0
+SRM=0
+UTC=0
+
+if SourceIfNotEmpty /etc/sysconfig/clock; then
+	# convert old style clock config to new values
+	if [ "${CLOCKMODE}" = "GMT" ]; then
+		UTC=true
+	elif [ "${CLOCKMODE}" = "ARC" ]; then
+		ARC=true
+	fi
+fi
+
+CLOCKDEF=
+
+case "$UTC" in
+	yes|true)
+		CLOCKFLAGS="$CLOCKFLAGS -u"
+		CLOCKDEF="$CLOCKDEF (utc)"
+		;;
+	no|false)
+		CLOCKFLAGS="$CLOCKFLAGS --localtime"
+		CLOCKDEF="$CLOCKDEF (localtime)"
+esac
+
+case "$ARC" in
+	yes|true)
+		CLOCKFLAGS="$CLOCKFLAGS -A"
+		CLOCKDEF="$CLOCKDEF (arc)"
+		;;
+esac
+
+case "$SRM" in
+	yes|true)
+		CLOCKFLAGS="$CLOCKFLAGS -S"
+		CLOCKDEF="$CLOCKDEF (srm)"
+		;;
+esac
+
+RETVAL=0
+
+case "$1" in
+	start)
+		/sbin/hwclock --hctosys $CLOCKFLAGS
+		action "Setting system clock$CLOCKDEF: `date`" date
+		;;
+	sync)
+		action "Syncing hwclock to system time$CLOCKDEF: `date`" /sbin/hwclock --systohc $CLOCKFLAGS
+		RETVAL=$?
+		;;
+	stop)
+		echo -n "Syncing hwclock to system time$CLOCKDEF: `date` "
+		/sbin/hwclock --systohc $CLOCKFLAGS && echo_success || echo_failure
+		RETVAL=$?
+		echo -e '\r'
+		;;
+	*)
+		echo "Usage: ${0##*/} {start|sync|stop}"
+		RETVAL=1
+		;;
+esac
+
+exit $RETVAL
