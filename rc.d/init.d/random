@@ -4,12 +4,12 @@
 #
 # Author:       Theodore Ts'o <tytso@mit.edu>
 #
-# chkconfig: 2345 20 80
+# chkconfig: 2345 15 85
 # description: Saves and restores system entropy pool for higher quality \
 #              random number generation.
 
 # Source function library.
-. /etc/rc.d/init.d/functions
+. /etc/init.d/functions
 
 random_seed=/var/run/random-seed
 
@@ -23,9 +23,8 @@ case "$1" in
 	else
 		touch $random_seed
 	fi
-	action "Initializing random number generator" /bin/true
 	chmod 600 $random_seed
-	dd if=/dev/urandom of=$random_seed count=1 bs=512 2>/dev/null
+	action "Initializing random number generator:" dd if=/dev/urandom of=$random_seed count=1 bs=512 2>/dev/null
 	touch /var/lock/subsys/random
 
 	;;
@@ -34,7 +33,7 @@ case "$1" in
 	# Save 512 bytes, which is the size of the entropy pool
 	touch $random_seed
 	chmod 600 $random_seed
-	action "Saving random seed" dd if=/dev/urandom of=$random_seed count=1 bs=512 2>/dev/null
+	action "Saving random seed:" dd if=/dev/urandom of=$random_seed count=1 bs=512 2>/dev/null
 	
 	rm -f /var/lock/subsys/random
 	;;
@@ -53,9 +52,8 @@ case "$1" in
   *)
 	# do not advertise unreasonable commands that there is no reason
 	# to use with this device
-	echo "Usage: random {start|stop|status|restart|reload}"
+	echo "Usage: ${0##*/} {start|stop|status|restart|reload}"
 	exit 1
 esac
 
 exit 0
-
