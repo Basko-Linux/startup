@@ -82,8 +82,8 @@ else
 	fastboot=
 fi
 
-if [ -f /fsckoptions ]; then
-	fsckoptions=`cat /fsckoptions`
+if [ -n "$FSCKOPTIONS" ]; then
+	fsckoptions="$FSCKOPTIONS"
 else
 	fsckoptions=
 fi
