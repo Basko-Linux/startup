@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.7
+Version: 0.8
 Release: alt1
 
 Summary: The system startup scripts
@@ -141,6 +141,11 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed Dec 24 2003 Dmitry V. Levin <ldv@altlinux.org> 0.8-alt1
+- rc.sysinit:
+  + removed old bits of linuxconf support;
+  + enhanced USEMODULES support.
+
 * Sun Oct 26 2003 Dmitry V. Levin <ldv@altlinux.org> 0.7-alt1
 - %_sysconfdir/adjtime: relocated to hwclock package.
 - scripts/indexhtml_update: relocated to indexhtml package.
