@@ -14,7 +14,8 @@ export NOLOCALE=1
 . /etc/init.d/functions
 unset TEXTDOMAIN TEXTDOMAINDIR
 
-runcmd()
+unset action
+action()
 {
 	echo -n "$1 "
 	shift
@@ -23,7 +24,9 @@ runcmd()
 	else
 		$*
 	fi
-	echo
+	local rc=$?
+	echo -e '\r'
+	return $rc
 }
 
 # See how we were called.
@@ -56,9 +59,9 @@ fi
 # Kill all processes.
 [ "${BASH+bash}" = bash ] && enable kill
 
-runcmd "Sending all processes the TERM signal..." /sbin/killall5 -15
+action "Sending all processes the TERM signal..." /sbin/killall5 -15
 sleep 5
-runcmd "Sending all processes the KILL signal..."  /sbin/killall5 -9
+action "Sending all processes the KILL signal..."  /sbin/killall5 -9
 
 # Write to wtmp file before unmounting /var
 halt -w
@@ -68,50 +71,18 @@ halt -w
 
 # Turn off swap, then unmount file systems.
 SWAPS=`awk '! /^Filename/ { print $1 }' /proc/swaps`
-[ -n "$SWAPS" ] && runcmd "Turning off swap:" swapoff $SWAPS
+[ -n "$SWAPS" ] && action "Turning off swap:" swapoff $SWAPS
 
 QUOTAOFF=/sbin/quotaoff
-[ -x "$QUOTAOFF" ] && runcmd "Turning off quotas:" "$QUOTAOFF" -a
+[ -x "$QUOTAOFF" ] && action "Turning off quotas:" "$QUOTAOFF" -a
 
 ACCTOFF=/sbin/accton
-[ -x "$ACCTOFF" ] && runcmd "Turning off accounting:" "$ACCTOFF"
-
-# Unmount file systems, killing processes if we have to.
-
-UnmountFilesystems()
-{
-	local sig=
-	local retry="$1"
-	shift
-	local delay="$1"
-	shift
-	local pattern="$1"
-	shift
-	local message1="$1"
-	shift
-	local message2="$1"
-	shift
-
-	local remaining=`awk "$pattern" /proc/mounts`
-	while [ -n "$remaining" -a "$retry" -gt 0 ]; do
-		if [ "$retry" -lt 3 ]; then
-			runcmd "$message2" umount -f -t noproc $remaining
-		else
-			runcmd "$message1" umount -f -t noproc $remaining
-		fi
-		local remaining=`awk "$pattern" /proc/mounts`
-		[ -n "$remaining" ] || break
-		/sbin/fuser -k -m $sig $remaining >/dev/null
-		sleep $delay
-		retry=$[retry-1]
-		sig=-9
-	done
-}
+[ -x "$ACCTOFF" ] && action "Turning off accounting:" "$ACCTOFF"
 
 # Unmount loopback stuff first.
 UnmountFilesystems 3 5 \
 	'$1 ~ /^\/dev\/loop/ && $2 != "/" {print $2}' \
-	"Unmounting loobpack filesystems:" \
+	"Unmounting loopback filesystems:" \
 	"Unmounting loopback filesystems (retry):"
 
 # Unmount all the rest.
@@ -129,20 +100,20 @@ if [ -x "$RAIDSTOP" -a -f /etc/raidtab ]; then
 	if [ -f /proc/mdstat ] ; then
 		mddevs=$(grep ^md /proc/mdstat | awk '{ print $1 }')
 		for mddev in $mddevs ; do
-			runcmd "Turning off RAID for $mddev:" "$RAIDSTOP" "/dev/$mddev"
+			action "Turning off RAID for $mddev:" "$RAIDSTOP" "/dev/$mddev"
 		done
 		unset mddev mddevs
 	fi
-	#runcmd "Turning off RAID:" /sbin/raidstop -a
+	#action "Turning off RAID:" /sbin/raidstop -a
 fi
 
 [ -f /proc/bus/usb/devices ] && umount -n /proc/bus/usb &>/dev/null
 
 # Remount read only anything that's left mounted.
-runcmd "Remounting remaining filesystems (if any) readonly:" umount -anrf
+action "Remounting remaining filesystems (if any) readonly:" umount -anrf
 mount -n -o remount,ro /
 
-runcmd "Unmounting proc filesystem:" umount -n /proc
+action "Unmounting proc filesystem:" umount -n /proc
 
 # See if this is a powerfail situation.
 UPSCTL=/etc/apcupsd/apccontrol
