@@ -2,7 +2,7 @@
 
 PATH=/bin:/usr/bin
 
-SourceIfNotEmpty /etc/sysconfig/i18n
+[ -s /etc/sysconfig/i18n ] && . /etc/sysconfig/i18n
 
 CONSOLECHARS=
 for f in /bin/consolechars /usr/bin/consolechars; do
