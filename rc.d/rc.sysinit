@@ -68,7 +68,7 @@ fi
 dmesg -n "$LOGLEVEL"
 
 # Set the system clock.
-/etc/rc.d/scripts/clock
+/etc/init.d/clock start
 
 # Activate swapping.
 action "Activating swap partitions:" swapon -a
