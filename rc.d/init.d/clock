@@ -28,6 +28,8 @@ if SourceIfNotEmpty /etc/sysconfig/clock; then
 	fi
 fi
 
+RETVAL=0
+
 CLOCKFLAGS=
 CLOCKDEF=
 
@@ -49,12 +51,17 @@ if is_yes "$SRM"; then
 	CLOCKDEF="$CLOCKDEF (srm)"
 fi
 
-RETVAL=0
+set_date()
+{
+	action "Setting system clock$CLOCKDEF:" /sbin/hwclock --hctosys $CLOCKFLAGS
+	RETVAL=$?
+	action "Today's date: `date`" true
+	return $RETVAL
+}
 
 case "$1" in
 	set)
-		/sbin/hwclock --hctosys $CLOCKFLAGS
-		action "Setting system clock$CLOCKDEF: `date`" date
+		set_date
 		;;
 	start)
 		if [ ! -s /etc/localtime ] && [ -n "$ZONE" -a -f "$ZONEDIR/$ZONE" ]; then
@@ -69,8 +76,7 @@ case "$1" in
 		if is_yes "$HWCLOCK_ADJUST" && [ -s /etc/adjtime ]; then
 			action "Adjusting hardware clock:" /sbin/hwclock --adjust
 		fi
-		/sbin/hwclock --hctosys $CLOCKFLAGS
-		action "Setting system clock$CLOCKDEF: `date`" date
+		set_date
 		;;
 	sync)
 		action "Setting hardware clock$CLOCKDEF: `date`" /sbin/hwclock --systohc $CLOCKFLAGS
@@ -82,7 +88,7 @@ case "$1" in
 			echo -n "Setting hardware clock$CLOCKDEF: `date` "
 			/sbin/hwclock --systohc $CLOCKFLAGS && echo_success || echo_failure
 			RETVAL=$?
-			echo -e '\r'
+			echo
 		fi
 		;;
 	*)
