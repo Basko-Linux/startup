@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.5
+Version: 0.6
 Release: alt1
 
 Summary: The system startup scripts
@@ -65,6 +65,7 @@ if [ $1 -eq 1 ]; then
 	/sbin/chkconfig --add random
 	/sbin/chkconfig --add rawdevices
 	/sbin/chkconfig --add usb
+	/sbin/chkconfig --add ieee1394
 fi
 
 for f in /var/{log/wtmp,run/utmp}; do
@@ -98,6 +99,7 @@ if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del random
 	/sbin/chkconfig --del rawdevices
 	/sbin/chkconfig --del usb
+	/sbin/chkconfig --del ieee1394
 fi
 
 %triggerpostun -- initscripts < 1:5.49.1-alt1
@@ -138,6 +140,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Thu Oct 16 2003 Dmitry V. Levin <ldv@altlinux.org> 0.6-alt1
+- init.d/ieee1394: new script (rider).
+- scripts/first_time: removed kudzu call (rider).
+
 * Tue Jun 03 2003 Dmitry V. Levin <ldv@altlinux.org> 0.5-alt1
 - init.d/*: fixed lockfiles handling.
 - init.d/killall: if first argument is not "start", exit.
