@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.1
+Version: 0.2
 Release: alt1
 
 Summary: The system startup scripts
@@ -11,10 +11,15 @@ Packager: Dmitry V. Levin <ldv@altlinux.org>
 
 Source: %name-%version.tar.bz2
 
-PreReq: service >= 0.0.2-alt1, chkconfig, gawk, grep, sed, coreutils
-# Who could remind me where these requires came from?
+PreReq: service >= 0.0.2-alt1, chkconfig, gawk, grep, sed, coreutils, %__subst
+# Who could remind me where these dependencies came from?
 Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
 Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk, util-linux >= 0:2.10q-ipl1mdk
+
+# due to update_wms
+Conflicts: xinitrc < 0:2.4.13-alt1
+# due to gen_kernel_headers
+Conflicts: kernel-headers-common < 0:1.1
 
 %description
 This package contains scripts used to boot your system,
@@ -58,6 +63,7 @@ done
 
 %post
 if [ $1 -eq 1 ]; then
+	/sbin/chkconfig --add fbsetfont
 	/sbin/chkconfig --add random
 	/sbin/chkconfig --add rawdevices
 	/sbin/chkconfig --add usb
@@ -83,8 +89,14 @@ if [ -L %_sysconfdir/localtime ]; then
 	fi
 fi
 
+if %__grep -qs '^fb:[0-9]*:once:/etc/rc.d/scripts/framebuffer_setfont' /etc/inittab; then
+	/sbin/chkconfig --add fbsetfont
+	%__subst 's,^\(fb:[0-9]*:once:/etc/rc.d/scripts/framebuffer_setfont\),#\1,' /etc/inittab
+fi
+
 %preun
 if [ $1 -eq 0 ]; then
+	/sbin/chkconfig --del fbsetfont
 	/sbin/chkconfig --del random
 	/sbin/chkconfig --del rawdevices
 	/sbin/chkconfig --del usb
@@ -100,9 +112,13 @@ for f in %_sysconfdir/{adjtime,inittab,modules,sysctl.conf,sysconfig/{clock,cons
 	        fi
 	fi
 done
+/sbin/chkconfig --add fbsetfont
 /sbin/chkconfig --add random
 /sbin/chkconfig --add rawdevices
 /sbin/chkconfig --add usb
+
+%triggerpostun -- startup < 0:0.2-alt1
+/sbin/chkconfig --add fbsetfont
 
 %files
 %config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/*
@@ -125,6 +141,12 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed May 21 2003 Dmitry V. Levin <ldv@altlinux.org> 0.2-alt1
+- Relocated scripts/framebuffer_setfont -> init.d/fbsetfont.
+- Removed framebuffer_setfont entry from inittab.
+- Dropped gen_kernel_headers in favour of adjust_kernel_headers.
+- Removed update_wms and gen_kernel_headers calls from rc.sysinit.
+
 * Mon May 12 2003 Dmitry V. Levin <ldv@altlinux.org> 0.1-alt1
 - rc.sysinit:
   + removed (never used) devfs initialization code;
