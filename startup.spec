@@ -95,6 +95,17 @@ if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del usb
 fi
 
+%triggerpostun -- initscripts < 1:5.49.1-alt1
+for f in %_sysconfdir/{adjtime,inittab,modules,sysctl.conf,sysconfig/{clock,console/setterm,framebuffer,i18n,init,keyboard,mouse,rawdevices,system,usb}}; do
+	if [ ! -f "$f" ]; then
+	        if [ -f "$f".rpmsave ]; then
+	                %__cp -pf "$f".rpmsave "$f"
+	        elif [ -f "$f".rpmnew ]; then
+	                %__cp -pf "$f".rpmnew "$f"
+	        fi
+	fi
+done
+
 %files
 %config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/*
 %config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) %_sysconfdir/adjtime
