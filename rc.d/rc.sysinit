@@ -82,7 +82,7 @@ fi
 [ -s /etc/adjtime ] || /etc/init.d/clock start
 
 # Activate swapping.
-action "Activating swap partitions:" swapon -a
+action "Activating swap partitions:" swapon -a -e
 
 # Set the hostname.
 action "Setting hostname $HOSTNAME:" hostname "$HOSTNAME"
@@ -231,26 +231,9 @@ if [ -z "$USEMODULES" ]; then
 	fi
 fi
 
-# Our modutils don't support it anymore, so we might as well remove
-# the preferred link.
-rm -f /lib/modules/{preferred,default}
+# Load modules where appropriate.
 if [ -x /sbin/depmod ] && is_yes "$USEMODULES"; then
-	# If they aren't using a recent sane kernel, make a link for them
-	if [ ! -n "`uname -r |fgrep -- -`" ]; then
-		ktag="`cat /proc/version`"
-		mtag=`fgrep -l -- "$ktag" /lib/modules/*/.rhkmvtag 2>/dev/null`
-		if [ -n "$mtag" ]; then
-			mver=`echo $mtag |sed -e 's,/lib/modules/,,' -e 's,/.rhkmvtag,,' -e 's,[ 	].*$,,'`
-		fi
-		if [ -n "$mver" ]; then
-			ln -snf "/lib/modules/$mver" /lib/modules/default
-		fi
-	fi
-	if [ -L /lib/modules/default ]; then
-		INITLOG_ARGS= action "Finding module dependencies:" depmod -A default
-	else
-		INITLOG_ARGS= action "Finding module dependencies:" depmod -A
-	fi
+	INITLOG_ARGS= action "Finding module dependencies:" depmod -A
 fi
 
 # Configure kernel parameters
@@ -443,8 +426,7 @@ action "Cleaning up temporary files from previous boot:" /etc/rc.d/scripts/clean
 /etc/rc.d/scripts/lang
 
 # Now turn on swap again (in case we swap to files).
-swapon -a >/dev/null 2>&1
-action "Enabling swap space:" /bin/true
+action "Activating swap space:" swapon -a -e
 
 # Initialize the serial ports.
 ExecIfExecutable /etc/rc.d/rc.serial
@@ -471,15 +453,6 @@ fi
 if fgrep -iwqs ide-scsi /proc/cmdline; then
 	modprobe ide-cd >/dev/null 2>&1
 	modprobe ide-scsi >/dev/null 2>&1
-fi
-
-# Adjust symlinks as necessary in /boot to keep system services from
-# spewing messages about mismatched System maps and so on.
-if [ -L /boot/System.map -a -r /boot/System.map-`uname -r` ] ; then
-	ln -snf System.map-`uname -r` /boot/System.map 2>/dev/null
-fi
-if [ ! -e /boot/System.map -a -r /boot/System.map-`uname -r` ] ; then
-	ln -snf System.map-`uname -r` /boot/System.map 2>/dev/null
 fi
 
 # Check if /mnt/cdrom, /mnt/floppy and /mnt/disk are here - if not create them
