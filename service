@@ -1,63 +1,80 @@
-#!/bin/sh
+#!/bin/sh -e
 
-VERSION="${0##*/} ver. 0.91"
-USAGE="Usage: ${0##*/} < option > | --status-all | \
-[ service_name [ command | --full-restart ] ]"
+export PATH=/sbin:/usr/sbin:/bin:/usr/bin
+
+VERSION="${0##*/} ver. 0.91-alt"
 SERVICE=
 SERVICEDIR="/etc/init.d"
 
+Fatal()
+{
+	echo "${0##*/}: $@" >&2
+	exit 1
+}
+
+Usage()
+{
+	echo "Usage: ${0##*/} < option > | --status-all | [ service_name [ command | --full-restart ] ]"
+	exit $1
+}
+
+CheckService()
+{
+	if [ -z "${SERVICE//*\/*/}" ]; then
+		Fatal "invalid service: $SERVICE"
+	fi
+}
+
 if [ $# -eq 0 ]; then
-   echo "${USAGE}" >&2
-   exit 1
+	Usage 1
 fi
 
-while [ $# -gt 0 ]
-do
-  case "${1}" in
-    --help | -h | --h* )
-       echo "${USAGE}" >&2
-       exit 0
-       ;;
-    --version | -V )
-       echo "${VERSION}" >&2
-       exit 0
-       ;;
-    *)
-       if [ -z "${SERVICE}" -a $# -eq 1 -a "${1}" = "--status-all" ]; then
-          cd "${SERVICEDIR}"
-          for SERVICE in *; do
-            case "${SERVICE}" in
-              functions|halt|killall|single|linuxconf|kudzu|*.rpm* |*~|*.orig)
-                  ;;
-              *)
-                if [ -x "${SERVICEDIR}/${SERVICE}" ]; then
-                  "${SERVICEDIR}/${SERVICE}" status
-                fi
-                ;;
-            esac
-          done
-          exit 0
-       elif [ $# -eq 2 -a "${2}" = "--full-restart" ]; then
-          SERVICE="${1}"
-          cd "${SERVICEDIR}"
-          if [ -x "${SERVICEDIR}/${SERVICE}" ]; then
-            "${SERVICEDIR}/${SERVICE}" stop
-            "${SERVICEDIR}/${SERVICE}" start
-            exit $?
-          fi
-       elif [ -z "${SERVICE}" ]; then
-         SERVICE="${1}"
-       else
-         OPTIONS="${OPTIONS} ${1}"
-       fi
-       shift
-       ;;
-   esac
+while [ $# -gt 0 ]; do
+	case "${1}" in
+		-h | --help )
+			Usage 0
+			;;
+		--version | -V )
+			echo "$VERSION" >&2
+			exit 0
+			;;
+		*)
+			if [ -z "$SERVICE" -a $# -eq 1 -a "$1" = "--status-all" ]; then
+				cd "$SERVICEDIR"
+				for SERVICE in *; do
+					case "$SERVICE" in
+						functions|halt|killall|single|linuxconf|kudzu|*.rpm* |*~|*.orig)
+							;;
+						*)
+							if [ -x "$SERVICEDIR/$SERVICE" ]; then
+								"$SERVICEDIR/$SERVICE" status
+							fi
+							;;
+					esac
+				done
+				exit 0
+			elif [ $# -eq 2 -a "$2" = "--full-restart" ]; then
+				SERVICE="$1"
+				CheckService
+				cd "$SERVICEDIR"
+				if [ -x "$SERVICEDIR/$SERVICE" ]; then
+					"$SERVICEDIR/$SERVICE" stop
+					"$SERVICEDIR/$SERVICE" start
+					exit $?
+				fi
+			elif [ -z "$SERVICE" ]; then
+				SERVICE="$1"
+				CheckService
+			else
+				OPTIONS="$OPTIONS $1"
+			fi
+			shift
+			;;
+	esac
 done
 
-if [ -x "${SERVICEDIR}/${SERVICE}" ]; then
-   "${SERVICEDIR}/${SERVICE}" ${OPTIONS}
+if [ -x "$SERVICEDIR/$SERVICE" ]; then
+	"$SERVICEDIR/$SERVICE" ${OPTIONS}
 else
-   echo "${SERVICE}: unrecognized service" >&2
-   exit 1
+	Fatal "unrecognized service: $SERVICE"
 fi
