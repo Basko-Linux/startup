@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.1
+Version: 0.9.2
 Release: alt1
 
 Summary: The system startup scripts
@@ -139,6 +139,12 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Sun Oct 03 2004 Dmitry V. Levin <ldv@altlinux.org> 0.9.2-alt1
+- rc.sysinit:
+  + enhanced LVM support, based on patch from Vladimir Kholmanov.
+- scripts/cleanup:
+  + recreate some directories in /tmp/ with proper permissions.
+
 * Mon Aug 09 2004 Dmitry V. Levin <ldv@altlinux.org> 0.9.1-alt1
 - scripts/vconfig-update: do nothing if /etc/alternatives
   directory doesn't exist.
