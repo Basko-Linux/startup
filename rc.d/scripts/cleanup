@@ -69,3 +69,4 @@ for f in /var/log/wtmp /var/run/utmp; do
 done
 > /var/run/utmp
 test -f /var/run/utmpx && > /var/run/utmpx
+exit 0
