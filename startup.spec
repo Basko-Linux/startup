@@ -46,6 +46,7 @@ for i in `seq 0 6`; do
 	%__ln_s rc.d/rc$i.d $RPM_BUILD_ROOT%_sysconfdir/rc$i.d
 done
 
+%__mkdir_p $RPM_BUILD_ROOT/var/{log,run}
 touch $RPM_BUILD_ROOT/var/{log/wtmp,run/utmp}
 touch $RPM_BUILD_ROOT%_sysconfdir/sysconfig/{clock,i18n,keyboard,mouse,system}
 chmod -R +x $RPM_BUILD_ROOT%_sysconfdir/rc.d
