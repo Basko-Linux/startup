@@ -434,7 +434,7 @@ action "Cleaning up temporary files from previous boot:" /etc/rc.d/scripts/clean
 /etc/rc.d/scripts/lang
 
 # Now turn on swap again (in case we swap to files).
-action "Activating swap space:" swapon -a -e
+action "Activating swap space:" swapon -a
 
 # Initialize the serial ports.
 ExecIfExecutable /etc/rc.d/rc.serial
