@@ -1,19 +1,19 @@
 #!/bin/sh
 
-PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin
 HOME=/root
-export HOME
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin
+export HOME PATH
 
 # We need to source this so that the login screens get translated
 . /etc/profile.d/lang.sh
 
-killed () {
+signal_handler () {
     kill -TERM $!
     exit
 }
 
 # trap signals to be able to kill autologin
-trap killed SIGHUP SIGPIPE SIGINT SIGTERM
+trap signal_handler SIGHUP SIGPIPE SIGINT SIGTERM
 
 # Run preferred X display manager
 
