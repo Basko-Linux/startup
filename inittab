@@ -52,6 +52,8 @@ pr:12345:powerokwait:/sbin/shutdown -c "Power Restored; Shutdown Cancelled"
 5:2345:respawn:/sbin/mingetty tty5
 6:2345:respawn:/sbin/mingetty tty6
 
+fb:2345:once:/etc/rc.d/scripts/framebuffer_setfont
+
 # Run xdm in runlevel 5
 # xdm is now a separate service
 x:5:respawn:/etc/X11/prefdm -nodaemon
