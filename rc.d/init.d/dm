@@ -25,7 +25,7 @@ stop()
 	local FGCONSOLE=/usr/bin/fgconsole
 	locat CHVT=/usr/bin/chvt
 	local fgconsole=
-	if [ -x "$FGCONSOLE" ];
+	if [ -x "$FGCONSOLE" ]; then
 		fgconsole=`$FGCONSOLE`
 	fi
 
@@ -35,7 +35,7 @@ stop()
 	echo
 	[ $RETVAL -eq 0 ] && rm -f "$LOCKFILE"
 
-	if [ -n "$fgconsole" -a -x "$CHVT" ];
+	if [ -n "$fgconsole" -a -x "$CHVT" ]; then
 		$CHVT "$fgconsole"
 	fi
 	
