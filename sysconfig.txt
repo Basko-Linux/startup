@@ -372,17 +372,12 @@ Files in /etc/sysconfig/network-scripts/
     GATEWAY=
     ONBOOT=yes|no
     USERCTL=yes|no
-    DEMAND=yes|no
-      Only used for PPP.  Switches on demand-dialing mode.
-    IDLETIMEOUT=600
-      Only used for PPP.  The amount of time the link needs to be inactive
-      before pppd will bring it down automatically.
     BOOTPROTO=none|bootp|dhcp|pump
     DHCP_CLIENT=
     MTU=
     PEERDNS=yes|no
       modify /etc/resolv.conf if peer uses msdns extension (PPP only) or
-      DNS{1,2} are set, default to "yes".
+      DNS{1,2} are set, or if using pump or dhcpcd. default to "yes".
     DNS{1,2}=<ipaddress>
       provide DNS addresses that are dropped into the resolv.conf
       file if PEERDNS is not set to "no".
@@ -409,6 +404,8 @@ Files in /etc/sysconfig/network-scripts/
     Managed from /etc/sysconfig/network-scripts/ifup-ipx
     ARP=yes|no (adds 'arp' flag to ifconfig, for use with the
       ethertap device)
+    PROMISC=yes|no (enable or disable promiscuous mode)
+    ALLMULTI=yes|no (enable or disable all-multicast mode)
 
   PPP/SLIP items:
     PERSIST=yes|no
@@ -460,6 +457,14 @@ default)
       is made to bring up the connection.  Note that some connect
       scripts (for example, wvdial) might do their own retries (such
       as BUSY or NO DIALTONE conditions).
+    MAXFAIL=<number>
+      If this is set, this will cause ppp-watch to exit after
+      the specified number of attempts.
+    DEMAND=yes|no
+      Switches on demand-dialing mode using pppd's "demand" option.
+    IDLETIMEOUT=600
+      The amount of time the link needs to be inactive before pppd will
+      bring it down automatically.
       
 /etc/sysconfig/network-scripts/chat-<interface-name>:
 
