@@ -143,6 +143,9 @@ fi
 /sbin/chkconfig --add usb
 /sbin/chkconfig --add dm
 
+%triggerpostun -- initscripts <= 5.49-ipl50mdk
+/sbin/chkconfig --add dm
+
 %triggerpostun -- %name <= 4.72
 . %_sysconfdir/sysconfig/init
 . %_sysconfdir/sysconfig/network
