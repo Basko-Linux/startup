@@ -20,11 +20,11 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 
-B=/var/run/kernel
-cd "$B"
+[ -n "$VAR_RUN_KERNEL" ] || VAR_RUN_KERNEL=/var/run/kernel
+cd "$VAR_RUN_KERNEL"
 
-K="$(uname -r)"
-[ -d "/usr/lib/kernel/$K" ]
+[ -n "$KERNEL_VERSION" ] || KERNEL_VERSION="$(uname -r)"
+[ -d "/usr/lib/kernel/$KERNEL_VERSION" ]
 
 for n in autoconf modversions version; do
 	cat >"$n.h" << EOF
@@ -35,7 +35,7 @@ for n in autoconf modversions version; do
 #ifndef	__boot_kernel_${n}__
 #define	__boot_kernel_${n}__
 
-#include </usr/lib/kernel/$K/$n.h>
+#include </usr/lib/kernel/$KERNEL_VERSION/$n.h>
 
 #endif	/* __boot_kernel_${n}__ */
 EOF
@@ -43,5 +43,5 @@ done
 
 H2PH=/usr/bin/h2ph
 if [ -x "$H2PH" ]; then
-	"$H2PH" -l -Q -d "$B" {autoconf,modversions,version}.h
+	"$H2PH" -l -Q -d "$VAR_RUN_KERNEL" {autoconf,modversions,version}.h
 fi
