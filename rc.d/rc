@@ -64,6 +64,17 @@ runlevel="$newrunlevel"
 
 # Is there an rc directory for this new runlevel?
 if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
+
+	# Show logo when we're halting or rebooting.
+	if [ $runlevel -eq 6 -o $runlevel -eq 0 ] && [ -f /proc/progress ]; then
+		echo -e '\033[?1;0c' >/dev/tty11
+		/usr/bin/chvt 11
+		# Enable progress bar interface
+		echo e > /proc/progress
+		echo s > /proc/progress
+		echo 100 > /proc/progress
+	fi
+
 	# First, run the KILL scripts.
 	for i in "/etc/rc.d/rc$runlevel.d"/K*; do
 		# Check if the script is there.
@@ -82,6 +93,12 @@ if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
 			"$i" stop
 		else
 			action "Stopping $subsys:" "$i" stop
+		fi
+		if [ -f /proc/progress ]; then
+			percent=`echo "$i" |cut -b 18-19`
+			percent=${percent#0*}
+			percent=$[100 - percent/2]
+			echo "$percent" >/proc/progress
 		fi
 	done
 
@@ -120,6 +137,12 @@ if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
 			"$i" start
 		else
 			action "Starting $subsys:" "$i" start
+		fi
+		if [ -f /proc/progress ]; then
+			percent=`echo $i |cut -b 18-19`
+			percent=${percent#0*}
+			percent=$[percent/2 + 51]
+			echo "$percent" >/proc/progress
 		fi
 	done
 fi

@@ -64,8 +64,17 @@ fi
 [ "${BASH+bash}" = bash ] && enable kill
 
 action "Sending all processes the TERM signal..." /sbin/killall5 -15
+
+if [ -f /proc/progress ]; then
+	echo 45 > /proc/progress
+fi
+
 sleep 5
 action "Sending all processes the KILL signal..."  /sbin/killall5 -9
+
+if [ -f /proc/progress ]; then
+	echo 40 > /proc/progress
+fi
 
 # Write to wtmp file before unmounting /var
 halt -w
@@ -73,15 +82,31 @@ halt -w
 # Sync clock
 /etc/init.d/clock stop
 
+if [ -f /proc/progress ]; then
+	echo 35 > /proc/progress
+fi
+
 # Turn off swap, then unmount file systems.
 SWAPS=`awk '! /^Filename/ { print $1 }' /proc/swaps`
 [ -n "$SWAPS" ] && action "Turning off swap:" swapoff $SWAPS
 
+if [ -f /proc/progress ]; then
+	echo 30 > /proc/progress
+fi
+
 QUOTAOFF=/sbin/quotaoff
 [ -x "$QUOTAOFF" ] && action "Turning off quotas:" "$QUOTAOFF" -a
 
+if [ -f /proc/progress ]; then
+	echo 25 > /proc/progress
+fi
+
 ACCTOFF=/sbin/accton
 [ -x "$ACCTOFF" ] && action "Turning off accounting:" "$ACCTOFF"
+
+if [ -f /proc/progress ]; then
+	echo 20 > /proc/progress
+fi
 
 # Unmount supermount and autofs*.
 UnmountFilesystems 3 5 \
@@ -95,11 +120,19 @@ UnmountFilesystems 3 5 \
 	"Unmounting loopback filesystem" \
 	"Unmounting loopback filesystem (retry)"
 
+if [ -f /proc/progress ]; then
+	echo 15 > /proc/progress
+fi
+
 # Unmount all the rest.
 UnmountFilesystems 3 5 \
 	'$2 != "/" && $3 != "proc" && $3 != "devfs" && $3 != "loopfs" && !($1 ~ /^none/) {print $2}' \
 	"Unmounting filesystem" \
 	"Unmounting filesystem (retry)"
+
+if [ -f /proc/progress ]; then
+	echo 10 > /proc/progress
+fi
 
 # Turn off raid.
 RAIDSTOP=/sbin/raidstop
@@ -122,6 +155,10 @@ fi
 # Remount read only anything that's left mounted.
 action "Remounting remaining filesystems (if any) readonly:" umount -anrf
 mount -n -o remount,ro /
+
+if [ -f /proc/progress ]; then
+    echo 0 > /proc/progress
+fi
 
 action "Unmounting proc filesystem:" umount -n /proc
 
