@@ -20,31 +20,11 @@ done
 
 action "Building dynamic library cache:" /sbin/ldconfig
 
-action "Adjusting index.html:" /etc/rc.d/scripts/indexhtml_update
-
-# Update menus.
-if [ -x /usr/bin/update-menus ]; then
-	action "Updating application menus:" /usr/bin/update-menus
-fi
-
-# Create new mbox files if they don't exist yet.
+# Create new mbox files if they don't exist yet (for local users only).
 for i in `awk -F: '{if ($3>=400) print $1}' </etc/passwd`; do
-	[ -e "/var/mail/$i" ] || action "Creating mailbox for $i:" install --owner="$i" --group=mail --mode=660 /dev/null "/var/mail/$i"
+	[ -e "/var/mail/$i" ] ||
+		action "Creating mailbox for $i:" install --owner="$i" --group=mail --mode=660 /dev/null "/var/mail/$i"
 done
-
-#Rebuild Mozilla registry to be sure that mozilla registry is ok
-MOZILLA_REGXPCOM=/usr/lib/mozilla/regxpcom
-MOZILLA_REGCHROME=/usr/lib/mozilla/regchrome
-if [ -x "$MOZILLA_REGXPCOM" -a -x "$MOZILLA_REGCHROME" ]; then
-	action "Building Mozilla registry:" "$MOZILLA_REGXPCOM" 2>>$FLO
-	action "Registering Mozilla chrome:" "$MOZILLA_REGCHROME" 2>>$FLO
-fi
-
-# Set the mixer to 80%
-AUMIX=/usr/bin/aumix
-if [ -x "$AUMIX" ] && egrep -qs '(sparcaudio|sound)' /proc/devices; then
-	"$AUMIX" -v80 -w80 -c80 >/dev/null 2>&1
-fi
 
 find / -mindepth 1 -maxdepth 1 \( -type d -o -type f \) -name '.??*' |
 	fgrep -v /.automount |
