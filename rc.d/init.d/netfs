@@ -42,8 +42,8 @@ stop()
 	if [ -n "$NFSMTAB" ]; then
 		UnmountFilesystems 3 5 \
 			'$3 == "nfs" && $2 != "/" {print $2}' \
-			"Unmounting NFS filesystems:" \
-			"Unmounting NFS filesystems (retry):"
+			"Unmounting NFS filesystem" \
+			"Unmounting NFS filesystem (retry)"
 	fi
 	[ -n "$SMBMTAB" ] && action "Unmounting SMB filesystems:" umount -a -t smbfs
 	[ -n "$NCPMTAB" ] && action "Unmounting NCP filesystems:" umount -a -t ncpfs

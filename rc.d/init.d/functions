@@ -524,14 +524,22 @@ UnmountFilesystems()
 	local message2="$1"
 	shift
 
-	local remaining=`awk "$pattern" /proc/mounts |LC_COLLATE=C /bin/sort -r`
+	local remaining=`awk "$pattern" /proc/mounts`
 	while [ -n "$remaining" -a "$retry" -gt 0 ]; do
+		local rem1=`echo "$remaining" |/bin/grep '^/.*/' |LC_COLLATE=C /bin/sort -r`
+		local rem2=`echo "$remaining" |/bin/grep -v '^/.*/' |LC_COLLATE=C /bin/sort -r`
+		remaining="$rem1
+$rem2"
 		if [ "$retry" -lt 3 ]; then
-			action "$message2" umount -f -t noproc $remaining
+			local message="$message2"
 		else
-			action "$message1" umount -f -t noproc $remaining
+			local message="$message1"
 		fi
-		remaining=`awk "$pattern" /proc/mounts |LC_COLLATE=C /bin/sort -r`
+		local point
+		for point in $remaining; do
+			action "$message [$point]:" umount -f -t noproc "$point"
+		done
+		remaining=`awk "$pattern" /proc/mounts`
 		[ -n "$remaining" ] || break
 		/sbin/fuser -k -m $sig $remaining >/dev/null
 		sleep $delay

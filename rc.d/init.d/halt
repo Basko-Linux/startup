@@ -82,20 +82,20 @@ ACCTOFF=/sbin/accton
 # Unmount supermount and autofs*.
 UnmountFilesystems 3 5 \
 	'$2 != "/" && (($3 == "supermount") || ($3 == "autofs") || ($3 == "autofs4")) {print $2}' \
-	"Unmounting automount filesystems:" \
-	"Unmounting automount filesystems (retry):"
+	"Unmounting automount filesystem" \
+	"Unmounting automount filesystem (retry)"
 
 # Unmount loopback stuff first.
 UnmountFilesystems 3 5 \
 	'$2 != "/" && $1 ~ /^\/dev\/loop/ {print $2}' \
-	"Unmounting loopback filesystems:" \
-	"Unmounting loopback filesystems (retry):"
+	"Unmounting loopback filesystem" \
+	"Unmounting loopback filesystem (retry)"
 
 # Unmount all the rest.
 UnmountFilesystems 3 5 \
 	'$2 != "/" && $3 != "proc" && $3 != "devfs" && $3 != "loopfs" && !($1 ~ /^none/) {print $2}' \
-	"Unmounting filesystems:" \
-	"Unmounting filesystems (retry):"
+	"Unmounting filesystem" \
+	"Unmounting filesystem (retry)"
 
 # Turn off raid.
 RAIDSTOP=/sbin/raidstop
