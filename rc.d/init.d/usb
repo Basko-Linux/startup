@@ -23,22 +23,22 @@ LOCKFILE=/var/lock/subsys/usb
 
 . /etc/init.d/functions
 
-SourceIfNotEmpty /etc/sysconfig/usb && [ "$USB" == yes ] || exit 0
+SourceIfNotEmpty /etc/sysconfig/usb && is_yes "$USB" || exit 0
 
 PKLVL=
 exit_handler()
 {
-	RETVAL=$?
-	trap '' EXIT
+	local rc=$?
+	trap - EXIT
 	[ -z "$PKLVL" ] || sysctl -w "kernel.printk=$PKLVL"
 	PKLVL=
-	exit $RETVAL
+	exit $rc
 }
 
 set_pklvl()
 {
 	PKLVL=`cut -f1 /proc/sys/kernel/printk` &&
-		trap 'exit_handler' SIGHUP SIGINT SIGQUIT SIGTERM EXIT &&
+		trap exit_handler SIGHUP SIGINT SIGQUIT SIGTERM EXIT &&
 		sysctl -w kernel.printk=0
 }
 
@@ -61,9 +61,9 @@ probe_usb_interface () {
 
     # let's try with lspcidrake, he has everything we need and should
     # do thing better
-    if [ -x /usr/bin/lspcidrake ];then
+    if [ -x /usr/bin/lspcidrake ]; then
 	t=$(lspcidrake|sed -n 's/.*USB.* \(.*\))$/\1/p')
-	if [ -n "$t" ];then
+	if [ -n "$t" ]; then
 	    set_usb_interface $t
 	    return 0;
 	fi
@@ -71,13 +71,13 @@ probe_usb_interface () {
     # Ok nothing let's try to detect it by ourself and pci id
     # aka: i have some time to lost in the airplane
     for i in $uhci_t;do
-	if grep -q ".*$i.*" $pci_f;then
+	if grep -q ".*$i.*" $pci_f; then
 	    set_usb_interface usb-uhci
 	    return 0
 	fi
     done
     for i in $ohci_t;do
-	if grep -q ".*$i.*" $pci_f;then
+	if grep -q ".*$i.*" $pci_f; then
 	    set_usb_interface usb-ohci
 	    return 0
 	fi
@@ -111,7 +111,7 @@ umount_proc_usb () {
 detect_devices () {
 	OIFS="$IFS"
 	IFS=
-	if [ -r /proc/bus/usb/devices ];then
+	if [ -r /proc/bus/usb/devices ]; then
 		dev=$(cat /proc/bus/usb/devices)
 	else
 		return;
@@ -179,19 +179,19 @@ start()
 	mount_proc_usb
 	sleep 2
 	detect_devices
-	if [ "$MOUSE" = "yes" ];then
+	if is_yes "$MOUSE"; then
 		action "Loading USB mouse:" /sbin/modprobe usbmouse && /sbin/modprobe mousedev
 	fi
-	if [ "$KEYBOARD" = "yes" ];then
+	if is_yes "$KEYBOARD"; then
 		action "Loading USB keyboard:" /sbin/modprobe usbkbd && /sbin/modprobe keybdev
 	fi
-	if [ "$STORAGE" = "yes" ];then
+	if is_yes "$STORAGE"; then
 		action "Loading USB storage:"  /sbin/modprobe usb-storage
 	fi
-	if [ "$PRINTER" = "yes" ];then
+	if is_yes "$PRINTER"; then
 		action "Loading USB printer:"  /sbin/modprobe printer
 	fi
-	if [ "$VISOR" = "yes" ];then
+	if is_yes "$VISOR"; then
 		action "Loading USB visor:"  /sbin/modprobe visor
 	fi
 
@@ -204,19 +204,19 @@ stop()
 	set_pklvl
 	detect_devices
 
-	if [ "$MOUSE" = "yes" ];then
+	if is_yes "$MOUSE"; then
 		action "Unloading USB mouse:" /sbin/modprobe -r mousedev && /sbin/modprobe -r usbmouse
 	fi
-	if [ "$KEYBOARD" = "yes" ];then
+	if is_yes "$KEYBOARD"; then
 		action "Unloading USB keyboard:" /sbin/modprobe -r keybdev && /sbin/modprobe -r usbkbd
 	fi
-	if [ "$STORAGE" = "yes" ];then
+	if is_yes "$STORAGE"; then
 		action "Unloading USB storage:" /sbin/modprobe -r usb-storage
 	fi
-	if [ "$PRINTER" = "yes" ];then
+	if is_yes "$PRINTER"; then
 		action "Unloading USB printer:" /sbin/modprobe -r printer
 	fi
-	if [ "$VISOR" = "yes" ];then
+	if is_yes "$VISOR"; then
 		action "Unloading USB visor:" /sbin/modprobe -r visor
 	fi
 	umount_proc_usb
@@ -235,9 +235,9 @@ case $1 in
 		;;
 	status)
 		if [ -e /proc/bus/usb/devices ]; then
-			echo "USB Loaded."
+			echo "USB is loaded."
 		else
-			echo "USB not loaded."
+			echo "USB is not loaded."
 		fi
 		;;
 	restart|reload)
