@@ -2,6 +2,9 @@
 
 # Source library functions
 . /etc/init.d/functions
+if [ "$LANG" = POSIX -o "$LANGUAGE" = POSIX ]; then
+	SourceIfNotEmpty /etc/sysconfig/i18n
+fi
 
 CONSOLECHARS=
 for f in /bin/consolechars /usr/bin/consolechars; do
