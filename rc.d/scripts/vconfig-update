@@ -1,6 +1,8 @@
 #!/bin/sh -e
 # $Id$
 
+[ -d /etc/alternatives ] || exit 0
+
 KV=`/bin/uname -r |/bin/cut -d- -f1`
 [ -n "$KV" ]
 KV_MAJOR=`echo "$KV" |/bin/cut -d. -f1`
