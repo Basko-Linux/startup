@@ -1,0 +1,8 @@
+#!/bin/sh
+
+KERNEL_PATCHLEVEL=`/bin/uname -r |/bin/cut -d- -f1 |/bin/cut -d. -f2`
+if [ -n "$KERNEL_PATCHLEVEL" ] && [ "$KERNEL_PATCHLEVEL" -lt 4 ]; then
+	ln -snf /usr/bin/vconfig22 /etc/alternatives/vconfig
+else
+	ln -snf /usr/bin/vconfig24 /etc/alternatives/vconfig
+fi

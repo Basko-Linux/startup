@@ -148,6 +148,23 @@ Files in /etc/sysconfig
       a bad idea otherwise. This setting has been moved into
       net.ipv4.ip_always_defrag setting in /etc/sysctl.conf.
 
+/etc/sysconfig/vlan:
+
+  DOT1Q_VLANS=yes|no
+  VLAN_NAMING=<naming schema>
+
+    DOT1Q_VLANS=yes|no
+      init VLANs at startup
+
+    VLAN_NAMING=VLAN_PLUS_VID
+      naming schema for VLAN interfaces
+	VLAN_PLUS_VID 		= vlan0005
+	VLAN_PLUS_VID_NO_PAD	= vlan5
+	DEV_PLUS_VID		= eth0.0005
+	DEV_PLUS_VID_NO_PAD	= eth0.5
+
+  see vlan-utils package documentation for details.
+
 /etc/sysconfig/static-routes:
 
   Contains lines of the form:
@@ -347,7 +364,9 @@ Files in /etc/sysconfig/network-scripts/
   and interface change notification through netreport.
 
 /etc/sysconfig/network-scripts/ifcfg-<interface-name> and
-/etc/sysconfig/network-scripts/ifcfg-<interface-name>:<alias-name>:
+/etc/sysconfig/network-scripts/ifcfg-<interface-name>:<alias-name> and
+/etc/sysconfig/network-scripts/ifcfg-<interface-name>.<vlan-id> or
+/etc/sysconfig/network-scripts/ifcfg-vlanXXXX (XXXX is VLAN ID):
 
   The first defines an interface, and the second contains
   only the parts of the definition that are different in a
@@ -406,6 +425,13 @@ Files in /etc/sysconfig/network-scripts/
       ethertap device)
     PROMISC=yes|no (enable or disable promiscuous mode)
     ALLMULTI=yes|no (enable or disable all-multicast mode)
+
+  VLAN-only items:
+    VLAN_TRUNK_IF=<device>
+      interface name for trunking VLANs
+    ENABLE_VLAN_DHCP=yes
+      enable ethernet header reorder on VLAN intreface. This need
+      for support DHCP operations on given VLAN. See docs for vconfig.
 
   PPP/SLIP items:
     PERSIST=yes|no
