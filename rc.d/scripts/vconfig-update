@@ -1,7 +1,16 @@
-#!/bin/sh
+#!/bin/sh -e
+# $Id$
 
-KERNEL_PATCHLEVEL=`/bin/uname -r |/bin/cut -d- -f1 |/bin/cut -d. -f2`
-if [ -n "$KERNEL_PATCHLEVEL" ] && [ "$KERNEL_PATCHLEVEL" -lt 4 ]; then
+KV=`/bin/uname -r |/bin/cut -d- -f1`
+[ -n "$KV" ]
+KV_MAJOR=`echo "$KV" |/bin/cut -d. -f1`
+[ -n "$KV_MAJOR" ]
+KV_MINOR=`echo "$KV" |/bin/cut -d. -f2`
+[ -n "$KV_MINOR" ]
+
+[ "$KV_MAJOR" -ge 2 ]
+
+if [ "$KV_MAJOR" -eq 2 ] && [ "$KV_MINOR" -lt 4 ]; then
 	ln -snf /usr/bin/vconfig22 /etc/alternatives/vconfig
 else
 	ln -snf /usr/bin/vconfig24 /etc/alternatives/vconfig
