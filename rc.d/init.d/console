@@ -7,7 +7,7 @@
 KEYMAP=
 if [ -f /etc/sysconfig/console/default.kmap ]; then
 	KEYMAP=/etc/sysconfig/console/default.kmap
-	action "Loading default keymap" \
+	action "Loading default keymap:" \
 		"sh -c \"loadkeys $KEYMAP </dev/tty0 >/dev/tty0 2>/dev/null\""
 else
 	INIT_KEYTABLE=/etc/init.d/keytable
@@ -22,7 +22,7 @@ fi
 if [ -x /sbin/setsysfont ]; then
 	SourceIfNotEmpty /etc/sysconfig/i18n
 	if [ -f /etc/sysconfig/console/$SYSFONT.psf.gz -o -f /usr/lib/kbd/consolefonts/$SYSFONT.psf.gz ]; then
-		action "Setting default font" /sbin/setsysfont
+		action "Setting default font:" /sbin/setsysfont
 	else
 		DELAYED_FONT=yes
 	fi
@@ -30,6 +30,6 @@ fi
 
 # Initialize screensaver
 if [ -x /usr/bin/setterm -a -d /usr/share/terminfo -a -s /etc/sysconfig/console/setterm ]; then
-	action "Initializing console powersaver" \
+	action "Initializing console powersaver:" \
 		"sh -c \"/usr/bin/setterm `cat /etc/sysconfig/console/setterm` >/dev/console\""
 fi
