@@ -33,7 +33,7 @@ rm -f /var/lock/subsys/*
 
 # make sure modprobe is working
 if [ -f /proc/sys/kernel/modprobe ]; then
-	sysctl -w kernel.modprobe="/sbin/modprobe" &>/dev/null
+	sysctl -w kernel.modprobe="/sbin/modprobe" >/dev/null 2>&1
 fi
 
 # If they want to run something in single user mode, might as well run it...

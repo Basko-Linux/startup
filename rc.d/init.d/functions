@@ -18,37 +18,40 @@ export PATH="/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin"
 
 SourceIfExists()
 {
-	local f="$1"
+	local f
+	f="$1"
 	shift
 	[ -f "$f" ] && . "$f" "$@"
 }
 
 SourceIfExecutable()
 {
-	local f="$1"
+	local f
+	f="$1"
 	shift
 	[ -x "$f" ] && . "$f" "$@"
 }
 
 SourceIfNotEmpty()
 {
-	local f="$1"
+	local f
+	f="$1"
 	shift
 	[ -s "$f" ] && . "$f" "$@"
 }
 
 ExecIfExecutable()
 {
-	local f="$1"
+	local f
+	f="$1"
 	shift
 	[ -x "$f" ] && "$f" "$@"
 }
 
 if [ "$UID" = 0 ]; then
 	LANG=POSIX
-	LC_ALL=POSIX
-	LINGUAS=POSIX
 	LANGUAGE=POSIX
+	LC_ALL=POSIX
 elif [ -z "$NOLOCALE" ]; then
 	TEXTDOMAIN=initscripts
 	TEXTDOMAINDIR=/etc/locale
@@ -65,7 +68,7 @@ if [ -x /sbin/consoletype ] && [ "`consoletype`" = "serial" ]; then
 	BOOTUP=serial
 fi
 
-if [ "$BOOTUP" != "color" ]; then
+if [ "$BOOTUP" != color ]; then
 	MOVE_TO_COL(){ :; }
 	SETCOLOR_SUCCESS(){ :; }
 	SETCOLOR_FAILURE(){ :; }
@@ -75,10 +78,10 @@ else
 	. /etc/init.d/outformat
 fi
 
-if [ "$BOOTUP" != "verbose" ]; then
-   INITLOG_ARGS="-q"
+if [ "$BOOTUP" != verbose ]; then
+	INITLOG_ARGS="-q"
 else
-   INITLOG_ARGS=
+	INITLOG_ARGS=
 fi
 
 [ -n "$LOGLEVEL" ] && [ "$LOGLEVEL" -ge 0 ] 2>/dev/null || LOGLEVEL=1
@@ -137,7 +140,8 @@ daemon()
 	[ -n "$gotbase" ] || base="${1##*/}"
 
 	# See if it's already running.
-	local pidlist=`pidofproc "$1"`
+	local pidlist
+	pidlist=`pidofproc "$1"`
 
 	local pid= p
 	for p in $pidlist; do
@@ -153,7 +157,7 @@ daemon()
 
 	# make sure it doesn't core dump anywhere; while this could mask
 	# problems with the daemon, it also closes some security problems
-	ulimit -Sc 0 &>/dev/null
+	ulimit -Sc 0 >/dev/null 2>&1
 
 	# And start it up.
 	if [ -z "$daemon_user" ]; then
@@ -167,14 +171,15 @@ daemon()
 # usage: wait_pid <w_times> <w_delay> pidlist
 wait_pid()
 {
-	local w_times="$1"
+	local w_times w_delay
+	w_times="$1"
 	shift
-	local w_delay="$1"
+	w_delay="$1"
 	shift
 
 	local i=0
 	while [ $i -lt "$w_times" ]; do
-		checkpid "$@" &>/dev/null || return 0
+		checkpid "$@" >/dev/null 2>&1 || return 0
 		usleep "$w_delay"
 		i=$[1+i]
 	done
@@ -201,10 +206,12 @@ killproc()
 	fi
 
 	# Save basename.
-	local base="${1##*/}"
+	local base
+	base="${1##*/}"
 
 	# Find pid.
-	local pidlist=`pidofproc "$1"`
+	local pidlist
+	pidlist=`pidofproc "$1"`
 
 	local pid= p
 	for p in $pidlist; do
@@ -217,7 +224,7 @@ killproc()
 	if [ -n "$pid" ]; then
 		[ "$BOOTUP" != "verbose" ] || echo -n "$base "
 		if [ "$notset" = "1" ]; then
-			if checkpid $pid &>/dev/null; then
+			if checkpid $pid >/dev/null 2>&1; then
 				# TERM first, then KILL if not dead
 				kill -TERM -- $pid
 				if ! wait_pid 30 100000 $pid; then
@@ -225,13 +232,13 @@ killproc()
 					usleep 100000
 				fi
 			fi
-			checkpid $pid &>/dev/null
+			checkpid $pid >/dev/null 2>&1
 			RC=$?
 			[ $RC -eq 0 ] && failure "$base shutdown" || success "$base shutdown"
 			RC=$((! $RC))
 		# use specified level only
 		else
-			if checkpid $pid &>/dev/null; then
+			if checkpid $pid >/dev/null 2>&1; then
 				kill "$killlevel" -- $pid
 				RC=$?
 				[ $RC -eq 0 ] && success "$base $killlevel" || failure "$base $killlevel"
@@ -251,7 +258,8 @@ killproc()
 # A function to find the pid of a program.
 pidfileofproc()
 {
-	local base="${1##*/}"
+	local base
+	base="${1##*/}"
 
 	# Test syntax.
 	if [ $# != 1 ]; then
@@ -264,7 +272,9 @@ pidfileofproc()
 		local line p pid=
 		read line <"/var/run/$base.pid"
 		for p in $line; do
-			[ -z "${p//[0-9]}" -a -d "/proc/$p" ] && pid="$pid $p"
+			if [ "$p" -gt 1 ] 2>/dev/null && [ -d "/proc/$p" ]; then
+				pid="$pid $p"
+			fi
 		done
 		if [ -n "$pid" ]; then
 			echo "$pid"
@@ -284,14 +294,17 @@ pidofproc()
 		return 1
 	fi
 
-	local base="${1##*/}"
+	local base
+	base="${1##*/}"
 
 	# First try "/var/run/*.pid" files.
 	if [ -s "/var/run/$base.pid" ]; then
 		local line p pid=
 		read line <"/var/run/$base.pid"
 		for p in $line; do
-			[ -z "${p//[0-9]}" -a -d "/proc/$p" ] && pid="$pid $p"
+			if [ "$p" -gt 1 ] 2>/dev/null && [ -d "/proc/$p" ]; then
+				pid="$pid $p"
+			fi
 		done
 		if [ -n "$pid" ]; then
 			echo "$pid"
@@ -311,12 +324,14 @@ status()
 		return 1
 	fi
 
-	local base="${1##*/}"
+	local base
+	base="${1##*/}"
 
 	# First try "pidof"
-	local pid=`pidof -o $$ -o $PPID -o %PPID -x "$1" || pidof -o $$ -o $PPID -o %PPID -x "$base"`
+	local pid
+	pid=`pidof -o $$ -o $PPID -o %PPID -x "$1" || pidof -o $$ -o $PPID -o %PPID -x "$base"`
 	if [ -n "$pid" ]; then
-		if [ "$pid" = "${pid// }" ]; then
+		if [ -n "${pid##* *}" ]; then
 			echo "$base (pid $pid) is running..."
 		else
 			echo "$base (pids $pid) are running..."
@@ -329,12 +344,12 @@ status()
 		local line p pid=
 		read line <"/var/run/$base.pid"
 		for p in $line; do
-			if [ -z "${p//[0-9]}" -a -d "/proc/$p" ]; then
+			if [ "$p" -gt 1 ] 2>/dev/null && [ -d "/proc/$p" ]; then
 				[ -z "$pid" ] && pid="$p" || pid="$pid $p"
 			fi
 		done
 		if [ -n "$pid" ]; then
-			if [ "$pid" = "${pid// }" ]; then
+			if [ -n "${pid##* *}" ]; then
 				echo "$base (pid $pid) is running..."
 			else
 				echo "$base (pids $pid) are running..."
@@ -395,7 +410,8 @@ success()
 	if [ -z "$IN_INITLOG" ]; then
 		initlog $INITLOG_ARGS -n $0 -s "$1" -e 1
 	else
-		local opipe=`trap -p SIGPIPE`
+		local opipe
+		opipe=`trap -p SIGPIPE`
 		trap '' SIGPIPE
 		echo "$INITLOG_ARGS -n $0 -s \"$1\" -e 1" >&21
 		$opipe
@@ -411,7 +427,8 @@ failure()
 	if [ -z "$IN_INITLOG" ]; then
 		initlog $INITLOG_ARGS -n $0 -s "$1" -e 2
 	else
-		local opipe=`trap -p SIGPIPE`
+		local opipe
+		opipe=`trap -p SIGPIPE`
 		trap '' SIGPIPE
 		echo "$INITLOG_ARGS -n $0 -s \"$1\" -e 2" >&21
 		$opipe
@@ -427,7 +444,8 @@ passed()
 	if [ -z "$IN_INITLOG" ]; then
 		initlog $INITLOG_ARGS -n $0 -s "$1" -e 1
 	else
-		local opipe=`trap -p SIGPIPE`
+		local opipe
+		opipe=`trap -p SIGPIPE`
 		trap '' SIGPIPE
 		echo "$INITLOG_ARGS -n $0 -s \"$1\" -e 1" >&21
 		$opipe
@@ -439,7 +457,8 @@ passed()
 # Run some action. Log its output.
 action()
 {
-	local STRING="$1"
+	local STRING
+	STRING="$1"
 	echo -n "$STRING "
 	shift
 	initlog $INITLOG_ARGS -c "$*" && success "$STRING" || failure "$STRING"
@@ -494,28 +513,32 @@ FindFile()
 # Unmount file systems, killing processes if we have to.
 UnmountFilesystems()
 {
-	local sig=
-	local retry="$1"
+	local sig retry delay pattern message1 message2 remaining
+
+	sig=
+	retry="$1"
 	shift
-	local delay="$1"
+	delay="$1"
 	shift
-	local pattern="$1"
+	pattern="$1"
 	shift
-	local message1="$1"
+	message1="$1"
 	shift
-	local message2="$1"
+	message2="$1"
 	shift
 
-	local remaining=`awk "$pattern" /proc/mounts`
+	remaining=`awk "$pattern" /proc/mounts`
 	while [ -n "$remaining" -a "$retry" -gt 0 ]; do
-		local rem1=`echo "$remaining" |/bin/grep '^/.*/' |LC_COLLATE=C /bin/sort -r`
-		local rem2=`echo "$remaining" |/bin/grep -v '^/.*/' |LC_COLLATE=C /bin/sort -r`
+		local rem1 rem2
+		rem1=`echo "$remaining" |/bin/grep '^/.*/' |LC_COLLATE=C /bin/sort -r`
+		rem2=`echo "$remaining" |/bin/grep -v '^/.*/' |LC_COLLATE=C /bin/sort -r`
 		remaining="$rem1
 $rem2"
+		local message
 		if [ "$retry" -lt 3 ]; then
-			local message="$message2"
+			message="$message2"
 		else
-			local message="$message1"
+			message="$message1"
 		fi
 		local point
 		for point in $remaining; do

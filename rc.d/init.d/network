@@ -58,9 +58,9 @@ ifup_interfaces()
 {
 	local i
 	for i in "$@"; do
-		if egrep -L "^ONBOOT=\"?[Nn][Oo]\"?" "ifcfg-$i" &>/dev/null; then
+		if egrep -L "^ONBOOT=\"?[Nn][Oo]\"?" "ifcfg-$i" >/dev/null 2>&1; then
 			# Probe module to preserve interface ordering
-			/sbin/ifconfig "$i" &>/dev/null
+			/sbin/ifconfig "$i" >/dev/null 2>&1
 		else
 			# If we're in confirmation mode, get user confirmation
 			if [ -n "$CONFIRM" ]; then

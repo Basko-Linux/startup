@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # $Id$
 #
@@ -63,7 +63,7 @@ if [ -n "$1" ]; then
 fi
 
 # Kill all processes.
-[ "${BASH+bash}" = bash ] && enable kill
+[ "${BASH+bash}" != bash ] || enable kill
 
 action "Sending all processes the TERM signal..." /sbin/killall5 -15
 
@@ -120,7 +120,7 @@ if [ -x "$RAIDSTOP" -a -f /etc/raidtab ]; then
 	#action "Turning off RAID:" /sbin/raidstop -a
 fi
 
-[ -f /proc/bus/usb/devices ] && umount -n /proc/bus/usb &>/dev/null
+[ -f /proc/bus/usb/devices ] && umount -n /proc/bus/usb >/dev/null 2>&1
 
 # Remount read only anything that's left mounted.
 action "Remounting remaining filesystems (if any) readonly:" umount -anrf
@@ -143,7 +143,7 @@ fi
 
 if [ "$command" = /sbin/poweroff ]; then
 	# Modprobe apm for automatic poweroff at ATX cases.
-	/sbin/modprobe apm &>/dev/null
+	/sbin/modprobe apm >/dev/null 2>&1
 fi
 
 if [ -f /fastboot ]; then

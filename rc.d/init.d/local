@@ -2,63 +2,29 @@
 #
 # $Id$
 #
-# This script should be executed *after* all the other init scripts.
-# You can put your own initialization stuff in here if you don't
-# want to do the full Sys V style init stuff.
+# This script should be executed after all the other init scripts.
 
 # Source function library.
 . /etc/init.d/functions
 
-SourceIfNotEmpty /etc/sysconfig/system
-[ -n "$SECURITY" ] || SECURITY=0
+if [ ! -f /etc/issue ]; then
+	W2L=/usr/bin/welcome2l
+	if [ -x "$W2L" ]; then
+		"$W2L" -gt '\R' >/etc/issue
+	else
+		echo 'Welcome to \R / \l' >/etc/issue
+	fi
+fi
+
+if [ ! -f /etc/issue.net ]; then
+	echo "Welcome to $HOSTNAME" >/etc/issue.net
+	cat /etc/altlinux-release >>/etc/issue.net 2>/dev/null
+fi
 
 if [ -f /var/lock/TMP_1ST ]; then
 	/etc/rc.d/scripts/first_time
 fi
 
-if R=$(cat /etc/altlinux-release 2>/dev/null) || R=$(cat /etc/mandrake-release 2>/dev/null) || R=$(cat /etc/redhat-release 2>/dev/null); then
-	arch=$(uname -m)
-	a="a"
-	case "_$arch" in
-		_a*) a="an";;
-		_i*) a="an";;
-	esac
-
-	NUMPROC=`egrep -c "^cpu[0-9]+" /proc/stat`
-	if [ "$NUMPROC" -gt "1" ]; then
-		SMP="$NUMPROC-processor "
-		if [ "$NUMPROC" = "2" ]; then
-			SMP="Bi-processor "
-		elif [ "$NUMPROC" = "8" -o "$NUMPROC" = "11" ]; then
-			a="an"
-		fi
-	fi
-
-	# This will overwrite /etc/issue at every boot. So, make any changes you
-	# want to make to /etc/issue here or you will lose them when you reboot.
-
-	W2L=/usr/bin/welcome2l
-	LINUX_LOGO=/usr/bin/linux_logo
-	if [ -x "$W2L" ]; then
-		"$W2L" -gt "$R" >/etc/issue
-	elif [ -x "$LINUX_LOGO" ]; then
-		"$LINUX_LOGO" -c -n -f >/etc/issue
-		echo >>/etc/issue
-		echo "$R" >>/etc/issue
-		echo "Kernel $(uname -r) on $a $SMP$(uname -m) / \l" >>/etc/issue
-	else
-		echo "$R" >/etc/issue
-		echo "Kernel $(uname -r) on $a $SMP$(uname -m) / \l" >>/etc/issue
-	fi
-
-	if [ "$SECURITY" -le 3 ]; then
-		echo "Welcome to %h" >/etc/issue.net
-		echo "$R" >>/etc/issue.net
-		echo "Kernel $(uname -r) on $a $SMP$(uname -m)" >>/etc/issue.net
-	else	
-		echo "Welcome to ALT Linux" >/etc/issue.net
-		echo "--------------------" >>/etc/issue.net
-	fi
-fi
-
+# You can put your own initialization stuff in this script
+# if you don't want to do the full Sys V style init stuff.
 ExecIfExecutable /etc/rc.d/rc.local

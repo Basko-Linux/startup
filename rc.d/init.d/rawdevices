@@ -21,7 +21,7 @@
 # If the file just has the default comments, exit.
 grep -qsv "^#" /etc/sysconfig/rawdevices || exit 0
 
-function assign_raw()
+assign_raw()
 {
    cat /etc/sysconfig/rawdevices | grep -v '^ *#' | while read RAW BLOCK; do 
      if [ -n "$RAW" -a -n "$BLOCK" ]; then 
