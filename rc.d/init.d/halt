@@ -146,6 +146,8 @@ fi
 HALTARGS="-i -d"
 if [ -f /poweroff -o ! -f /halt ]; then
 	HALTARGS="$HALTARGS -p"
+	# Modprobe apm for automatic poweroff at ATX cases.
+	/sbin/modprobe apm &>/dev/null
 fi
 
 eval $command $HALTARGS
