@@ -20,39 +20,51 @@ for f in /bin/setfont /usr/bin/setfont; do
 	fi
 done
 
+FindFile()
+{
+	local n f
+	for n in "$@"; do
+		for f in "$n"*; do
+			if [ -r "$f" ]; then
+				echo "$f"
+				return 0
+			fi
+		done
+	done
+	return 1
+}
+
 if [ -n "$CONSOLECHARS" ]; then
-  if [ -n "$SYSFONT" ]; then
-    if [ -f /etc/sysconfig/console/$SYSFONT.psf* ]; then
-    	ARGS="/etc/sysconfig/console/$SYSFONT.psf.gz"
-	else
-    	ARGS="$SYSFONT"
+	if [ -n "$SYSFONT" ]; then
+		if a=`FindFile /etc/sysconfig/console/$SYSFONT.psf`; then
+			ARGS="$a"
+		else
+			ARGS="$SYSFONT"
+		fi
 	fi
     if [ -n "$UNIMAP" ]; then
-    	if [ -f /etc/sysconfig/console/$UNIMAP.sfm* ]; then
-    		ARGS="$ARGS --sfm /etc/sysconfig/console/$UNIMAP.sfm"
+		if a=`FindFile /etc/sysconfig/console/$UNIMAP.sfm`; then
+			ARGS="$ARGS --sfm $a"
 		else
 			ARGS="$ARGS --sfm $UNIMAP"
 		fi
-    fi
+	fi
     if [ -n "$SYSFONTACM" ]; then
-    	if [ -f /etc/sysconfig/console/$SYSFONTACM.acm* ]; then
-    		ARGS="$ARGS --acm /etc/sysconfig/console/$SYSFONTACM.acm"
+		if a=`FindFile /etc/sysconfig/console/$SYSFONTACM.acm`; then
+			ARGS="$ARGS --acm $a"
 		else
 			ARGS="$ARGS --acm $SYSFONTACM"
 		fi
     fi
-    "$CONSOLECHARS" $@ -f $ARGS
-  fi
+    "$CONSOLECHARS" "$@" -f $ARGS
 elif [ -n "$SETFONT" ]; then
-  if [ -n "$SYSFONT" -a -n "$UNIMAP" ]; then
-    "$SETFONT" $SYSFONT -u $UNIMAP
-  elif [ -n "$SYSFONT" ]; then
-    "$SETFONT" $SYSFONT
-#  else
-#    /usr/bin/setfont
-  fi
+	if [ -n "$SYSFONT" -a -n "$UNIMAP" ]; then
+		"$SETFONT" "$SYSFONT" -u "$UNIMAP"
+	elif [ -n "$SYSFONT" ]; then
+		"$SETFONT" "$SYSFONT"
+	fi
 else
-  echo "cannot set font" >&2
-  exit 1
+	echo "cannot set font" >&2
+	exit 1
 fi
-exit 0
+:
