@@ -33,8 +33,8 @@ export TERM
 # Terminal sequence to move to that position.
 MOVE_TO_COL()
 {
-	# `tput cols` reports 80 on dumb terms, the real width when appropriate;
-	# `tput hpa N` moves to col N; on dumb terms does nothing.
+	[ -n "$COLUMNS" ] || COLUMNS=80
+	# "tput hpa N" moves to col N; on dumb terms does nothing.
 	local pos=$((COLUMNS - RES_OFFSET))
 	[ $pos -le 0 ] ||
 		tput -- hpa $((COLUMNS - RES_OFFSET)) # Horizontal Position Absolute.
