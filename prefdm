@@ -19,7 +19,7 @@ trap killed SIGHUP SIGPIPE SIGINT SIGTERM
 
 # Try autologin first, if wanted...
 AUTOLOGIN=/usr/sbin/autologin
-if [ -s /etc/sysconfig/autologin -a -x "$AUTOLOGIN" ]; then
+if [ -x "$AUTOLOGIN" -a -s /etc/sysconfig/autologin ]; then
 	"$AUTOLOGIN" &
 	wait $!
 fi
@@ -36,8 +36,8 @@ if [ -s /etc/sysconfig/desktop ]; then
 		preferred=xdm
 	fi
 fi
-if [ -n "$preferred" ] && which $preferred &>/dev/null; then 
-	exec $preferred $*
+if [ -n "$preferred" ] && which "$preferred" &>/dev/null; then 
+	exec "$preferred" $@
 fi
 
 if which kdm &>/dev/null; then
@@ -50,8 +50,8 @@ elif which xdm &>/dev/null; then
 	preferred=xdm
 fi
 
-if [ -n "$preferred" ] && which $preferred &>/dev/null; then 
-	exec `which $preferred` $*
+if [ -n "$preferred" ] && which "$preferred" &>/dev/null; then 
+	exec "$preferred" $@
 fi
 
 exit 1
