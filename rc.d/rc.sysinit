@@ -18,7 +18,7 @@ export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 HOSTNAME=`/bin/hostname`
 
 # Read in config data.
-if [ -f /etc/sysconfig/network ]; then
+if [ -s /etc/sysconfig/network ]; then
 	. /etc/sysconfig/network
 else
 	NETWORKING=no
@@ -51,13 +51,13 @@ action "Configuring kernel parameters: " sysctl -p /etc/sysctl.conf
 # Try to get devfsd
 if [ -c /dev/.devfsd -a -x /sbin/devfsd ]; then
 	action "Running DevFS daemon" devfsd /dev
-	for i in /dev/cdroms/*;do 
+	for i in /dev/cdroms/*; do 
 		ln -sf "$i" /dev/
 	done
 	if [ -e /dev/cdrom0	]; then
 		ln -sf /dev/cdrom0 /dev/cdrom
 	fi
-	if [ -f /etc/sysconfig/mouse ];then
+	if [ -s /etc/sysconfig/mouse ]; then
 		. /etc/sysconfig/mouse
 		device=`echo "$device" |sed -e 's,psaux,misc/psaux,' -e 's/ttyS\(.\)/tts\/\1/g'`
 		if [ -n "$device" ]; then
@@ -374,13 +374,13 @@ action "Mounting loopback filesystems: " mount -a -t loop,ext2,vfat
 # Try to get linuxconf profile.
 if profile=$(sed 's/.*prof=\([A-Za-z_0-9]*\).*$/\1/' /proc/cmdline) && \
 	[ -d  "/etc/linuxconf/archive/$profile" ] && \
-	! grep -q "confver.current $profile" /etc/conf.linuxconf;then
+	! grep -q "confver.current $profile" /etc/conf.linuxconf; then
 
 	action "Setting profile to $profile: " /bin/linuxconf --selectprofile "$profile"
 	
 	# Setting again network scripts.
-	if [ -f /etc/sysconfig/network ]; then
-		source /etc/sysconfig/network
+	if [ -s /etc/sysconfig/network ]; then
+		. /etc/sysconfig/network
 		hostname "$HOSTNAME"
 		[ -n "$NISDOMAIN" ] && domainname "$NISDOMAIN"
 		echo "$HOSTNAME" >/etc/HOSTNAME
@@ -410,7 +410,7 @@ if [ -f /.unconfigured ]; then
 	fi
 
 	# Reread in network configuration data.
-	if [ -f /etc/sysconfig/network ]; then
+	if [ -s /etc/sysconfig/network ]; then
 		. /etc/sysconfig/network
 
 		# Reset the hostname.
@@ -442,15 +442,17 @@ swapon -a &>/dev/null
 action "Enabling swap space: " /bin/true
 
 # Initialize the serial ports.
-if [ -f /etc/rc.d/rc.serial ]; then
+if [ -x /etc/rc.d/rc.serial ]; then
 	. /etc/rc.d/rc.serial
 fi
 
-if [ -r /etc/rc.firewall ]; then
-	. /etc/rc.firewall
-elif [ -r /etc/rc.d/rc.firewall ]; then
-	. /etc/rc.d/rc.firewall
-fi
+# Initialize firewall.
+for f in /etc/rc.d/rc.firewall /etc/rc.firewall; do
+	if [ -x "$f" ]; then
+		. "$f"
+		break
+	fi
+done
 
 # If a SCSI tape has been detected, load the st module unconditionally
 # since many SCSI tapes don't deal well with st being loaded and unloaded

@@ -10,8 +10,9 @@ if [ -f /etc/sysconfig/console/default.kmap ]; then
 	action "Loading default keymap" \
 		"sh -c \"loadkeys $KEYMAP </dev/tty0 >/dev/tty0 2>/dev/null\""
 else
-	if [ -x etc/init.d/keytable -a -d /usr/lib/kbd/keymaps ]; then
-			/etc/init.d/keytable start
+	INIT_KEYTABLE=/etc/init.d/keytable
+	if [ -x "$INIT_KEYTABLE" -a -d /usr/lib/kbd/keymaps ]; then
+			"$INIT_KEYTABLE" start
 	else
 		DELAYED_KEYMAP=y
 	fi

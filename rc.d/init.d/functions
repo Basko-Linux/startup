@@ -89,7 +89,7 @@ daemon() {
 	done
 
         # Save basename.
-        [ -z $gotbase ] && base=`basename $1`
+        [ -z $gotbase ] && base="${1##*/}"
 
         # See if it's already running.
         pidlist=`pidofproc $1`
@@ -136,7 +136,7 @@ killproc() {
 	fi
 
         # Save basename.
-        base=`basename $1`
+        base="${1##*/}"
 
         # Find pid.
         pidlist=`pidofproc $1`
@@ -190,7 +190,7 @@ killproc() {
 
 # A function to find the pid of a program.
 pidofproc() {
-	base=`basename $1`
+	base="${1##*/}"
 
 	# Test syntax.
 	if [ $# = 0 ] ; then
@@ -216,7 +216,7 @@ pidofproc() {
 }
 
 status() {
-	base=`basename $1`
+	base="${1##*/}"
 
 	# Test syntax.
 	if [ $# = 0 ] ; then
