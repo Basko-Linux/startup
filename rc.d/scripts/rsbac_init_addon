@@ -18,9 +18,16 @@ done
 #FF - protection for libraries (read only)
     "$attr_set_fd" DIR ff_flags 129 /lib
     "$attr_set_fd" DIR ff_flags 129 /usr/lib
+
+flag_ro()
+{
+    for f in "$@"; do
+	[ -f "$f" ] && "$attr_set_fd" FILE ff_flags 1 "$f" ||:
+    done
+}
+
 #FF -protection for /etc
-    "$attr_set_fd" FILE ff_flags 1 /etc/passwd
-    "$attr_set_fd" FILE ff_flags 1 /etc/shadow
+    flag_ro /etc/passwd /etc/shadow /etc/fstab /etc/lilo.conf /boot/grub/menu.lst
 
 #RC - Protection for Home Area
 #find free or existing fd type 'Home_Area'
