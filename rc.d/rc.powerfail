@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# $Id$
+
+# See how we were called.
+case "$1" in
+	start)
+		# When our UPS tells us power has failed, assume we have a few
+		# minutes of power left.  Schedule a shutdown for 2 minutes from now.
+		/sbin/shutdown -f -h +2 "Power Failure; System Shutting Down"
+		;;
+	now)
+		# The battery of the external UPS is almost empty
+		# and the power is failing
+		;;
+	stop)
+		# If power was restored before the shutdown kicked in, cancel it.
+		/sbin/shutdown -c "Power Restored; Shutdown Cancelled"
+		;;
+	*)
+		echo "Usage: ${0##*/} {start|now|stop}"
+		exit 1
+		;;
+esac
