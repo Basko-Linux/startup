@@ -14,24 +14,30 @@ export PATH="/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin"
 
 SourceIfExists()
 {
-	[ -f "$1" ] && . "$1"
+	local f="$1"
+	shift
+	[ -f "$f" ] && . "$f" "$@"
 }
 
 SourceIfExecutable()
 {
-	[ -x "$1" ] && . "$1"
+	local f="$1"
+	shift
+	[ -x "$f" ] && . "$f" "$@"
 }
 
 SourceIfNotEmpty()
 {
-	[ -s "$1" ] && . "$1"
+	local f="$1"
+	shift
+	[ -s "$f" ] && . "$f" "$@"
 }
 
 ExecIfExecutable()
 {
-	local executable="$1"
+	local f="$1"
 	shift
-	[ -x "$executable" ] && "$executable" "$@"
+	[ -x "$f" ] && "$f" "$@"
 }
 
 # Get a sane screen width
