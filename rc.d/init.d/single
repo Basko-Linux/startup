@@ -51,4 +51,4 @@ done
 
 # Now go to the single user level.
 echo "Telling INIT to go to single user mode."
-exec init -t1 S
+telinit -t1 S
