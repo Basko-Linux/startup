@@ -25,38 +25,10 @@ uname -r |fgrep -qs rsbac || exit 0
 auth_set_cap=`which auth_set_cap` || exit 0
 attr_set_fd=`which attr_set_fd` || exit 0
 
-# xfs
-if uid=`getuseruid xfs` && program=`which xfs`; then
-#    echo "$uid $program"
-    "$auth_set_cap" FILE add $program $uid
-fi
-
-#crond
-if program=`which crond`; then
+#sshd
+if program=`which sshd`; then
 #    echo $program
-    "$auth_set_cap" FILE add $program 0 399
-    "$auth_set_cap" FILE add $program 401 16384
-fi
-
-#atd
-if program=`which atd`; then
-#    echo $program
-    "$auth_set_cap" FILE add $program 0 399 
-    "$auth_set_cap" FILE add $program 401 16384
-fi
-
-#at
-if program=`which at`; then
-#    echo $program
-    "$auth_set_cap" FILE add $program 0 399
-    "$auth_set_cap" FILE add $program 401 16384
-fi
-
-#xinetd
-if program=`which xinetd`; then
-#    echo $program
-    "$auth_set_cap" FILE add $program 0 399 
-    "$auth_set_cap" FILE add $program 401 16384
+    "$attr_set_fd" FILE auth_may_setuid 1 $program
 fi
 
 #su for Postgres
@@ -65,59 +37,63 @@ if uid=`getuseruid postgres` && program=`which su`; then
     "$auth_set_cap" FILE add $program $uid
 fi
 
-#sshd
-if program=`which sshd`; then
-#    echo $program
-    "$attr_set_fd" FILE auth_may_setuid 1 $program
-fi
+auth_set_cap_program_anybody()
+{
+    program=`which $1` || return
+#    echo "$auth_set_cap FILE add $program $uid"
+    "$auth_set_cap" FILE add $program 0 399
+    "$auth_set_cap" FILE add $program 401 16384
+}
+
+#xinetd
+auth_set_cap_program_anybody xinetd
+
+#crond
+auth_set_cap_program_anybody crond
+
+#atd
+auth_set_cap_program_anybody atd
+
+#at: FIXME swap_uid
+auth_set_cap_program_anybody at
+
+auth_set_cap_program_user()
+{
+    program=`which $1` || return
+    uid=`getuseruid $2` || return
+#    echo "$auth_set_cap FILE add $program $uid"
+    "$auth_set_cap" FILE add "$program" "$uid"
+}
+
+# xfs
+auth_set_cap_program_user xfs xfs
 
 #portmap
-if uid=`getuseruid rpc` && program=`which portmap`; then
-#    echo "$uid $program"
-    "$auth_set_cap" FILE add $program $uid
-fi
+auth_set_cap_program_user portmap rpc
 
 #named
-if uid=`getuseruid named` && program=`which named`; then
-#    echo "$uid $program"
-    "$auth_set_cap" FILE add $program $uid
-fi
+auth_set_cap_program_user named named
 
 #scanlogd
-if uid=`getuseruid scanlogd` && program=`which scanlogd`; then
-#    echo "$uid $program"
-    "$auth_set_cap" FILE add $program $uid
-fi
+auth_set_cap_program_user scanlogd scanlogd
 
 #apache
-if uid=`getuseruid apache` && program=`which httpd`; then
-#    echo "$uid $program"
-    "$auth_set_cap" FILE add $program $uid
-fi
+auth_set_cap_program_user httpd apache
 
 #libra-ftpd
-if uid=`getuseruid libra-ftpd` && program=`which libra-ftpd`; then
-#    echo "$uid $program"
-    "$auth_set_cap" FILE add $program $uid
-fi
+auth_set_cap_program_user libra-ftpd libra-ftpd
 
 #junkbuster
-if uid=`getuseruid junkbuster` && program=`which exec_junkbuster`; then
-#    echo "$uid $program"
-    "$auth_set_cap" FILE add $program $uid
-fi
+auth_set_cap_program_user exec_junkbuster junkbuster
 
 #mysql
-if uid=`getuseruid mysql` && program=`which mysqld`; then
-#    echo "$uid $program"
-    "$auth_set_cap" FILE add $program $uid
-fi
+auth_set_cap_program_user mysqld mysql
 
 #rcync
-if uid=`getuseruid rsyncd` && program=`which rsync`; then
-#    echo "$uid $program"
-    "$auth_set_cap" FILE add $program $uid
-fi
+auth_set_cap_program_user rsync rsyncd
+
+#cupsd
+auth_set_cap_program_user cupsd lp
 
 #postfix
 if uid=`getuseruid postfix`; then
@@ -152,12 +128,12 @@ fi
 
 
 #remove rsbac_ lines from lilo&grub
-if [ -f /etc/lilo.conf ];then
+if [ -f /etc/lilo.conf ]; then
     cat /etc/lilo.conf | sed 's/ *rsbac_auth_enable_login//;s/ *rsbac_softmode//' >/etc/lilo.conf~tmp
     mv /etc/lilo.conf~tmp /etc/lilo.conf
 fi
 
-if [ -f /boot/grub/menu.lst ];then
+if [ -f /boot/grub/menu.lst ]; then
     cat /boot/grub/menu.lst | sed 's/ *rsbac_auth_enable_login//;s/ *rsbac_softmode//' >/boot/grub/menu.lst~tmp
     mv /boot/grub/menu.lst~tmp /boot/grub/menu.lst
 fi
