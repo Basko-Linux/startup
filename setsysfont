@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # ALT's /sbin/setsysfont.
 # Agrees with RH's initscripts-7.06-1.
@@ -6,27 +6,19 @@
 # 2003 Feb 10: 
 # - wrap unicode_start to hide it from dependency-seekers.
 
-# Source library functions
+WITHOUT_RC_COMPAT=1
+
+# Source function library.
 . /etc/init.d/functions
 
-EXECPATH=(/bin /usr/bin)
-# inspired by FindFile() form /etc/init.d/functions (initscripts-5.49-ipl49mdk)
-FindExec()
-{
-	local n f d
-	for n in "$@"; do
-		for d in "${EXECPATH[@]}"; do
-		    f="$d/$n"
-		    if [ -x "$f" ]; then
-			echo "$f"
-			return 0
-		    fi
-		done
-	done
-	return 1
-}
-
 addLoadableData() {
+# An alternative to FindFile() and the corresponding readbility test could be
+# a test performed by consolechars themselves, like this:
+#
+#   "$CONSOLECHARS" --no-act "$option" "$f"
+#
+# But I don't think such complexity is reasonable here.
+# imz@altlinux.ru, Feb 2003.
   local option="$1" name="$2" type
   case "$option" in
   --font) type=psf ;;
@@ -41,15 +33,7 @@ addLoadableData() {
 	  args[${#args[@]}]="$name"
       fi
   fi
-# An alternative to FindFile() and the corresponding readbility test could be
-# a test performed by consolechars themselves, like this:
-#
-#   "$CONSOLECHARS" --no-act "$option" "$f"
-#
-# But I don't think such complexity is reasonable here.
-# imz@altlinux.ru, Feb 2003.
 }
-
 
 if [ "$LANG" = POSIX -o "$LANGUAGE" = POSIX ]; then
 	SourceIfNotEmpty /etc/sysconfig/i18n
@@ -58,12 +42,13 @@ fi
 # Our parameters:
 readonly SYSFONT UNIMAP SYSFONTACM
 
+# Use absolute() from new functions library.
 readonly \
-    CONSOLECHARS="$(FindExec consolechars)" \
-    SETFONT="$(FindExec setfont)" \
-    UNICODE_START=unicode_start
+    CONSOLECHARS=`absolute consolechars` \
+    SETFONT=`absolute setfont` \
+    UNICODE_START=`absolute unicode_start`
 
-if [ -z "$CONSOLECHARS" -a -z "$SETFONT" ]; then
+if [ -z "$CONSOLECHARS" -o -z "$SETFONT" ]; then
     echo "${0##*/}: cannot set font because no tools found." >&2
     exit 1
 fi
