@@ -1,0 +1,72 @@
+#!/bin/sh
+# Description: Launch ALT Linux Configuration
+
+FLO=/var/log/first_boot_log
+:>>$FLO
+chmod go-rwx $FLO
+
+. /etc/init.d/functions
+
+# On fail/exit erase the temporary file
+trap 'rm -f /var/lock/TMP_1ST' 1 2 3 15 EXIT
+
+for f in /dev/cdrom*; do
+	t="${f/cdrom/dvd}"
+	[ -e "$f" -a ! -e "$t" ] && ln -s "$f" "$t"
+done
+
+action "Building dynamic library cache:" /sbin/ldconfig
+
+action "Adjusting index.html:" /etc/rc.d/scripts/indexhtml_update
+
+# Initialize kudzu.
+if [ -x /usr/sbin/kudzu ]; then
+	action "Adjusting hardware configuration:" /usr/sbin/kudzu -q
+fi
+
+action "Adjusting automounter configuration:" /etc/rc.d/scripts/adjust_autofs
+
+# Create new mail files if it doesn't exists.
+for i in `awk -F: '{if ($3>=400) print $1}' </etc/passwd`; do
+	[ -e "/var/mail/$i" ] || action "Creating mailbox for $i:" install --owner="$i" --group=mail --mode=660 /dev/null "/var/mail/$i"
+done
+
+# Build the whatis database
+{
+	for i in /etc/cron.weekly/makewhatis*.cron; do
+		[ -r "$i" ] && nice -20 /bin/sh "$i" 2>> $FLO
+	done
+} &
+
+#Rebuild Mozilla registry to be sure that mozilla registry is ok
+MOZILLA_REGXPCOM=/usr/lib/mozilla/regxpcom
+MOZILLA_REGCHROME=/usr/lib/mozilla/regchrome
+if [ -x "$MOZILLA_REGXPCOM" -a -x "$MOZILLA_REGCHROME" ]; then
+	action "Building Mozilla registry:" "$MOZILLA_REGXPCOM" 2>>$FLO
+	action "Registering Mozilla chrome:" "$MOZILLA_REGCHROME" 2>>$FLO
+fi
+
+# Next try to find the applications installed on system and give a nice entries
+# in kde menus # TODO: Gnomefinder4root
+KAPPFINDER=/usr/sbin/kappfinder4root
+if [ -x "$KAPPFINDER" ]; then
+	action "Building your KDE menu:" "$KAPPFINDER" 2>> "$FLO"
+fi
+
+# perform charset conversions for some translation files if needed
+#{
+#	touch /usr/share/locale/*/LC_MESSAGES
+#	for i in /etc/cron.hourly/mdk_convert_translations* ; do
+#		[ -r "$i" ] && nice -20 /bin/sh "$i" 2>> $FLO
+#	done
+#} &
+
+# Set the mixer to 80%
+AUMIX=/usr/bin/aumix
+if [ -x "$AUMIX" ] && egrep -qs '(sparcaudio|sound)' /proc/devices; then
+	"$AUMIX" -v80 -w80 -c80 &>/dev/null
+fi
+
+find / -mindepth 1 -maxdepth 1 \( -type d -o -type f \) -name '.??*' |fgrep -v /.automount |xargs -r rm -rf
+
+ExecIfExecutable /etc/rc.d/scripts/distribution
