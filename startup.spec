@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.0
+Version: 0.9.1
 Release: alt1
 
 Summary: The system startup scripts
@@ -139,6 +139,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Mon Aug 09 2004 Dmitry V. Levin <ldv@altlinux.org> 0.9.1-alt1
+- scripts/vconfig-update: do nothing if /etc/alternatives
+  directory doesn't exist.
+
 * Wed May 26 2004 Dmitry V. Levin <ldv@altlinux.org> 0.9.0-alt1
 - Removed scripts: init.d/ieee1394, init.d/usb.
 
