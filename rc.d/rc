@@ -86,6 +86,9 @@ if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
 
 		subsys=${i#/etc/rc.d/rc$runlevel.d/K??}
 
+		# Hack: ignore buggy subsystems.
+		[ "$subsys" != internet ] || continue
+
 		# Check if the subsystem is already up.
 		[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] || continue
 		
@@ -112,6 +115,9 @@ if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
 		[ "${i%.rpm*}" = "$i" -a "${i%\~}" = "$i" ] || continue
 
 		subsys=${i#/etc/rc.d/rc$runlevel.d/S??}
+
+		# Hack: ignore buggy subsystems.
+		[ "$subsys" != internet ] || continue
 
 		# Check if the subsystem is already up.
 		[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] && continue

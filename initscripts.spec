@@ -239,6 +239,7 @@ fi
 * Sat Dec 28 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl48mdk
 - init.d/outformat: fixed MOVE_TO_COL (#0001767).
 - scripts/adjust_autofs: relocated to autofs package.
+- rc.d/rc: ignore buggy subsystems.
 
 * Sun Dec 15 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl47mdk
 - rc.sysinit, init.d/outformat: back to use $COLUMNS (#0001117).
