@@ -39,7 +39,7 @@ ExecIfExecutable()
 
 # Read in our configuration
 if [ -z "$BOOTUP" ]; then
-	SourceIfNotEmpty /etc/sysconfig/init || BOOTUP=color
+	SourceIfNotEmpty /etc/sysconfig/init
 	[ -n "$BOOTUP" ] || BOOTUP=color
 fi
 
@@ -162,11 +162,11 @@ wait_pid()
 
 	local i=0
 	while [ $i -lt "$w_times" ]; do
-		checkpid "$w_pid" &>/dev/null || return 0
+		checkpid $w_pid &>/dev/null || return 0
 		usleep "$w_delay"
 		i=$[1+i]
 	done
-	! checkpid "$w_pid"
+	! checkpid $w_pid
 }
 
 # A function to stop a program.
@@ -180,7 +180,7 @@ killproc() {
 
 	notset=0
 	# check for second arg to be kill level
-	if [ "$2" != "" ] ; then
+	if [ -n "$2" ]; then
 		killlevel=$2
 	else
 		notset=1
@@ -195,7 +195,7 @@ killproc() {
 	
 	pid=
 	for apid in $pidlist; do
-		if [ -d /proc/$apid ]; then
+		if [ -d "/proc/$apid" ]; then
 			pid="$pid $apid"
 		fi
 	done
@@ -204,22 +204,22 @@ killproc() {
 	if [ -n "$pid" ]; then
 		if [ "$BOOTUP" = "verbose" ]; then echo -n "$base "; fi
 		if [ "$notset" = "1" ] ; then
-			if checkpid "$pid" 2>&1; then
+			if checkpid $pid 2>&1; then
 				# TERM first, then KILL if not dead
-				kill -TERM "$pid"
+				kill -TERM -- $pid
 				if ! wait_pid "$pid" 30 100000; then
-					kill -KILL "$pid"
+					kill -KILL -- $pid
 					usleep 100000
 				fi
 			fi
-			checkpid "$pid" &>/dev/null
+			checkpid $pid &>/dev/null
 			RC=$?
 			[ $RC -eq 0 ] && failure "$base shutdown" || success "$base shutdown"
 			RC=$((! $RC))
 		# use specified level only
 		else
-			if checkpid "$pid" &>/dev/null; then
-				kill "$killlevel" "$pid"
+			if checkpid $pid &>/dev/null; then
+				kill "$killlevel" -- $pid
 				RC=$?
 				[ $RC -eq 0 ] && success "$base $killlevel" || failure "$base $killlevel"
 			fi
@@ -246,25 +246,25 @@ pidofproc() {
 	fi
 
 	# First try "/var/run/*.pid" files
-	if [ -f /var/run/${base}.pid ] ; then
-	        pid=`cat /var/run/${base}.pid | { read foo ; echo $foo ; }`
-	        if [ "$pid" != "" ] ; then
-	                echo $pid
-	                return 0
-	        fi
+	if [ -f "/var/run/$base.pid" ]; then
+		pid=`cat "/var/run/$base.pid" | { read foo; echo -E "$foo"; }`
+		if [ -n "$pid" -a -d "/proc/$pid" ]; then
+			echo -E "$pid"
+			return 0
+		fi
 	fi
 
 	# Next try "pidof"
-	pid=`pidof -o $$ -o $PPID -o %PPID -x ${base}`
-	if [ "$pid" != "" ] ; then
-	        echo $pid
-	        return 0
+	pid=`pidof -o $$ -o $PPID -o %PPID -x "$base"`
+	if [ -n "$pid" -a -d "/proc/$pid" ]; then
+		echo -E "$pid"
+		return 0
 	fi
 }
 
 status() {
 	# Test syntax.
-	if [ $# = 0 ] ; then
+	if [ $# = 0 ]; then
 		echo "Usage: status {program}"
 		return 1
 	fi
@@ -273,14 +273,14 @@ status() {
 
 	# First try "pidof"
 	pid=`pidof -o $$ -o $PPID -o %PPID -x "$base"`
-	if [ "$pid" != "" ] ; then
+	if [ -n "$pid" -a -d "/proc/$pid" ]; then
 	        echo "$base (pid $pid) is running..."
 	        return 0
 	fi
 
 	# Next try "/var/run/*.pid" files
 	if [ -s "/var/run/$base.pid" ]; then
-		pid=`cat "/var/run/$base.pid" | { read foo ; echo "$foo"; }`
+		pid=`cat "/var/run/$base.pid" | { read foo; echo -E "$foo"; }`
 		if [ -n "$pid" ]; then
 			echo "$base dead but pid file exists"
 			return 1
@@ -297,74 +297,76 @@ status() {
 
 echo_success() {
 	MOVE_TO_COL
-	echo -n "[  "
+	echo -n '[  '
 	SETCOLOR_SUCCESS
-	echo -n "OK"
+	echo -n 'OK'
 	SETCOLOR_NORMAL
-	echo -n "  ]"
+	echo -n '  ]'
 	return 0
 }
 
 echo_failure() {
 	MOVE_TO_COL
-	echo -n "["
+	echo -n '['
 	SETCOLOR_FAILURE
-	echo -n "FAILED"
+	echo -n 'FAILED'
 	SETCOLOR_NORMAL
-	echo -n "]"
+	echo -n ']'
 	return 1
 }
 
 echo_passed() {
 	MOVE_TO_COL
-	echo -n "["
+	echo -n '['
 	SETCOLOR_WARNING
-	echo -n "PASSED"
+	echo -n 'PASSED'
 	SETCOLOR_NORMAL
-	echo -n "]"
+	echo -n ']'
 	return 1
 }
 
 # Log that something succeeded
 success() {
-  if [ -z "$IN_INITLOG" ]; then
-     initlog $INITLOG_ARGS -n $0 -s "$1" -e 1
-  else
-     # silly hack to avoid EPIPE killing rc.sysinit
-     trap "" SIGPIPE
-     echo "$INITLOG_ARGS -n $0 -s \"$1\" -e 1" >&21
-     trap - SIGPIPE
-  fi
-  echo_success
-  return 0
+	if [ -z "$IN_INITLOG" ]; then
+		initlog $INITLOG_ARGS -n $0 -s "$1" -e 1
+	else
+		local opipe=`trap -p SIGPIPE`
+		trap '' SIGPIPE
+		echo "$INITLOG_ARGS -n $0 -s \"$1\" -e 1" >&21
+		$opipe
+	fi
+	echo_success
+	return 0
 }
 
 # Log that something failed
 failure() {
-  rc=$?
-  if [ -z "$IN_INITLOG" ]; then
-     initlog $INITLOG_ARGS -n $0 -s "$1" -e 2
-  else
-     trap "" SIGPIPE
-     echo "$INITLOG_ARGS -n $0 -s \"$1\" -e 2" >&21
-     trap - SIGPIPE
-  fi
-  echo_failure
-  return $rc
+	rc=$?
+	if [ -z "$IN_INITLOG" ]; then
+		initlog $INITLOG_ARGS -n $0 -s "$1" -e 2
+	else
+		local opipe=`trap -p SIGPIPE`
+		trap '' SIGPIPE
+		echo "$INITLOG_ARGS -n $0 -s \"$1\" -e 2" >&21
+		$opipe
+	fi
+	echo_failure
+	return $rc
 }
 
 # Log that something passed, but may have had errors. Useful for fsck
 passed() {
-  rc=$?
-  if [ -z "$IN_INITLOG" ]; then
-     initlog $INITLOG_ARGS -n $0 -s "$1" -e 1
-  else
-     trap "" SIGPIPE
-     echo "$INITLOG_ARGS -n $0 -s \"$1\" -e 1" >&21
-     trap - SIGPIPE
-  fi
-  echo_passed
-  return $rc
+	rc=$?
+	if [ -z "$IN_INITLOG" ]; then
+		initlog $INITLOG_ARGS -n $0 -s "$1" -e 1
+	else
+		local opipe=`trap -p SIGPIPE`
+		trap '' SIGPIPE
+		echo "$INITLOG_ARGS -n $0 -s \"$1\" -e 1" >&21
+		$opipe
+	fi
+	echo_passed
+	return $rc
 }  
 
 # Run some action. Log its output.
