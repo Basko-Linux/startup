@@ -1,10 +1,5 @@
 # /etc/profile.d/lang.sh - set i18n stuff
 
-Unset()
-{
-	unset "$@" ||:
-}
-
 sourced=
 for f in "$HOME/.i18n" /etc/sysconfig/i18n; do
 	if [ -f "$f" ] && . "$f"; then
@@ -13,21 +8,29 @@ for f in "$HOME/.i18n" /etc/sysconfig/i18n; do
 	fi
 done
 
-Unset f
+unset f
+
+Unset()
+{
+	unset "$@" ||:
+}
+
+CondSet()
+{
+	local n
+	for n in "$@"; do
+		[ -n "$(eval "echo \"\$$n\"")" ] && export "$n" || Unset "$n"
+	done
+}
 
 if [ -n "sourced" ]; then
+	CondSet LANGUAGE LC_ADDRESS LC_COLLATE LC_CTYPE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE
 	if [ -n "$LANG" ]; then
 		if [ "$LANG" = "C" ]; then LANG="en_US"; fi
 		export LANG
 	else
 		Unset LANG
 	fi
-	[ -n "$LC_CTYPE" ] && export LC_CTYPE || Unset LC_CTYPE
-	[ -n "$LC_COLLATE" ] && export LC_COLLATE || Unset LC_COLLATE
-	[ -n "$LC_MESSAGES" ] && export LC_MESSAGES || Unset LC_MESSAGES
-	[ -n "$LC_NUMERIC" ] && export LC_NUMERIC || Unset LC_NUMERIC
-	[ -n "$LC_MONETARY" ] && export LC_MONETARY || Unset LC_MONETARY
-	[ -n "$LC_TIME" ] && export LC_TIME || Unset LC_TIME
 	if [ -n "$LC_ALL" ]; then
 		if [ "$LC_ALL" != "$LANG" ]; then
 			if [ "$LC_ALL" = "C" ]; then LC_ALL="en_US"; fi
@@ -38,7 +41,6 @@ if [ -n "sourced" ]; then
 	else
 		Unset LC_ALL
 	fi
-	[ -n "$LANGUAGE" ] && export LANGUAGE || Unset LANGUAGE
 	if [ -n "$LINGUAS" ]; then
 		if [ "$LINGUAS" != "$LANG" -a "$LINGUAS" != "$LANGUAGE" ]; then
 			export LINGUAS
