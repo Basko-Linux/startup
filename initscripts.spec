@@ -2,7 +2,7 @@
 
 Name: initscripts
 Version: 5.49
-Release: ipl46mdk
+Release: ipl47mdk
 
 Summary: The inittab file and the %_sysconfdir/init.d scripts.
 License: GPL
@@ -15,7 +15,7 @@ Obsoletes: rhsound sapinit
 
 Conflicts: kernel <= 2.2, timeconfig < 0:3.0, ppp < 0:2.3.9, wvdial < 0:1.40
 Conflicts: sysklogd < 0:1.3.33, lilo < 0:21.5, e2fsprogs < 0:1.19-ipl2mdk
-Conflicts: shadow-utils < 0:19990827-ipl9mdk
+Conflicts: shadow-utils < 0:19990827-ipl9mdk, autofs < 4.0.0-alt0.4.pre10
 
 PreReq: setup >= 0:2.1.9-ipl18mdk, chkconfig, gawk, grep, sed, coreutils, control
 Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
@@ -236,6 +236,13 @@ fi
 %doc sysconfig.txt sysvinitfiles ChangeLog*
 
 %changelog
+* Sun Dec 15 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl47mdk
+- rc.sysinit, init.d/outformat: back to use $COLUMNS (#0001117).
+- scripts/cleanup:
+  + keep more quota files;
+  + create lastlog if missing.
+- scripts/adjust_autofs: add skipstart support (required for fix #0000530).
+
 * Sun Dec 08 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl46mdk
 - network-scripts/ifup: fixed vlan_id calculation.
 - init.d/network: fixed filtering vlan interfaces.
