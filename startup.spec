@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.6
+Version: 0.7
 Release: alt1
 
 Summary: The system startup scripts
@@ -16,6 +16,8 @@ PreReq: service >= 0.0.2-alt1, chkconfig, gawk, grep, sed, coreutils, %__subst
 # Who could remind me where these dependencies came from?
 Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
 Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk, util-linux >= 0:2.10q-ipl1mdk
+# due to %_sysconfdir/adjtime
+Requires: hwclock >= 2.23-alt1
 
 # due to update_wms
 Conflicts: xinitrc < 0:2.4.13-alt1
@@ -31,7 +33,7 @@ change runlevels, and shut the system down cleanly.
 
 %install
 %__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc{0,1,2,3,4,5,6}.d
-%__install -p -m644 adjtime inittab modules sysctl.conf $RPM_BUILD_ROOT%_sysconfdir/
+%__install -p -m644 inittab modules sysctl.conf $RPM_BUILD_ROOT%_sysconfdir/
 %__install -pD -m755 setsysfont $RPM_BUILD_ROOT/sbin/setsysfont
 %__cp -a rc.d sysconfig $RPM_BUILD_ROOT%_sysconfdir/
 
@@ -103,7 +105,7 @@ if [ $1 -eq 0 ]; then
 fi
 
 %triggerpostun -- initscripts < 1:5.49.1-alt1
-for f in %_sysconfdir/{adjtime,inittab,modules,sysctl.conf,sysconfig/{clock,console/setterm,framebuffer,i18n,init,keyboard,mouse,rawdevices,system,usb}}; do
+for f in %_sysconfdir/{inittab,modules,sysctl.conf,sysconfig/{clock,console/setterm,framebuffer,i18n,init,keyboard,mouse,rawdevices,system,usb}}; do
 	if [ ! -f "$f" ]; then
 	        if [ -f "$f".rpmsave ]; then
 	                %__cp -pf "$f".rpmsave "$f"
@@ -122,7 +124,6 @@ done
 
 %files
 %config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/*
-%config(noreplace) %verify(not md5 mtime size) %attr(640,root,root) %_sysconfdir/adjtime
 %config(noreplace) %_sysconfdir/inittab
 %config(noreplace) %_sysconfdir/modules
 %config(noreplace) %_sysconfdir/sysctl.conf
@@ -140,6 +141,21 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Sun Oct 26 2003 Dmitry V. Levin <ldv@altlinux.org> 0.7-alt1
+- %_sysconfdir/adjtime: relocated to hwclock package.
+- scripts/indexhtml_update: relocated to indexhtml package.
+- scripts/first_time:
+  + moved menu support to menu package;
+  + moved index.html support to indexhtml package;
+  + moved aumix support to aumix-minimal package;
+  + moved mozilla support to mozilla packages.
+- init.d/clock:
+  + check for /etc/localtime before 'clock start';
+  + try to set timezone if not set.
+- rc.d/rc.sysinit:
+  When /etc/adjtime is present and non-empty, run
+  "clock start" after root filesystem is mounted read-write.
+
 * Thu Oct 16 2003 Dmitry V. Levin <ldv@altlinux.org> 0.6-alt1
 - init.d/ieee1394: new script (rider).
 - scripts/first_time: removed kudzu call (rider).
