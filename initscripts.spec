@@ -1,272 +1,455 @@
-# 	$Id$	
-%define version 4.97
-%define release 42mdk
-
-Summary: The inittab file and the /etc/rc.d scripts.
 Name: initscripts
-Version: %{version}
-Release: %{release}
-Copyright: GPL
+Version: 5.49
+Release: ipl45mdk
+
+Summary: The inittab file and the %_sysconfdir/init.d scripts.
+License: GPL
 Group: System/Base
-Source0: initscripts-%{version}.tar.bz2
-Patch:	initscripts-mdkconf.patch.bz2
-BuildRoot: %{_tmppath}/%{name}-root
-Requires: mingetty, /bin/awk, /bin/sed, mktemp, e2fsprogs >= 1.18-2mdk, console-tools
-Requires: procps >= 2.0.6-8mdk, modutils >= 2.3.10, sysklogd >= 1.3.31, mount >= 2.10f-2mdk
-Requires: /sbin/fuser, which, setup >= 2.1.9-3mdk
-Prereq: /sbin/chkconfig, /usr/sbin/groupadd, gawk
+Packager: Dmitry V. Levin <ldv@altlinux.org>
+
+Source: %name-%version.tar.bz2
+
 Obsoletes: rhsound sapinit
-Conflicts: kernel <= 2.2, timeconfig < 3.0, pppd < 2.3.9, wvdial < 1.40-3
-Conflicts: initscripts < 1.22.1-5
-BuildPrereq: glib-devel
-%ifarch alpha
-Requires: util-linux >= 2.9w-26
-%endif
+
+Conflicts: kernel <= 2.2, timeconfig < 0:3.0, ppp < 0:2.3.9, wvdial < 0:1.40
+Conflicts: sysklogd < 0:1.3.33, lilo < 0:21.5, e2fsprogs < 0:1.19-ipl2mdk
+Conflicts: shadow-utils < 0:19990827-ipl9mdk
+
+PreReq: setup >= 0:2.1.9-ipl18mdk, chkconfig, gawk, grep, sed, coreutils
+Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
+Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk
+Requires: util-linux >= 0:2.10q-ipl1mdk, libreadline >= 4.3-alt2
+
+# Automatically added by buildreq on Sat Dec 02 2000
+BuildRequires: glib-devel libpopt-devel
 
 %description
-The initscripts package contains the basic system scripts used to boot
-your Mandrake system, change run levels, and shut the system down cleanly.
-Initscripts also contains the scripts that activate and deactivate most
-network interfaces.
+The %name package contains the basic system scripts used to boot
+your %distribution system, change run levels, and shut the system
+down cleanly. Initscripts also contains the scripts that activate and
+deactivate most network interfaces.
 
 %prep
 %setup -q
-%patch0 -p2
 
 %build
-make CFLAGS="$RPM_OPT_FLAGS"
-make -C mandrake/ CFLAGS="$RPM_OPT_FLAGS"
+%add_optflags -D_GNU_SOURCE
+%make_build CFLAGS="$RPM_OPT_FLAGS"
+%make_build -C mandrake CFLAGS="$RPM_OPT_FLAGS"
 
 %install
-rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/etc
-make ROOT=$RPM_BUILD_ROOT install 
-mkdir -p $RPM_BUILD_ROOT/var/run/netreport
-chmod u=rwx,g=rwx,o=rx $RPM_BUILD_ROOT/var/run/netreport
+mkdir -p $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc{0,1,2,3,4,5,6}.d
+mkdir -p $RPM_BUILD_ROOT/var/{log,run/netreport}
 
-for i in 0 1 2 3 4 5 6 ; do
-  file=$RPM_BUILD_ROOT/etc/rc.d/rc$i.d
-  mkdir $file
-  chmod u=rwx,g=rx,o=rx $file
-done
+%make_install install ROOT=$RPM_BUILD_ROOT
 
 # Can't store symlinks in a CVS archive
-ln -s ../init.d/random $RPM_BUILD_ROOT/etc/rc.d/rc0.d/K80random
-ln -s ../init.d/random $RPM_BUILD_ROOT/etc/rc.d/rc1.d/S20random
-ln -s ../init.d/random $RPM_BUILD_ROOT/etc/rc.d/rc2.d/S20random
-ln -s ../init.d/random $RPM_BUILD_ROOT/etc/rc.d/rc3.d/S20random
-ln -s ../init.d/random $RPM_BUILD_ROOT/etc/rc.d/rc4.d/S20random
-ln -s ../init.d/random $RPM_BUILD_ROOT/etc/rc.d/rc5.d/S20random
-ln -s ../init.d/random $RPM_BUILD_ROOT/etc/rc.d/rc6.d/K80random
+ln -s ../init.d/killall $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc0.d/S00killall
+ln -s ../init.d/killall $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc6.d/S00killall
 
-ln -s ../init.d/netfs $RPM_BUILD_ROOT/etc/rc.d/rc0.d/K75netfs
-ln -s ../init.d/netfs $RPM_BUILD_ROOT/etc/rc.d/rc1.d/K75netfs
-ln -s ../init.d/netfs $RPM_BUILD_ROOT/etc/rc.d/rc2.d/K75netfs
-ln -s ../init.d/netfs $RPM_BUILD_ROOT/etc/rc.d/rc3.d/S25netfs
-ln -s ../init.d/netfs $RPM_BUILD_ROOT/etc/rc.d/rc4.d/S25netfs
-ln -s ../init.d/netfs $RPM_BUILD_ROOT/etc/rc.d/rc5.d/S25netfs
-ln -s ../init.d/netfs $RPM_BUILD_ROOT/etc/rc.d/rc6.d/K75netfs
+ln -s ../init.d/halt $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc0.d/S01halt
+ln -s ../init.d/halt $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc6.d/S01reboot
 
+ln -s ../init.d/single $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc1.d/S00single
 
-ln -s ../init.d/network $RPM_BUILD_ROOT/etc/rc.d/rc0.d/K90network
-ln -s ../init.d/network $RPM_BUILD_ROOT/etc/rc.d/rc1.d/K90network
-ln -s ../init.d/network $RPM_BUILD_ROOT/etc/rc.d/rc2.d/S10network
-ln -s ../init.d/network $RPM_BUILD_ROOT/etc/rc.d/rc3.d/S10network
-ln -s ../init.d/network $RPM_BUILD_ROOT/etc/rc.d/rc4.d/S10network
-ln -s ../init.d/network $RPM_BUILD_ROOT/etc/rc.d/rc5.d/S10network
-ln -s ../init.d/network $RPM_BUILD_ROOT/etc/rc.d/rc6.d/K90network
+# S99local does not support chkconfig.
+for i in `seq 2 5`; do
+	ln -s ../init.d/local "$RPM_BUILD_ROOT%_sysconfdir/rc.d/rc$i.d/S99local"
+done
 
-ln -s ../init.d/killall $RPM_BUILD_ROOT/etc/rc.d/rc0.d/S00killall
-ln -s ../init.d/killall $RPM_BUILD_ROOT/etc/rc.d/rc6.d/S00killall
+# These are LSB compatibility symlinks. Some day
+# the actual files will be here instead of symlinks
+for i in `seq 0 6`; do
+	ln -s rc.d/rc$i.d $RPM_BUILD_ROOT%_sysconfdir/rc$i.d
+done
+for i in init.d; do
+	ln -s rc.d/$i $RPM_BUILD_ROOT%_sysconfdir/$i
+done
 
-ln -s ../init.d/halt $RPM_BUILD_ROOT/etc/rc.d/rc0.d/S01halt
-ln -s ../init.d/halt $RPM_BUILD_ROOT/etc/rc.d/rc6.d/S01reboot
+%make_install install -C mandrake ROOT=$RPM_BUILD_ROOT
 
-ln -s ../init.d/single $RPM_BUILD_ROOT/etc/rc.d/rc1.d/S00single
+touch $RPM_BUILD_ROOT/var/{log/wtmp,run/utmp}
+touch $RPM_BUILD_ROOT%_sysconfdir/sysconfig/{clock,i18n,keyboard,mouse,network,system}
+chmod -R +x $RPM_BUILD_ROOT%_sysconfdir/{rc.d,sysconfig}
+touch $RPM_BUILD_ROOT%_sysconfdir/sysconfig/console/setterm
+mkdir $RPM_BUILD_ROOT%_sysconfdir/sysconfig/harddisk
 
-ln -s ../rc.local $RPM_BUILD_ROOT/etc/rc.d/rc2.d/S99local
-ln -s ../rc.local $RPM_BUILD_ROOT/etc/rc.d/rc3.d/S99local
-ln -s ../rc.local $RPM_BUILD_ROOT/etc/rc.d/rc5.d/S99local
-
-mkdir -p $RPM_BUILD_ROOT/var/{log,run}
-touch $RPM_BUILD_ROOT/var/run/utmp
-touch $RPM_BUILD_ROOT/var/log/wtmp
-
-#MDK
-make -C mandrake/ install ROOT=$RPM_BUILD_ROOT
-
-%pre
-/usr/sbin/groupadd -g 22 -r -f utmp
+# Autogenerated kernel headers.
+mkdir -p $RPM_BUILD_ROOT{/var/run/kernel,%_localstatedir/rsbac}
+for f in {autoconf,modversions,version}.{h,ph} _h2ph_pre.ph; do
+	touch "$RPM_BUILD_ROOT/var/run/kernel/$f"
+done
 
 %post
-##Fixme
-touch /etc/sysconfig/i18n
-##
-touch /var/log/wtmp
-touch /var/run/utmp
-chown root.utmp /var/log/wtmp /var/run/utmp
-chmod 664 /var/log/wtmp /var/run/utmp
-
-chkconfig --add random 
-chkconfig --add netfs 
-chkconfig --add network 
-chkconfig --add sound
-chkconfig --add kheader
-
+if [ $1 = 1 ]; then     
+	/sbin/chkconfig --add random
+	/sbin/chkconfig --add netfs
+	/sbin/chkconfig --add network
+	/sbin/chkconfig --add rawdevices
+	/sbin/chkconfig --add sound
 %ifnarch sparc sparc64
-chkconfig --add usb
+	/sbin/chkconfig --add usb
 %endif
-
-# handle serial installs semi gracefully
-if [ $1 = 0 ]; then
-  if [ "$TERM" = "vt100" ]; then
-      tmpfile=/etc/sysconfig/tmp.$$
-      sed -e '/BOOTUP=color/BOOTUP=serial/' /etc/sysconfig/init > $tmpfile
-      mv -f $tmpfile /etc/sysconfig/init
-  fi
 fi
 
-# dup of timeconfig %post - here to avoid a dependency
-if [ -L /etc/localtime ]; then
-    _FNAME=`ls -ld /etc/localtime | awk '{ print $11}' | sed 's/lib/share/'`
-    rm /etc/localtime
-    cp -f $_FNAME /etc/localtime
-    if ! grep -q "^ZONE=" /etc/sysconfig/clock ; then
-      echo "ZONE=\"$_FNAME"\" | sed -e "s|[^\"]*/usr/share/zoneinfo/||" >> /etc/sysconfig/clock
-    fi
+for f in /var/{log/wtmp,run/utmp}; do
+	if [ ! -f "$f" ]; then
+		:>>"$f"
+		%__chown root.utmp "$f"
+		%__chmod 664 "$f"
+	fi
+done
+
+# Dup of timeconfig %%post - here to avoid a dependency.
+if [ -L %_sysconfdir/localtime ]; then
+	_FNAME=`/bin/ls -ld %_sysconfdir/localtime |/bin/awk '{print $11}' |/bin/sed 's/lib/share/'`
+	if [ -f "$_FNAME" ]; then
+		%__rm %_sysconfdir/localtime
+		%__cp -fp "$_FNAME" %_sysconfdir/localtime
+		if ! %__grep -q "^ZONE=" %_sysconfdir/sysconfig/clock; then
+			echo "ZONE=\"$_FNAME"\" |/bin/sed -e "s|[^\"]*/usr/share/zoneinfo/||" >>%_sysconfdir/sysconfig/clock
+		fi
+	fi
 fi
 
 %preun
 if [ $1 = 0 ]; then
-  chkconfig --del random
-  chkconfig --del netfs
-  chkconfig --del network
+	/sbin/chkconfig --del random
+	/sbin/chkconfig --del netfs
+	/sbin/chkconfig --del network
+	/sbin/chkconfig --del rawdevices
+	/sbin/chkconfig --del sound
 %ifnarch sparc sparc64
-  chkconfig --del usb
+	/sbin/chkconfig --del usb
 %endif
-  chkconfig --del sound
-  chkconfig --add kheader
 fi
 
-%triggerpostun -- initscripts <= 4.72
+%triggerpostun -- initscripts < %version
+/sbin/chkconfig --add random
+/sbin/chkconfig --add netfs
+/sbin/chkconfig --add network
+/sbin/chkconfig --add rawdevices
+/sbin/chkconfig --add sound
+%ifnarch sparc sparc64
+/sbin/chkconfig --add usb
+%endif
 
-. /etc/sysconfig/init
-. /etc/sysconfig/network
+%triggerpostun -- %name <= 4.72
+. %_sysconfdir/sysconfig/init
+. %_sysconfdir/sysconfig/network
 
 # These are the non-default settings. By putting them at the end
-# of the /etc/sysctl.conf file, it will override the default
+# of the %_sysconfdir/sysctl.conf file, it will override the default
 # settings earlier in the file.
 
-if [ -n "$FORWARD_IPV4" -a "$FORWARD_IPV4" != "no" -a "$FORWARD_IPV4" != "false" ]; then
-	echo "# added by initscripts install on `date`" >> /etc/sysctl.conf
-	echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
+if [ -n "$FORWARD_IPV4" ] && [ "$FORWARD_IPV4" != "no" -a "$FORWARD_IPV4" != "false" ]; then
+	echo "# added by initscripts install on `date`" >>%_sysconfdir/sysctl.conf
+	echo "net.ipv4.ip_forward = 1" >>%_sysconfdir/sysctl.conf
 fi
-if [ "$DEFRAG_IPV4" = "yes" -o "$DEFRAG_IPV4" = "true" ]; then
-	echo "# added by initscripts install on `date`" >> /etc/sysctl.conf
-	echo "net.ipv4.ip_always_defrag = 1" >> /etc/sysctl.conf
+if [ -n "$DEFRAG_IPV4" ] && [ "$DEFRAG_IPV4" != "no" -a "$DEFRAG_IPV4" != "false" ]; then
+	echo "# added by initscripts install on `date`" >>%_sysconfdir/sysctl.conf
+	echo "net.ipv4.ip_always_defrag = 1" >>%_sysconfdir/sysctl.conf
 fi
-if [ -n "$MAGIC_SYSRQ" -a "$MAGIC_SYSRQ" != "no" ]; then
-	echo "# added by initscripts install on `date`" >> /etc/sysctl.conf
-	echo "kernel.sysrq = 0" >> /etc/sysctl.conf
+if [ -n "$MAGIC_SYSRQ" ] && [ "$MAGIC_SYSRQ" != "no" -a "$MAGIC_SYSRQ" != "false" ]; then
+	echo "# added by initscripts install on `date`" >>%_sysconfdir/sysctl.conf
+	echo "kernel.sysrq = 1" >>%_sysconfdir/sysctl.conf
 fi
-if uname -m | grep -q sparc ; then
-   if [ -n "$STOP_A" -a "$STOP_A" != "no" ]; then
-	echo "# added by initscripts install on `date`" >> /etc/sysctl.conf
-	echo "kernel. = 1" >> /etc/sysctl.conf
-   fi
+if uname -m |fgrep -q sparc; then
+	if [ -n "$STOP_A" -a "$STOP_A" != "no" -a "$STOP_A" != "false" ]; then
+		echo "# added by initscripts install on `date`" >>%_sysconfdir/sysctl.conf
+		echo "kernel. = 1" >>%_sysconfdir/sysctl.conf
+	fi
 fi
-
-%postun
-if [ -f /var/lock/TMP_1ST ];then 
-		rm -f /var/lock/TMP_1ST
-fi
-
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 %files
-%defattr(-,root,root)
-%dir /etc/sysconfig/network-scripts
-%config %verify(not md5 mtime size) /etc/adjtime
-%config(noreplace) /etc/sysconfig/init
-/etc/sysconfig/network-scripts/ifdown
+%config %verify(not md5 mtime size) %attr(640,root,root) %_sysconfdir/adjtime
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/clock
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/framebuffer
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/i18n
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/init
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/keyboard
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/mouse
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/network
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/rawdevices
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/system
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/usb
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/vlan
 %config /sbin/ifdown
-%config /etc/sysconfig/network-scripts/ifdown-post
-/etc/sysconfig/network-scripts/ifup
 %config /sbin/ifup
-%dir /etc/sysconfig/console
-%config /etc/sysconfig/network-scripts/network-functions
-%config /etc/sysconfig/network-scripts/ifup-post
-%config /etc/sysconfig/network-scripts/ifcfg-lo
-%config /etc/sysconfig/network-scripts/ifdown-ppp
-%config /etc/sysconfig/network-scripts/ifdown-sl
-%config /etc/sysconfig/network-scripts/ifup-ppp
-%config /etc/sysconfig/network-scripts/ifup-sl
-%config /etc/sysconfig/network-scripts/ifup-routes
-%config /etc/sysconfig/network-scripts/ifup-plip
-%config /etc/sysconfig/network-scripts/ifup-aliases
-%config /etc/sysconfig/network-scripts/ifup-ipx
-%config /etc/X11/prefdm
-%config /etc/inittab
-%dir    /etc/rc.d
-%config /etc/rc.d/rc.sysinit
-%dir    /etc/rc.d/rc0.d
-%config(missingok) /etc/rc.d/rc0.d/*
-%dir    /etc/rc.d/rc1.d
-%config(missingok) /etc/rc.d/rc1.d/*
-%dir    /etc/rc.d/rc2.d
-%config(missingok) /etc/rc.d/rc2.d/*
-%dir    /etc/rc.d/rc3.d
-%config(missingok) /etc/rc.d/rc3.d/*
-%dir    /etc/rc.d/rc4.d
-%config(missingok) /etc/rc.d/rc4.d/*
-%dir    /etc/rc.d/rc5.d
-%config(missingok) /etc/rc.d/rc5.d/*
-%dir    /etc/rc.d/rc6.d
-%config(missingok) /etc/rc.d/rc6.d/*
-%dir    /etc/rc.d/init.d
-%config(missingok) /etc/rc.d/init.d/*
-%config /etc/rc.d/rc
-%config(noreplace) /etc/rc.d/rc.local
-%config(noreplace) /etc/sysctl.conf
-%config /etc/profile.d/lang.sh
-%config /etc/profile.d/lang.csh
-%config /etc/profile.d/inputrc.sh
-%config /etc/profile.d/inputrc.csh
-/usr/sbin/sys-unconfig
+%dir %_sysconfdir/sysconfig/harddisk
+%dir %_sysconfdir/sysconfig/console
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/console/setterm
+%dir %_sysconfdir/sysconfig/network-scripts
+%_sysconfdir/sysconfig/network-scripts/ifup
+%_sysconfdir/sysconfig/network-scripts/ifdown
+%config %_sysconfdir/sysconfig/network-scripts/*-*
+%config %_sysconfdir/X11/prefdm
+%config(noreplace) %_sysconfdir/inittab
+%_sysconfdir/init.d
+%dir    %_sysconfdir/rc.d
+%dir    %_sysconfdir/rc.d/rc?.d
+%config(missingok) %_sysconfdir/rc.d/rc?.d/*
+%dir    %_sysconfdir/rc.d/scripts
+%config %_sysconfdir/rc.d/scripts/*
+%dir    %_sysconfdir/rc.d/init.d
+%config %_sysconfdir/rc.d/init.d/*
+%config %_sysconfdir/rc.d/rc
+%config %_sysconfdir/rc.d/rc.sysinit
+%config %_sysconfdir/rc.d/rc.powerfail
+%config(noreplace) %verify(not md5 mtime size) %_sysconfdir/modules
+%config(noreplace) %_sysconfdir/sysctl.conf
+%config %_sysconfdir/profile.d/*
+%_sbindir/sys-unconfig
 /sbin/setsysfont
-/bin/doexec
-/bin/ipcalc
-/bin/usleep
-%attr(4755,root,root) /usr/sbin/usernetctl
+%attr(4711,root,root) %_sbindir/usernetctl
 /sbin/consoletype
 /sbin/getkey
-%attr(2755,root,root) /sbin/netreport
+%attr(2711,root,netwatch) /sbin/netreport
 /sbin/initlog
 /sbin/minilogd
 /sbin/service
-/sbin/installkernel
 /sbin/ppp-watch
-/usr/man/man*/*
-%dir %attr(775,root,root) /var/run/netreport
-%config /etc/ppp/ip-up
-%config /etc/ppp/ip-down
-%config /etc/initlog.conf
-%ghost %attr(0664,root,utmp) /var/log/wtmp
-%ghost %attr(0664,root,utmp) /var/run/utmp
-%config /etc/modules
-%config /etc/rc.d/rc.modules
-/sbin/is_depmod_necessary
+%config %_sysconfdir/ppp/ip-up
+%config %_sysconfdir/ppp/ip-down
+%config %_sysconfdir/initlog.conf
+%dir %attr(770,root,netwatch) /var/run/netreport
+%ghost %attr(664,root,utmp) /var/log/wtmp
+%ghost %attr(664,root,utmp) /var/run/utmp
 %ifnarch sparc
-/usr/sbin/supermount
+%_sbindir/supermount
 %endif
-%ifarch %ix86
-/usr/sbin/detectloader
-%endif
-/usr/bin/*
-%doc sysconfig.txt sysvinitfiles ChangeLog
+/bin/*
+%_bindir/*
+%_mandir/man?/*
+%dir /var/run/kernel
+%ghost /var/run/kernel/*
+%dir %_localstatedir/rsbac
+%doc sysconfig.txt sysvinitfiles ChangeLog*
 
 %changelog
+* Mon Oct 14 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl45mdk
+- Removed profile.d/inputrc.{sh,csh} (#0001327).
+
+* Tue Jun 18 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl44mdk
+- init.d/sound: changed chkconfig values.
+- TODO:
+  + move all X11 stuff to xinitrc;
+  + move all network stuff to separate subpackage;
+  + consider moving sound and usb stuff to separate subpackage.
+
+* Thu Jun 06 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl43mdk
+- profile.d/inputrc.{sh,csh}: moved LESS* rules to separate files
+  (now in less package).
+
+* Tue Jun 04 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl42mdk
+- init.d/usb: added support for multiple usb interfaces.
+
+* Sun Jun 02 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl41mdk
+- Moved utilities to sh-utils package:
+  /bin/getuseruid, /bin/runas, /bin/usleep - from initscripts.
+- Moved requires to interactivesystem package:
+  bdflush, mingetty.
+- Fixed %%post: call "/sbin/chkconfig --add" only for first package install.
+- Fixed typo in /etc/profile.d/inputrc.csh script.
+- Removed %%config attributre from symlinks in %_sysconfdir/sysconfig/network-scripts/
+
+* Mon Apr 15 2002 Dmitry V. Levin <ldv@alt-linux.org> 5.49-ipl40mdk
+- Added sample rc.powerfail script.
+- inittab:
+  + cleaned up;
+  + added comments and examples from Owl;
+  + changed single-user mode action to /sbin/sulogin
+    (closes #0000753, #0000683).
+- scripts/first_time: added update-menus call.
+
+* Mon Apr 15 2002 Dmitry V. Levin <ldv@alt-linux.org> 5.49-ipl39mdk
+- Moved all useful from mandrake_everytime to rc.sysinit,
+  and dropped mandrake_everytime.
+- Renamed mandrake_firstime to first_time, dropped obsolete code.
+- Relocated rc.local to init.d/local (so rc.local is user-defined now).
+- Fixed:
+  + init.d/clock: message typo (#0000451);
+  + /sbin/if{up,down}-post: fixed typo, changed hooks for if{up,down}-local (#0000514);
+  + init.d/functions: check for multi-word arguments for pidofproc/pidfileofproc (#0000515);
+  + scripts/adjust_autofs: don't start autofs (#0000530);
+  + init.d/local: fbprogress support: switching to tty1 only
+    for "N --> [234]" runlevel change (#0000685).
+  + manpage typos (#0000819);
+
+* Fri Jan 18 2002 Dmitry V. Levin <ldv@alt-linux.org> 5.49-ipl38mdk
+- network-scripts/ifup: call dhcpxd with -w option (#0000401).
+- scripts/adjust_autofs: try to start automounter after config creation.
+- scripts/indexhtml_update: test directory presence before chdir.
+
+* Tue Jan 15 2002 Dmitry V. Levin <ldv@alt-linux.org> 5.49-ipl37mdk
+- Added vlan support (dvlsakh, #0000363).
+
+* Wed Jan 09 2002 Dmitry V. Levin <ldv@alt-linux.org> 5.49-ipl36mdk
+- scripts/mandrake_everytime: call update_wms instead of fndSession.
+- profile.d/lang.sh: test for non-empty i18n config, presence isn't enough.
+- profile.d/tmpdir.sh: fixed $SECURE_TMP handling.
+- init.d/usb: always probe usb-interface (goldhead).
+- scripts/adjust_autofs: fixed TABFILE support.
+- scripts/framebuffer_setfont: call setsysfont if and only if required.
+- sysconfig/framebuffer: enable by default.
+
+* Fri Jan 04 2002 Dmitry V. Levin <ldv@alt-linux.org> 5.49-ipl35mdk
+- scripts/adjust_autofs: added TABFILE support.
+- network-scripts/ifup: removed unneeded quotes for $RFLAG (#0000315).
+- rc,rc.local: removed unnecessary chvt dependence.
+
+* Wed Dec 26 2001 Dmitry V. Levin <ldv@alt-linux.org> 5.49-ipl34mdk
+- Added LPP support (goldhead).
+
+* Tue Dec 18 2001 Dmitry V. Levin <ldv@alt-linux.org> 5.49-ipl33mdk
+- Fixed typo in lang.sh (svd).
+- Fixed versioned dependencies.
+
+* Fri Dec 14 2001 Dmitry V. Levin <ldv@alt-linux.org> 5.49-ipl32mdk
+- Addeded inittab-generated requires: bdflush, mingetty (#0000180).
+- rc.sysinit: added "modprobe lvm-mod" before testing /proc/lvm (#0000115).
+- lang.sh: dropped RPM_INSTALL_LANG support.
+- rc.local: added welcome2l support.
+- usb: enable by default.
+- rc.sysinit: set kernel.hotplug.
+- init.d/network: disable kernel.hotplug during interfaces startup.
+
+* Wed Nov 14 2001 Dmitry V. Levin <ldv@alt-linux.org> 5.49-ipl31mdk
+- Moved bootloader stuff to separate package.
+
+* Wed Sep 12 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl30mdk
+- mandrake_firstime:
+  + create /dev/dvd* symlinks if required;
+  + create missing user mailboxes;
+  + execute distribution-specific script: /etc/rc.d/scripts/distribution.
+
+* Mon Aug 20 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl29mdk
+- init.d/halt: reworked apcupsd and poweroff handling.
+
+* Wed Aug 15 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl28mdk
+- init.d/halt: in case of poweroff, call "modprobe apm";
+- scripts/framebuffer_init: fixed typo;
+- scripts/framebuffer_setfont: added "sleep 1" (temporary hack);
+- scripts/idetune: added more harddisks; corrected hdparm parameter checks.
+
+* Tue Jul 31 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl27mdk
+- Added framebuffer device initialization support (goldhead).
+- lang.sh: added iso08* to the list of '\033(K'-wanting SYSFONTACMs (aen).
+- prefdm: redirect output from kdm to /dev/null (goldhead).
+- functions: fixed type in --bg option parsing.
+- rc.sysinit: relocated modprobing calls to reduce spam.
+
+* Tue Jul 17 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl26mdk
+- Added autofs support (at firsttime stage).
+- network-functions: optimized a bit (mookid).
+
+* Mon Jun 18 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl25mdk
+- mandrake_firstime: remove also plain files from /.??*
+
+* Tue Jun 05 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl24mdk
+- Fixed bugs due to recent changes.
+
+* Tue Jun 05 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl23mdk
+- Everytime at startup touch if missing files: /etc/ld.so.{cache,preload} (for RSBAC).
+- supermount script: put "$dev" in the first (device) field of a supermount entry (imz).
+- prefdm: added WindowMaker support (voins).
+- functions: set locale to POSIX for root.
+- functions: sort remaining filesystems in UnmountFilesystems() (Alex Morozov).
+- halt: update UnmountFilesystems patterns (idea from Alex Morozov).
+- gen_kernel_headers: added support for various USR_LIB_KERNEL (idea from Alex Morozov).
+- Moved some obsoletes to requires.
+
+* Fri May 11 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl22mdk
+- Set "aumix -v90 -w90" by default for alsa sound.
+
+* Thu May 10 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl21mdk
+- s|sysctl -p /etc/sysctl.conf|sysctl -e -p /etc/sysctl.conf|g
+
+* Wed Apr 25 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl20mdk
+- Reformat banner.
+- Fixed init.d/netfs script.
+- Re-added NIS domain initialization (dropped since 5.49-ipl7mdk).
+
+* Mon Apr 23 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl19mdk
+- Fixed rsbac softmode check.
+- Updated %%distribution information.
+
+* Fri Apr 20 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl18mdk
+- network-scripts/ifup-post: fixed PEERDNS check; added SMTP_RELAYHOST support.
+- init.d/usb: fixed usb mounting; changed startup level to 04.
+
+* Thu Apr 19 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl17mdk
+- Moved main rsbac stuff to separate package (secfiles).
+- Fixed usb unmounting.
+- Added rebuilding mozilla registry on first boot.
+
+* Mon Apr 16 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl16mdk
+- Added initial rsbac support.
+
+* Mon Apr 16 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl15mdk
+- Enhanced idetune script (cdrom support).
+
+* Wed Apr 04 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl14mdk
+- Various minor fixes.
+
+* Tue Mar 20 2001 Dmitry V. Levin <ldv@altlinux.ru> 5.49-ipl13mdk
+- Various fixes.
+
+* Wed Mar 07 2001 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl12mdk
+- Fixed typo in %_initdir/network.
+
+* Mon Mar 05 2001 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl11mdk
+- Major RH/MDK merge.
+
+* Sun Feb 04 2001 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl10mdk
+- Rewritten kernel headers autogeneration.
+
+* Thu Feb 01 2001 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl9mdk
+- Fixed status() function (%_initdir/functions).
+- Fixed console initialization (%_sysconfdir/profile.d/lang.*).
+
+* Wed Jan 31 2001 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl8mdk
+- Fixed %_initdir/clock.
+- Added wireless support.
+
+* Mon Jan 22 2001 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl7mdk
+- Moved helper scripts from %_sysconfdir/rc.d/init.d/ to %_sysconfdir/rc.d/scripts/
+- New helper: idetune.
+- We don't set the NIS domain name anymore.
+- RH fixes from %name-5.54.
+
+* Sun Jan 21 2001 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl6mdk
+- Improved SourceIf* functions.
+- Fixed interactive startup selection.
+- Added %_sysconfdir/sysconfig/keyboard.
+- Removed %_sysconfdir/sysconfig/pcmcia
+  (it's now provided by pcmcia-cs package).
+- Minor code cleanup.
+
+* Sat Jan 06 2001 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl5mdk
+- Fixes in installkernel (from Ivan Zakharyaschev <vanyaz@mccme.ru>).
+- Added /usr/share/postfix/rebuild_aliases in mandrake_firstime.
+
+* Wed Dec 27 2000 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl4mdk
+- Fixed "pidofproc" in /etc/init.d/functions.
+
+* Thu Dec 21 2000 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl3mdk
+- Updated %_sysconfdir/profile.d/inputrc.sh.
+- Added "PreReq: setup >= 2.1.9-ipl15mdk".
+
+* Wed Dec 13 2000 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl2mdk
+- Added more helper functions (/etc/init.d/functions).
+- Updated bootup code and help files.
+
+* Tue Dec 05 2000 Dmitry V. Levin <ldv@fandra.org> 5.49-ipl1mdk
+- 5.49 - BigMerge with RH.
+
+* Sat Dec 02 2000 Dmitry V. Levin <ldv@fandra.org> 5.27-ipl38mdk
+- 5.27 - BigMerge with MDK (all except aurora).
+
+* Wed May 31 2000 Dmitry V. Levin <ldv@fandra.org> 4.97-ipl42mdk
+- RE and Fandra adaptions.
+
 * Tue May 30 2000 Chmouel Boudjnah <chmouel@mandrakesoft.com> 4.97-42mdk
 - mandrake/installkernel: fix typo.
 
@@ -278,7 +461,7 @@ rm -rf $RPM_BUILD_ROOT
 - mandrake/inputrc.csh: Remove = (not needed).
 
 * Sun May 28 2000 Chmouel Boudjnah <chmouel@mandrakesoft.com> 4.97-40mdk
-- mandrake/Makefile: Include usb for alpha. 
+- mandrake/Makefile: Include usb for alpha.
 - initscripts.spec: Include usb for alpha.
 
 * Sun May 28 2000 Chmouel Boudjnah <chmouel@mandrakesoft.com> 4.97-39mdk
@@ -425,7 +608,7 @@ network FS, and unmount them even if the user didn't turn on netfs
 
 * Wed Apr  5 2000 Chmouel Boudjnah <chmouel@mandrakesoft.com> 4.97-14mdk
 - mandrake/supermount: fix multiple bugs (multiple cdrom, handle options).
-- mandrake/mandrake_everytime: don't use insmod -p to detect is supermount 
+- mandrake/mandrake_everytime: don't use insmod -p to detect is supermount
   module is here.
 
 * Mon Apr  3 2000 Chmouel Boudjnah <chmouel@mandrakesoft.com> 4.97-13mdk
@@ -444,7 +627,7 @@ network FS, and unmount them even if the user didn't turn on netfs
 - mandrake/rc.modules: new file to load modules of /etc/modules.
 - mandrake/supermount: Fix typo and chmou stupidity.
 - mandrake/Makefile: Add kheader/rc.modules/modules.
-- mandrake/mandrake_everytime: use better approach to detect if	
+- mandrake/mandrake_everytime: use better approach to detect if
   supermount modules is not present.
 - mandrake/mandrake_everytime: Remove the modprobe vfat.
 - mandrake/mandrake_firstime: erase first logfile if the file is empty.
@@ -496,7 +679,7 @@ way, sed doesn't exit code depending on succeeding subst)
 - initscripts.spec: requires setup >= 2.1.9-3mdk (for inputrc).
 
 * Mon Mar 13 2000 Chmouel Boudjnah <chmouel@mandrakesoft.com> 4.97-4mdk
-- initscripts.spec: Adjust groups. 
+- initscripts.spec: Adjust groups.
 
 * Mon Mar 13 2000 Chmouel Boudjnah <chmouel@mandrakesoft.com> 4.97-3mdk
 - rc.d/rc.sysinit: Remove nasty mount /boot stuff (pixel)
