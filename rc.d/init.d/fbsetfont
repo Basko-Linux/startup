@@ -22,46 +22,56 @@ FBSET=/usr/sbin/fbset
 # Parse framebuffer config.
 SourceIfNotEmpty /etc/sysconfig/framebuffer && is_yes "$ENABLE" || exit 0
 
+LOCKFILE=/var/lock/subsys/fbsetfont
 RETVAL=0
 
-# See how we were called.
-case "$1" in
-	start|reload|restart)
-		# Initializing ttys.
-		sed -ne 's,^\([0-9]\+\):[0-9]\+:respawn:/sbin/mingetty.*,/dev/tty\1,pg' </etc/inittab |
-			while read t; do
-				[ ! -c "$t" ] || : >>"$t"
-			done
-		for i in $TTYS; do
-			t="/dev/tty$i"
+start()
+{
+	# Initializing ttys.
+	sed -ne 's,^\([0-9]\+\):[0-9]\+:respawn:/sbin/mingetty.*,/dev/tty\1,pg' </etc/inittab |
+		while read t; do
 			[ ! -c "$t" ] || : >>"$t"
 		done
+	for i in $TTYS; do
+		t="/dev/tty$i"
+		[ ! -c "$t" ] || : >>"$t"
+	done
 
-		# Setup videomode if requested.
-		if [ -n "$MODE" -a -x "$FBSET" ]; then
-			: >>"$LOGDEVICE"
-			"$FBSET" -a "$MODE" >>"$LOGDEVICE" 2>&1
-		fi
+	# Setup videomode if requested.
+	if [ -n "$MODE" -a -x "$FBSET" ]; then
+		: >>"$LOGDEVICE"
+		"$FBSET" -a "$MODE" >>"$LOGDEVICE" 2>&1
+	fi
 
-		# Update system font.
-		if [ -n "$MODULE" ] || [ -n "$MODE" -a -x "$FBSET" ]; then
-			: >>"$LOGDEVICE"
-			sed -ne 's,^\([0-9]\+\):[0-9]\+:respawn:/sbin/mingetty.*,/dev/tty\1,pg' </etc/inittab |
-				while read t; do
-					[ ! -c "$t" ] ||
-						/sbin/setsysfont --tty="$t" >>"$LOGDEVICE" 2>&1
-				done
-			for i in $TTYS; do
-				t="/dev/tty$i"
+	# Update system font.
+	if [ -n "$MODULE" ] || [ -n "$MODE" -a -x "$FBSET" ]; then
+		: >>"$LOGDEVICE"
+		sed -ne 's,^\([0-9]\+\):[0-9]\+:respawn:/sbin/mingetty.*,/dev/tty\1,pg' </etc/inittab |
+			while read t; do
 				[ ! -c "$t" ] ||
 					/sbin/setsysfont --tty="$t" >>"$LOGDEVICE" 2>&1
 			done
-		fi
+		for i in $TTYS; do
+			t="/dev/tty$i"
+			[ ! -c "$t" ] ||
+				/sbin/setsysfont --tty="$t" >>"$LOGDEVICE" 2>&1
+		done
+	fi
+	touch "$LOCKFILE"
+}
+
+# See how we were called.
+case "$1" in
+	start|reload|restart|condrestart|condreload)
+		start
 		;;
-	stop|condstop|condrestart|condreload|status)
+	stop|condstop)
+		rm -f "$LOCKFILE"
+		;;
+	status)
 		;;
 	*)
-		msg_usage "${0##*/} {start}"
+		msg_usage "${0##*/} {start|stop}"
 		RETVAL=1
 esac
 

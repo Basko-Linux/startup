@@ -20,6 +20,8 @@ WITHOUT_RC_COMPAT=1
 CONFIG=/etc/sysconfig/rawdevices
 [ -x /usr/bin/raw -a -s "$CONFIG" ] || exit 0
 
+LOCKFILE=/var/lock/subsys/rawdevices
+
 assign_raw()
 {
    grep -v '^ *#' "$CONFIG" | while read RAW BLOCK; do 
@@ -43,15 +45,16 @@ assign_raw()
 
 # See how we were called.
 case "$1" in
-	start|restart|reload)
+	start|reload|restart|condreload|condrestart)
 		if grep -qsv '^ *#' "$CONFIG"; then
 			echo $"Assigning devices: "
 			assign_raw
 			echo "done"
 		fi
+		touch "$LOCKFILE"
 		;;
-	stop)
-		# No action to be taken here
+	stop|condstop)
+		rm -f "$LOCKFILE"
 		;;
 	status)
 		if [ "$(id -u)" -eq 0 ]; then 

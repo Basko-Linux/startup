@@ -10,8 +10,6 @@
 #               Modified for RHS Linux by Damien Neil
 #
 
-# Set the path.
-PATH=/sbin:/bin:/usr/bin:/usr/sbin
 export NOLOCALE=1
 
 WITHOUT_RC_COMPAT=1
