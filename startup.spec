@@ -66,7 +66,6 @@ done
 if [ $1 -eq 1 ]; then
 	/sbin/chkconfig --add random
 	/sbin/chkconfig --add rawdevices
-	/sbin/chkconfig --add sound
 	/sbin/chkconfig --add usb
 fi
 
@@ -94,7 +93,6 @@ fi
 if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del random
 	/sbin/chkconfig --del rawdevices
-	/sbin/chkconfig --del sound
 	/sbin/chkconfig --del usb
 fi
 
@@ -108,6 +106,9 @@ for f in %_sysconfdir/{adjtime,inittab,modules,sysctl.conf,sysconfig/{clock,cons
 	        fi
 	fi
 done
+/sbin/chkconfig --add random
+/sbin/chkconfig --add rawdevices
+/sbin/chkconfig --add usb
 
 %files
 %config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/*
