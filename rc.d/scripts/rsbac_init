@@ -1,0 +1,177 @@
+#!/bin/sh
+
+which()
+{
+    PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin:/usr/lib/postfix /usr/bin/which "$1" 2>/dev/null
+}
+
+export which
+
+LOADER=`detectloader`
+#check lilo&grub for rsbac_ lines
+if [ "$LOADER" = LILO ]; then
+    if [ -f /etc/lilo.conf ]; then
+	grep -qs rsbac_auth_enable_login /etc/lilo.conf || exit 0
+    fi 
+else
+    if [ -f /boot/grub/menu.lst ];then
+	grep -qs rsbac_auth_enable_login /boot/grub/menu.lst || exit 0
+    fi
+fi
+
+#check kernel
+uname -r |fgrep -qs rsbac || exit 0
+
+auth_set_cap=`which auth_set_cap` || exit 0
+attr_set_fd=`which attr_set_fd` || exit 0
+
+# xfs
+if uid=`getuseruid xfs` && program=`which xfs`; then
+#    echo "$uid $program"
+    "$auth_set_cap" FILE add $program $uid
+fi
+
+#crond
+if program=`which crond`; then
+#    echo $program
+    "$auth_set_cap" FILE add $program 0 399
+    "$auth_set_cap" FILE add $program 401 16384
+fi
+
+#atd
+if program=`which atd`; then
+#    echo $program
+    "$auth_set_cap" FILE add $program 0 399 
+    "$auth_set_cap" FILE add $program 401 16384
+fi
+
+#at
+if program=`which at`; then
+#    echo $program
+    "$auth_set_cap" FILE add $program 0 399
+    "$auth_set_cap" FILE add $program 401 16384
+fi
+
+#xinetd
+if program=`which xinetd`; then
+#    echo $program
+    "$auth_set_cap" FILE add $program 0 399 
+    "$auth_set_cap" FILE add $program 401 16384
+fi
+
+#su for Postgres
+if uid=`getuseruid postgres` && program=`which su`; then
+#    echo "$uid $program"
+    "$auth_set_cap" FILE add $program $uid
+fi
+
+#sshd
+if program=`which sshd`; then
+#    echo $program
+    "$attr_set_fd" FILE auth_may_setuid 1 $program
+fi
+
+#portmap
+if uid=`getuseruid rpc` && program=`which portmap`; then
+#    echo "$uid $program"
+    "$auth_set_cap" FILE add $program $uid
+fi
+
+#named
+if uid=`getuseruid named` && program=`which named`; then
+#    echo "$uid $program"
+    "$auth_set_cap" FILE add $program $uid
+fi
+
+#scanlogd
+if uid=`getuseruid scanlogd` && program=`which scanlogd`; then
+#    echo "$uid $program"
+    "$auth_set_cap" FILE add $program $uid
+fi
+
+#apache
+if uid=`getuseruid apache` && program=`which httpd`; then
+#    echo "$uid $program"
+    "$auth_set_cap" FILE add $program $uid
+fi
+
+#libra-ftpd
+if uid=`getuseruid libra-ftpd` && program=`which libra-ftpd`; then
+#    echo "$uid $program"
+    "$auth_set_cap" FILE add $program $uid
+fi
+
+#junkbuster
+if uid=`getuseruid junkbuster` && program=`which exec_junkbuster`; then
+#    echo "$uid $program"
+    "$auth_set_cap" FILE add $program $uid
+fi
+
+#mysql
+if uid=`getuseruid mysql` && program=`which mysqld`; then
+#    echo "$uid $program"
+    "$auth_set_cap" FILE add $program $uid
+fi
+
+#rcync
+if uid=`getuseruid rsyncd` && program=`which rsync`; then
+#    echo "$uid $program"
+    "$auth_set_cap" FILE add $program $uid
+fi
+
+#postfix
+if uid=`getuseruid postfix`; then
+    postsuper_program=`which postsuper`
+    qmgr_program=`which qmgr`
+    cleanup_program=`which cleanup`
+    trivialrewrite_program=`which trivial-rewrite`
+    bounce_program=`which bounce`
+    local_program=`which local`
+    smtp_program=`which smtp`
+    smtpd_program=`which smtpd`
+
+#    echo "$uid $postsuper_program"
+#    echo "$uid $qmgr_program"
+#    echo "$uid $cleanup_program"
+#    echo "$uid $trivialrewrite_program"
+#    echo "$uid $bounce_program"
+#    echo  $local_program
+#    echo "$uid $smtp_program"
+#    echo "$uid $smtpd_program"
+
+    "$auth_set_cap" FILE add $postsuper_program $uid
+    "$auth_set_cap" FILE add $qmgr_program $uid
+    "$auth_set_cap" FILE add $cleanup_program $uid
+    "$auth_set_cap" FILE add $trivialrewrite_program $uid
+    "$auth_set_cap" FILE add $bounce_program $uid
+    "$auth_set_cap" FILE add $smtp_program $uid
+    "$auth_set_cap" FILE add $smtpd_program $uid
+
+    "$attr_set_fd" FILE auth_may_setuid 1 $local_program
+fi
+
+
+#remove rsbac_ lines from lilo&grub
+if [ -f /etc/lilo.conf ];then
+    cat /etc/lilo.conf | sed 's/ *rsbac_auth_enable_login//;s/ *rsbac_softmode//' >/etc/lilo.conf~tmp
+    mv /etc/lilo.conf~tmp /etc/lilo.conf
+fi
+
+if [ -f /boot/grub/menu.lst ];then
+    cat /boot/grub/menu.lst | sed 's/ *rsbac_auth_enable_login//;s/ *rsbac_softmode//' >/boot/grub/menu.lst~tmp
+    mv /boot/grub/menu.lst~tmp /boot/grub/menu.lst
+fi
+
+#if our loader LILO then restart it
+if [ "$LOADER" = LILO ]; then
+    /sbin/lilo &>/dev/null
+fi
+
+##########################################
+# Now add some additional restrictions   #
+##########################################
+
+name=`awk -F: '{if($3=="400") print $1}' /etc/passwd |head -1`
+if [ -n "$name" ]; then
+    su $name -c ${0%/*}/rsbac_init_addon
+fi

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+uname -r |fgrep -qs rsbac || exit 0
+mkdir -p /var/lib/rsbac || exit 0
+
+LOCKFILE=/var/lib/rsbac/init.lock
+if [ -f "$LOCKFILE" ]; then
+	exit 0
+fi
+if action "Adjusting RSBAC configuration:" ${0%/*}/rsbac_init; then
+	touch "$LOCKFILE"
+fi

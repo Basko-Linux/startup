@@ -1,0 +1,59 @@
+#!/bin/bash
+
+attr_set_fd=`which attr_set_fd` || exit 0
+rc_get_item=`which rc_get_item` || exit 0
+rc_set_item=`which rc_set_item` || exit 0
+attr_set_file_dir=`which attr_set_file_dir` || exit 0
+
+#FF - protection for executables
+RESTRICTED_DIRS="/bin /sbin /usr/bin /usr/sbin"
+for i in $RESTRICTED_DIRS; do
+#We must set read_only to executable scripts
+    file $i/* |grep 'script.*executable' |cut -d: -f1 |xargs -r "$attr_set_fd" FILE ff_flags 1
+
+#    echo "FF (execute_only) - $i" 
+    "$attr_set_fd" DIR ff_flags 130 $i
+done
+
+#FF - protection for libraries (read only)
+    "$attr_set_fd" DIR ff_flags 129 /lib
+    "$attr_set_fd" DIR ff_flags 129 /usr/lib
+#FF -protection for /etc
+    "$attr_set_fd" FILE ff_flags 1 /etc/passwd
+    "$attr_set_fd" FILE ff_flags 1 /etc/shadow
+
+#RC - Protection for Home Area
+#find free or existing fd type 'Home_Area'
+HOMEAREATYPE=`"$rc_get_item" list_used_fd_types | grep 'Home_Area' | cut -f 1 -d ' '`
+if test -z $HOMEAREATYPE;then
+    HOMEAREATYPE=`"$rc_get_item" list_unused_fd_type_nr | head -n 1`
+fi
+
+#create new fd type 'Home Area'
+"$rc_set_item" TYPE $HOMEAREATYPE type_fd_name "Home Area"
+
+#add to "General User" all nessesary rights
+"$rc_set_item" ROLE 0 type_comp_fd $HOMEAREATYPE RW 1
+
+#add to "Role Admin" all nessesary rights
+"$rc_set_item" ROLE 1 type_comp_fd $HOMEAREATYPE RW 1
+
+#set 'Home Area' type to /home
+"$attr_set_file_dir" DIR /home rc_type_fd $HOMEAREATYPE
+
+#RC - Protection for Secoff Home Area
+#find free or existing fd type 'Secoff_Area'
+HOMEAREATYPE=`"$rc_get_item" list_used_fd_types | grep 'Secoff_Area' | cut -f 1 -d ' '`
+if test -z $HOMEAREATYPE;then
+    HOMEAREATYPE=`"$rc_get_item" list_unused_fd_type_nr | head -n 1`
+fi
+
+#create new fd type 'Home Area'
+"$rc_set_item" TYPE $HOMEAREATYPE type_fd_name "Secoff Area"
+
+#add to "Role Admin" all nessesary rights
+"$rc_set_item" ROLE 1 type_comp_fd $HOMEAREATYPE RW 1
+
+#set 'Home Area' type to /home
+"$attr_set_file_dir" DIR /secoff rc_type_fd $HOMEAREATYPE
+
