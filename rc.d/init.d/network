@@ -41,7 +41,7 @@ cd /etc/sysconfig/network-scripts
 # ignore aliases, alternative configurations, and editor backup files
 interfaces=`ls ifcfg* | \
 	egrep -v '(ifcfg-lo|:|\.rpm)' | \
-	egrep -v 'ifcfg-vlan[0-9]*' | \
+	egrep -v 'ifcfg-[a-z0-9]+\.[0-9]+$|ifcfg-vlan[0-9]*$' | \
 	egrep -v '(~|\.bak)$' | \
 	egrep 'ifcfg-[a-z0-9]+$' | \
 	sed 's/^ifcfg-//g'`
