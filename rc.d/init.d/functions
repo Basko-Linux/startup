@@ -177,9 +177,9 @@ daemon()
 
 	# And start it up.
 	if [ -z "$daemon_user" ]; then
-		nice -n $nicelevel initlog $INITLOG_ARGS -c "$*$bg"
+		nice -n $nicelevel initlog $INITLOG_ARGS -n "$base" -c "sh -c '$*$bg'"
 	else
-		nice -n $nicelevel initlog $INITLOG_ARGS -n "$base" -c "su -s /bin/sh -l $daemon_user -c \"$*$bg\""
+		nice -n $nicelevel initlog $INITLOG_ARGS -n "$base" -c "su -s /bin/sh -l $daemon_user -c '$*$bg'"
 	fi
 	[ $? = 0 ] && success "$base startup" || failure "$base startup"
 }
