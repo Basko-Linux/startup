@@ -228,7 +228,9 @@ fi
 
 %changelog
 * Mon Oct 14 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl45mdk
-- Removed profile.d/inputrc.{sh,csh} (#0001327).
+- network-scripts/ifup: added PEERNTP logic to dhcpcd; (#0001263).
+- init.d/single: fixed; (#0001324).
+- profile.d/inputrc.{sh,csh}: removed; (#0001327).
 
 * Tue Jun 18 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl44mdk
 - init.d/sound: changed chkconfig values.
