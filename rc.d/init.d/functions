@@ -252,6 +252,7 @@ killproc()
 			fi
 		fi
 	else
+		RC=1
 		failure "$base shutdown"
 	fi
 
