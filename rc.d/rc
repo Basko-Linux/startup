@@ -69,13 +69,11 @@ if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
 		# Check if the script is there.
 		[ -f "$i" ] || continue
 
-		# Don't run *.rpm* scripts
-		[ "${i%.rpm*}" == "$i" ] || continue
-
-		# Don't run *~ scripts
-		[ "${i%\~}" == "$i" ] || continue
+		# Don't run *.rpm* and *~ scripts
+		[ "${i%.rpm*}" == "$i" -a "${i%\~}" == "$i" ] || continue
 
 		subsys=${i#/etc/rc.d/rc$runlevel.d/K??}
+
 		# Check if the subsystem is already up.
 		[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] || continue
 		
@@ -96,13 +94,11 @@ if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
 		# Check if the script is there.
 		[ -f "$i" ] || continue
 
-		# Don't run *.rpm* scripts
-		[ "${i%.rpm*}" == "$i" ] || continue
-
-		# Don't run *~ scripts
-		[ "${i%\~}" == "$i" ] || continue
+		# Don't run *.rpm* and *~ scripts
+		[ "${i%.rpm*}" == "$i" -a "${i%\~}" == "$i" ] || continue
 
 		subsys=${i#/etc/rc.d/rc$runlevel.d/S??}
+
 		# Check if the subsystem is already up.
 		[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] && continue
 		
