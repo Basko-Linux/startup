@@ -3,6 +3,7 @@
 RSBAC_INIT="${0%/*}/rsbac_init"
 [ -x "$RSBAC_INIT" ] || exit 0
 
+fgrep -wqs rsbac_softmode /proc/cmdline || exit 0
 uname -r |fgrep -qs rsbac || exit 0
 mkdir -p /var/lib/rsbac || exit 0
 
