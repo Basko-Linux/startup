@@ -138,7 +138,7 @@ daemon()
 				break
 				;;
 			*)
-				echo '$0: Usage: daemon [+/-nicelevel] {program}'
+				echo 'Usage: daemon [+/-nicelevel] {program}' >&2
 				return 1
 				;;
 		esac
@@ -148,7 +148,14 @@ daemon()
 	[ -n "$gotbase" ] || base="${1##*/}"
 
 	# See if it's already running.
-	local pid=`pidofproc $1`
+	local pidlist=`pidofproc $1`
+
+	local pid= p
+	for p in $pidlist; do
+		if checkpid "$p"; then
+			[ -z "$pid" ] && pid="$p" || pid="$pid $p"
+		fi
+	done
 
 	# Echo daemon
 	if [ "$BOOTUP" = "verbose" ]; then echo -n "$base "; fi
@@ -168,11 +175,9 @@ daemon()
 	[ $? = 0 ] && success "$base startup" || failure "$base startup"
 }
 
-# usage: wait_pid <w_pid> <w_times> <w_delay>
+# usage: wait_pid <w_times> <w_delay> pidlist
 wait_pid()
 {
-	local w_pid="$1"
-	shift
 	local w_times="$1"
 	shift
 	local w_delay="$1"
@@ -180,11 +185,11 @@ wait_pid()
 
 	local i=0
 	while [ $i -lt "$w_times" ]; do
-		checkpid $w_pid &>/dev/null || return 0
+		checkpid "$@" &>/dev/null || return 0
 		usleep "$w_delay"
 		i=$[1+i]
 	done
-	! checkpid $w_pid
+	! checkpid "$@"
 }
 
 # A function to stop a program.
@@ -193,7 +198,7 @@ killproc()
 	local RC=0
 	# Test syntax.
 	if [ $# = 0 ]; then
-		echo "Usage: killproc {program} [signal]"
+		echo "Usage: killproc {program} [signal]" >&2
 		return 1
 	fi
 
@@ -210,7 +215,14 @@ killproc()
 	local base="${1##*/}"
 
 	# Find pid.
-	local pid=`pidofproc $1`
+	local pidlist=`pidofproc $1`
+
+	local pid= p
+	for p in $pidlist; do
+		if checkpid "$p"; then
+			[ -z "$pid" ] && pid="$p" || pid="$pid $p"
+		fi
+	done
 
 	# Kill it.
 	if [ -n "$pid" ]; then
@@ -219,7 +231,7 @@ killproc()
 			if checkpid $pid &>/dev/null; then
 				# TERM first, then KILL if not dead
 				kill -TERM -- $pid
-				if ! wait_pid "$pid" 30 100000; then
+				if ! wait_pid 30 100000 $pid; then
 					kill -KILL -- $pid
 					usleep 100000
 				fi
@@ -254,7 +266,7 @@ pidfileofproc()
 
 	# Test syntax.
 	if [ $# = 0 ]; then
-		echo "Usage: pidfileofproc {program}"
+		echo "Usage: pidfileofproc {program}" >&2
 		return 1
 	fi
 
@@ -277,13 +289,13 @@ pidfileofproc()
 # A function to find the pid of a program.
 pidofproc()
 {
-	local base="${1##*/}"
-
 	# Test syntax.
 	if [ $# = 0 ]; then
-		echo "Usage: pidofproc {program}"
+		echo "Usage: pidofproc {program}" >&2
 		return 1
 	fi
+
+	local base="${1##*/}"
 
 	# First try "/var/run/*.pid" files.
 	if [ -s "/var/run/$base.pid" ]; then
@@ -299,21 +311,14 @@ pidofproc()
 	fi
 
 	# Next try "pidof".
-	local p pid=
-	for p in `pidof -o $$ -o $PPID -o %PPID -x "$1" || pidof -o $$ -o $PPID -o %PPID -x "$base"`; do
-		if [ -d "/proc/$p" ]; then
-			[ -z "$pid" ] && pid="$p" || pid="$pid $p"
-		fi
-	done
-
-	[ -n "$pid" ] && echo "$pid"
+	pidof -o $$ -o $PPID -o %PPID -x "$1" || pidof -o $$ -o $PPID -o %PPID -x "$base"
 }
 
 status()
 {
 	# Test syntax.
 	if [ $# = 0 ]; then
-		echo "Usage: status {program}"
+		echo "Usage: status {program}" >&2
 		return 1
 	fi
 
