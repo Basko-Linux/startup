@@ -1,5 +1,6 @@
 #!/bin/sh
 #
+# $Id$
 # /etc/rc.d/rc.sysinit - run once at boot time
 #
 # Taken in part from Miquel van Smoorenburg's bcheckrc.
@@ -252,9 +253,11 @@ action "Configuring kernel parameters:" sysctl -e -p /etc/sysctl.conf
 if [ -f /proc/sys/kernel/modprobe ]; then
 	if [ -n "$USEMODULES" ]; then
 		sysctl -w kernel.modprobe="/sbin/modprobe" &>/dev/null
+		sysctl -w kernel.hotplug="/sbin/hotplug" &>/dev/null
 	else
 		# We used to set this to NULL, but that causes 'failed to exec' messages"
 		sysctl -w kernel.modprobe="/bin/true" &>/dev/null
+		sysctl -w kernel.hotplug="/bin/true" &>/dev/null
 	fi
 fi
 
