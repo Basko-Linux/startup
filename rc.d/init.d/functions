@@ -13,7 +13,7 @@
 # i18n originally by: 	Arnaldo Carvalho de Melo <acme@conectiva.com.br>,
 #			Wanderlei Antonio Cavassin
 
-# First set up a default search path.
+# Set the initial default search path for use by startup scripts.
 export PATH="/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin"
 
 SourceIfExists()
@@ -155,8 +155,10 @@ daemon()
 
 	[ -z "$pid" ] || { echo_passed; return; }
 
-	# make sure it doesn't core dump anywhere; while this could mask
-	# problems with the daemon, it also closes some security problems
+	# Use a safe umask
+	#umask 077
+
+	# Don't do coredumps.
 	ulimit -Sc 0 >/dev/null 2>&1
 
 	# And start it up.
