@@ -59,14 +59,24 @@ set_date()
 	return $RETVAL
 }
 
+set_timezone()
+{
+	if [ ! -s /etc/localtime ] && [ -n "$ZONE" -a -s "$ZONEDIR/$ZONE" ]; then
+		action "Setting timezone information ($ZONE):" cp -p "$ZONEDIR/$ZONE" /etc/localtime
+	fi
+	RETVAL=$?
+	return $RETVAL
+}
+
 case "$1" in
 	set)
 		set_date
 		;;
+	tzset)
+		set_timezone
+		;;
 	start)
-		if [ ! -s /etc/localtime ] && [ -n "$ZONE" -a -f "$ZONEDIR/$ZONE" ]; then
-			action "Setting timezone information ($ZONE):" cp -p "$ZONEDIR/$ZONE" /etc/localtime
-		fi
+		set_timezone
 		if [ ! -s /etc/localtime ]; then
 			echo -n 'Setting system clock: timezone not configured'
 			passed 'clock startup'
@@ -92,7 +102,7 @@ case "$1" in
 		fi
 		;;
 	*)
-		msg_usage "${0##*/} {set|start|sync|stop}"
+		msg_usage "${0##*/} {set|tzset|start|sync|stop}"
 		RETVAL=1
 		;;
 esac
