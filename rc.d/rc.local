@@ -8,7 +8,7 @@
 [ -n "$SECURITY" ] || SECURITY=0
 
 if [ -f /var/lock/TMP_1ST ]; then
-	/etc/rc.d/scripts/mandrake_firstime
+	/etc/rc.d/scripts/first_time
 fi
 
 if R=$(cat /etc/altlinux-release 2>/dev/null) || R=$(cat /etc/mandrake-release 2>/dev/null) || R=$(cat /etc/redhat-release 2>/dev/null); then
