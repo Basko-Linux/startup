@@ -38,3 +38,4 @@ echo "$header" >/etc/auto.tab
 		done
 	done
 done
+:
