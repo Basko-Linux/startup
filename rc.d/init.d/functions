@@ -12,14 +12,34 @@
 # First set up a default search path.
 export PATH="/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin"
 
+SourceIfExists()
+{
+	[ -f "$1" ] && . "$1"
+}
+
+SourceIfExecutable()
+{
+	[ -x "$1" ] && . "$1"
+}
+
+SourceIfNotEmpty()
+{
+	[ -s "$1" ] && . "$1"
+}
+
+ExecIfExecutable()
+{
+	local executable="$1"
+	shift
+	[ -x "$executable" ] && "$executable" "$@"
+}
+
 # Get a sane screen width
 [ -z "$COLUMNS" ] && COLUMNS=80
 
 # Read in our configuration
 if [ -z "$BOOTUP" ]; then
-  if [ -f /etc/sysconfig/init ]; then
-      . /etc/sysconfig/init
-  else
+  if ! SourceIfNotEmpty /etc/sysconfig/init; then
     # This all seem confusing? Look in /etc/sysconfig/init,
     # or in /usr/doc/initscripts-*/sysconfig.txt
     BOOTUP=color

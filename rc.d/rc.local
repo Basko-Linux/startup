@@ -4,13 +4,11 @@
 # You can put your own initialization stuff in here if you don't
 # want to do the full Sys V style init stuff.
 
-[ -f /etc/sysconfig/system ] && . /etc/sysconfig/system
+[ -s /etc/sysconfig/system ] && . /etc/sysconfig/system
 [ -z "$SECURITY" ] && SECURITY=0
 
 if [ -f /var/lock/TMP_1ST ]; then
-	if [ -f /etc/init.d/mandrake_firstime ]; then
-		/bin/sh /etc/init.d/mandrake_firstime
-	fi
+	/etc/init.d/mandrake_firstime
 fi
 
 if [ -f /etc/mandrake-release ]; then
@@ -36,8 +34,9 @@ if [ -f /etc/mandrake-release ]; then
 	# This will overwrite /etc/issue at every boot. So, make any changes you
 	# want to make to /etc/issue here or you will lose them when you reboot.
 
-	if [ -x /usr/bin/linux_logo ]; then
-		/usr/bin/linux_logo -c -n -f >/etc/issue
+	LINUX_LOGO=/usr/bin/linux_logo
+	if [ -x "$LINUX_LOGO" ]; then
+		"$LINUX_LOGO" -c -n -f >/etc/issue
 		echo >>/etc/issue
 	else
 		:>/etc/issue

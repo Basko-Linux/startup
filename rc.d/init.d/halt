@@ -8,9 +8,6 @@
 #               Modified for RHS Linux by Damien Neil
 #
 
-# Set the path.
-PATH=/sbin:/bin:/usr/bin:/usr/sbin
-
 . /etc/init.d/functions
 
 runcmd() {
@@ -54,9 +51,11 @@ halt -w
 SWAPS=`awk '! /^Filename/ { print $1 }' /proc/swaps`
 [ -n "$SWAPS" ] && runcmd "Turning off swap: " swapoff $SWAPS
 
-[ -x /sbin/accton ] && runcmd "Turning off accounting: " /sbin/accton
+ACCTOFF=/sbin/accton
+[ -x "$ACCTOFF" ] && runcmd "Turning off accounting: " "$ACCTOFF"
 
-[ -x /sbin/quotaoff ] && runcmd "Turning off quotas: " /sbin/quotaoff -a
+QUOTAOFF=/sbin/quotaoff
+[ -x "$QUOTAOFF" ] && runcmd "Turning off quotas: " "$QUOTAOFF" -a
 
 # first remove entry /initrd/loopfs as it can't be unmounted :(
 mtab=$(fgrep -v "/initrd/loopfs[^/]" /etc/mtab)
@@ -105,10 +104,11 @@ mount -n -o remount,ro /
 runcmd "Unmounting proc file system: " umount /proc
 
 # See if this is a powerfail situation.
-if [ -f /etc/powerfail ]; then
+UPSCTL=/etc/apcupsd/apccontrol
+if [ -x "$UPSCTL" -a -f /etc/powerfail ]; then
   echo "APCUPSD will now power off the UPS!"
   echo
-  /etc/apcupsd/apccontrol killpower
+  "$UPSCTL" killpower
   echo
   echo "Please ensure that the UPS has powered off before rebooting"
   echo "Otherwise, the UPS may cut the power during the reboot!!!"

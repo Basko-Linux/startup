@@ -2,31 +2,57 @@
 
 PATH=/bin:/usr/bin
 
-if [ -f /etc/sysconfig/i18n ]; then
-  . /etc/sysconfig/i18n
-fi
+SourceIfNotEmpty /etc/sysconfig/i18n
 
-if [ -x /bin/consolechars -o -x /usr/bin/consolechars ]; then
+CONSOLECHARS=
+for f in /bin/consolechars /usr/bin/consolechars; do
+	if [ -x "$f" ]; then
+		CONSOLECHARS="$f"
+		break
+	fi
+done
+
+SETFONT=
+for f in /bin/setfont /usr/bin/setfont; do
+	if [ -x "$f" ]; then
+		SETFONT="$f"
+		break
+	fi
+done
+
+if [ -n "$CONSOLECHARS" ]; then
   if [ -n "$SYSFONT" ]; then
-    ARGS=$SYSFONT
+    if [ -f /etc/sysconfig/console/$SYSFONT.psf* ]; then
+    	ARGS="/etc/sysconfig/console/$SYSFONT.psf.gz"
+	else
+    	ARGS="$SYSFONT"
+	fi
     if [ -n "$UNIMAP" ]; then
-       ARGS="$ARGS --sfm $UNIMAP"
+    	if [ -f /etc/sysconfig/console/$UNIMAP.sfm* ]; then
+    		ARGS="$ARGS --sfm /etc/sysconfig/console/$UNIMAP.sfm"
+		else
+			ARGS="$ARGS --sfm $UNIMAP"
+		fi
     fi
     if [ -n "$SYSFONTACM" ]; then
-       ARGS="$ARGS --acm $SYSFONTACM"
+    	if [ -f /etc/sysconfig/console/$SYSFONTACM.acm* ]; then
+    		ARGS="$ARGS --acm /etc/sysconfig/console/$SYSFONTACM.acm"
+		else
+			ARGS="$ARGS --acm $SYSFONTACM"
+		fi
     fi
-    consolechars -f $ARGS
+    "$CONSOLECHARS" $@ -f $ARGS
   fi
-elif [ -x /usr/bin/setfont ]; then
+elif [ -n "$SETFONT" ]; then
   if [ -n "$SYSFONT" -a -n "$UNIMAP" ]; then
-    /usr/bin/setfont $SYSFONT -u $UNIMAP
+    "$SETFONT" $SYSFONT -u $UNIMAP
   elif [ -n "$SYSFONT" ]; then
-    /usr/bin/setfont $SYSFONT
+    "$SETFONT" $SYSFONT
 #  else
 #    /usr/bin/setfont
   fi
 else
-  echo "can't set font"
+  echo "cannot set font" >&2
   exit 1
 fi
 exit 0

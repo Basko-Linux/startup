@@ -8,26 +8,26 @@
 # probe: true
 
 # Source function library.
-. /etc/rc.d/init.d/functions
+. /etc/init.d/functions
 
-if [ ! -f /etc/sysconfig/network ]; then
-    exit 0
+# Source networking configuration.
+if ! SourceIfNotEmpty /etc/sysconfig/network ]; then
+	exit 0
 fi
-
-. /etc/sysconfig/network
-
-if [ -f /etc/sysconfig/pcmcia ]; then
-	. /etc/sysconfig/pcmcia
-fi
-
 
 # Check that networking is up.
-[ ${NETWORKING} = "no" ] && exit 0
+[ "$NETWORKING" = "no" ] && exit 0
+
+SourceIfNotEmpty /etc/sysconfig/pcmcia
 
 [ -x /sbin/ifconfig ] || exit 0
 
 # Even if IPX is configured, without the utilities we can't do much
-[ ! -x /sbin/ipx_internal_net -o ! -x /sbin/ipx_configure ] && IPX=
+IPX_INTERNAL_NET=/sbin/ipx_internal_net
+IPX_CONFIGURE=/sbin/ipx_configure
+[ ! -x "$IPX_INTERNAL_NET" -o ! -x "$IPX_CONFIGURE" ] && IPX=
+
+LINUXCONF=/bin/linuxconf
 
 CWD=`pwd`
 cd /etc/sysconfig/network-scripts
@@ -41,39 +41,43 @@ interfaces=`ls ifcfg* | egrep -v '(ifcfg-lo|:)' | \
 # See how we were called.
 case "$1" in
   start)
-    
-    action "Setting network parameters" sysctl -p /etc/sysctl.conf
+  
+  	action "Setting network parameters: " sysctl -p /etc/sysctl.conf
 
-	action "Bringing up interface lo" ./ifup ifcfg-lo
+	action "Bringing up interface lo: " ./ifup ifcfg-lo
 
 	case "$IPX" in
 	  yes|true)
-	    /sbin/ipx_configure --auto_primary=$IPXAUTOPRIMARY \
+	    "$IPX_CONFIGURE" --auto_primary=$IPXAUTOPRIMARY \
 				   --auto_interface=$IPXAUTOFRAME
 	    if [ "$IPXINTERNALNETNUM" != "0" ]; then
-	       /sbin/ipx_internal_net add $IPXINTERNALNETNUM $IPXINTERNALNODENUM
+	       "$IPX_INTERNAL_NET" add $IPXINTERNALNETNUM $IPXINTERNALNODENUM
 	    fi
 	    ;;
 	esac
-	if [ -f /proc/sys/net/ipv4/ip_forward ] && [ "$FORWARD_IPV4" = "yes" ] || [ "$FORWARD_IPV4" = "true" ]; then
+	# depreciated but we still use it.
+	if [ -f /proc/sys/net/ipv4/ip_forward ] && [ "$FORWARD_IPV4" = "yes" ] || [ "$FORWARD_IPV4" = "true" ]; 
+	    then
 		action "Enabling IPv4 packet forwarding" sysctl -w net.ipv4.ip_forward=1
 	fi
+
 	for i in $interfaces; do
-		if egrep -L "ONBOOT=\"?[Nn][Oo]\"?" ifcfg-$i >/dev/null ; then
-		    if echo $interfaces|egrep -q 'eth[0-9]';then #Do this only for eth?
+		if egrep -L "^ONBOOT=\"?[Nn][Oo]\"?" ifcfg-$i &>/dev/null; then
 			# Probe module to preserve interface ordering
-			/sbin/ifconfig $i >/dev/null 2>&1
-		    fi
+			/sbin/ifconfig $i &>/dev/null
 		else
-			action "Bringing up interface $i" ./ifup $i boot
+			action "Bringing up interface $i: " ./ifup $i boot
 		fi
 	done
 	
 	# Add non interface-specific static-routes.
 	if [ -f /etc/sysconfig/static-routes ]; then
-	   grep "^any" /etc/sysconfig/static-routes | while read ignore type dest netmask mask gw gateway; do
-	      [ "${gateway}" != "${gateway##[0-9}" ] && \
-	      	/sbin/route add -$type $dest $netmask $mask $gw $gateway
+	   grep "^any" /etc/sysconfig/static-routes | while read ignore type dest netmask mask bogus args; do
+	      if [ "${bogus}" = "gw" ]; then 
+	      	/sbin/route add -$type $dest $netmask $mask $args
+	      else
+	      	/sbin/route add -$type $dest $netmask $mask $bogus $args
+	      fi
 	   done
 	fi    
 
@@ -88,17 +92,19 @@ case "$1" in
 		SMBMTAB=`grep -v '^#' /proc/mounts | awk '{ if ($3 ~ /^smbfs$/ ) print $2}'`
 		NCPMTAB=`grep -v '^#' /proc/mounts | awk '{ if ($3 ~ /^ncpfs$/ ) print $2}'`
 		if [ -n "$NFSMTAB" -o -n "$SMBMTAB" -o -n "$NCPMTAB" ] ; then
-			/etc/rc.d/init.d/netfs stop
+			/etc/init.d/netfs stop
 		fi
 	fi
 	
-       for i in $interfaces ; do
-		action "Shutting down interface $i" ./ifdown $i boot
+	for i in $interfaces ; do
+	        if ifconfig $i 2>/dev/null | grep -q "UP" >/dev/null 2>&1 ; then
+		   action "Shutting down interface $i: " ./ifdown $i boot
+		fi
 	done
 	case "$IPX" in
 	  yes|true)
 	    if [ "$IPXINTERNALNETNUM" != "0" ]; then
-	       /sbin/ipx_internal_net del
+	       "$IPX_INTERNAL_NET" del
 	    fi
 	    ;;
 	esac
@@ -106,12 +112,12 @@ case "$1" in
 	if [ -d /proc/sys/net/ipv4 ]; then
 	  if [ -f /proc/sys/net/ipv4/ip_forward ]; then
 		if [ `cat /proc/sys/net/ipv4/ip_forward` != 0 ]; then
-			action "Disabling IPv4 packet forwarding" sysctl -w net.ipv4.ip_forward=0
+			action "Disabling IPv4 packet forwarding: " sysctl -w net.ipv4.ip_forward=0
 		fi
 	  fi
 	  if [ -f /proc/sys/net/ipv4/ip_always_defrag ]; then
 	        if [ `cat /proc/sys/net/ipv4/ip_always_defrag` != 0 ]; then
-		        action "Disabling IPv4 automatic defragmentation" sysctl -w net.ipv4.ip_always_defrag=0
+		        action "Disabling IPv4 automatic defragmentation: " sysctl -w net.ipv4.ip_always_defrag=0
 		fi
 	  fi
 	fi
@@ -127,8 +133,8 @@ case "$1" in
 	echo "Configured devices:"
 	echo lo $interfaces
 
-	if [ -x /bin/linuxconf ] ; then
-		eval `/bin/linuxconf --hint netdev`
+	if [ -x "$LINUXCONF" ] ; then
+		eval `"$LINUXCONF" --hint netdev`
 		echo "Devices that are down:"
 		echo $DEV_UP
 		echo "Devices with modified configuration:"
@@ -144,37 +150,37 @@ case "$1" in
 	$0 start
 	;;
   reload)
-	if [ -x /bin/linuxconf ] ; then
-		eval `/bin/linuxconf --hint netdev`
+	if [ -x "$LINUXCONF" ] ; then
+		eval `"$LINUXCONF" --hint netdev`
 		for device in $DEV_UP ; do
-			action "Bringing up device $device" ./ifup $device
+			action "Bringing up device $device: " ./ifup $device
 		done
 		for device in $DEV_DOWN ; do
-			action "Shutting down device $device" ./ifdown $device
+			action "Shutting down device $device: " ./ifdown $device
 		done
 		for device in $DEV_RECONF ; do
-			action "Shutting down device $device" ./ifdown $device
-			action "Bringing up device $device" ./ifup $device
+			action "Shutting down device $device: " ./ifdown $device
+			action "Bringing up device $device: " ./ifup $device
 		done
 		for device in $DEV_RECONF_ALIASES ; do
-			action "Briging up alias $device" /etc/sysconfig/network-scripts/ifup-aliases $device
+			action "Briging up alias $device: " /etc/sysconfig/network-scripts/ifup-aliases $device
 		done
 		for device in $DEV_RECONF_ROUTES ; do
-			action "Bringing up route $device" /etc/sysconfig/network-scripts/ifup-routes $device
+			action "Bringing up route $device: " /etc/sysconfig/network-scripts/ifup-routes $device
 		done
 		case $IPX in yes|true)
 		  case $IPXINTERNALNET in
 		    reconf)
-			action "Deleting internal IPX network" /sbin/ipx_internal_net del
-			action "Adding internal IPX network $IPXINTERNALNETNUM $IPXINTERNALNODENUM" /sbin/ipx_internal_net add $IPXINTERNALNETNUM \
+			action "Deleting internal IPX network: " "$IPX_INTERNAL_NET" del
+			action "Adding internal IPX network $IPXINTERNALNETNUM $IPXINTERNALNODENUM: " "$IPX_INTERNAL_NET" add $IPXINTERNALNETNUM \
 						      $IPXINTERNALNODENUM
 			;;
 		    add)
-			action "Adding internal IPX network $IPXINTERNALNETNUM $IPXINTERNALNODENUM"/sbin/ipx_internal_net add $IPXINTERNALNETNUM \
+			action "Adding internal IPX network $IPXINTERNALNETNUM $IPXINTERNALNODENUM: " "$IPX_INTERNAL_NET" add $IPXINTERNALNETNUM \
 						      $IPXINTERNALNODENUM
 			;;
 		    del)
-			action "Deleting internal IPX network" /sbin/ipx_internal_net del
+			action "Deleting internal IPX network: " "$IPX_INTERNAL_NET" del
 			;;
 		  esac
 		  ;;
@@ -185,8 +191,8 @@ case "$1" in
 	fi
 	;;
   probe)
-	if [ -x /bin/linuxconf ] ; then
-		eval `/bin/linuxconf --hint netdev`
+	if [ -x "$LINUXCONF" ] ; then
+		eval `"$LINUXCONF" --hint netdev`
 		[ -n "$DEV_UP$DEV_DOWN$DEV_RECONF$DEV_RECONF_ALIASES" -o \
 		  -n "$DEV_RECONF_ROUTES$IPXINTERNALNET" ] && \
 			echo reload

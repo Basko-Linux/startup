@@ -12,24 +12,19 @@ if [ -z "$IN_INITLOG" ]; then
 	[ -f /sbin/initlog ] && exec /sbin/initlog $INITLOG_ARGS -r /etc/rc.d/rc.sysinit
 fi
 
-# Set the path
-export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+# Source functions
+. /etc/init.d/functions
 
 HOSTNAME=`/bin/hostname`
 
 # Read in config data.
-if [ -s /etc/sysconfig/network ]; then
-	. /etc/sysconfig/network
-else
+if ! SourceIfNotEmpty /etc/sysconfig/network; then
 	NETWORKING=no
 fi
 
 if [ -z "$HOSTNAME" -o "$HOSTNAME" = "(none)" ]; then
 	HOSTNAME=localhost
 fi
-
-# Source functions
-. /etc/init.d/functions
 
 # Print a banner. ;)
 if [ "$BOOTUP" != "serial" ]; then
@@ -57,8 +52,7 @@ if [ -c /dev/.devfsd -a -x /sbin/devfsd ]; then
 	if [ -e /dev/cdrom0	]; then
 		ln -sf /dev/cdrom0 /dev/cdrom
 	fi
-	if [ -s /etc/sysconfig/mouse ]; then
-		. /etc/sysconfig/mouse
+	if SourceIfNotEmpty /etc/sysconfig/mouse; then
 		device=`echo "$device" |sed -e 's,psaux,misc/psaux,' -e 's/ttyS\(.\)/tts\/\1/g'`
 		if [ -n "$device" ]; then
 			ln -s "/dev/$device" /dev/mouse
@@ -176,8 +170,9 @@ mount -f /
 mount -f /proc
 
 # Update quotas if fsck was run on /.
-if [ "$_RUN_QUOTACHECK" = 1 -a -x /sbin/quotacheck ]; then
-	action "Checking root filesystem quotas"  /sbin/quotacheck -v /
+QUOTACHECK=/sbin/quotacheck
+if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
+	action "Checking root filesystem quotas" "$QUOTACHECK" -v /
 fi
 
 # The root filesystem is now read-write, so we can now log via syslog() directly..
@@ -243,17 +238,15 @@ if [ -f /proc/mdstat -a -s /etc/raidtab ]; then
 			# fall back to raidadd, raidrun.  If that
 			# also fails, then we drop to a shell
 			RESULT=1
-			if [ -x /sbin/raidstart ]; then
-				/sbin/raidstart "$i"
+			ExecIfExecutable /sbin/raidstart "$i"
+			RESULT=$?
+			if [ $RESULT -gt 0 ]; then
+				ExecIfExecutable /sbin/raid0run "$i"
 				RESULT=$?
 			fi
-			if [ $RESULT -gt 0 -a -x /sbin/raid0run ]; then
-				/sbin/raid0run "$i"
-				RESULT=$?
-			fi
-			if [ $RESULT -gt 0 -a -x /sbin/raidadd -a -x /sbin/raidrun ]; then
-				/sbin/raidadd "$i"
-				/sbin/raidrun "$i"
+			if [ $RESULT -gt 0 ]; then
+				ExecIfExecutable /sbin/raidadd "$i"
+				ExecIfExecutable /sbin/raidrun "$i"
 				RESULT=$?
 			fi
 			if [ $RESULT -gt 0 ]; then
@@ -316,7 +309,7 @@ if [ -z "$fastboot" ]; then
 		mount -n -o remount,ro /
 		echo "Automatic reboot in progress."
 		reboot -f
-	elif [ "$rc" = "1" -a -x /sbin/quotacheck ]; then
+	elif [ "$rc" = "1" -a -x "$QUOTACHECK" ]; then
 		_RUN_QUOTACHECK=1
 	fi
 fi
@@ -358,8 +351,8 @@ if [ -z "$fastboot" ]; then
 		mount -n -o remount,ro /
 		echo "Automatic reboot in progress."
 		reboot -f
-	elif [ "$rc" = "1" -a -x /sbin/quotacheck ]; then
-		action "Checking filesystem quotas: " /sbin/quotacheck -v -R -a
+	elif [ "$rc" = "1" -a -x "$QUOTACHECK" ]; then
+		action "Checking filesystem quotas: " "$QUOTACHECK" -v -R -a
 	fi
 fi
 
@@ -379,40 +372,27 @@ if profile=$(sed 's/.*prof=\([A-Za-z_0-9]*\).*$/\1/' /proc/cmdline) && \
 	action "Setting profile to $profile: " /bin/linuxconf --selectprofile "$profile"
 	
 	# Setting again network scripts.
-	if [ -s /etc/sysconfig/network ]; then
-		. /etc/sysconfig/network
+	if SourceIfNotEmpty /etc/sysconfig/network; then
 		hostname "$HOSTNAME"
 		[ -n "$NISDOMAIN" ] && domainname "$NISDOMAIN"
 		echo "$HOSTNAME" >/etc/HOSTNAME
 	fi
 fi
 
-if [ X"$_RUN_QUOTACHECK" = X1 -a -x /sbin/quotacheck ]; then
-	action "Checking filesystem quotas: "  /sbin/quotacheck -v -R -a
+if [ X"$_RUN_QUOTACHECK" = X1 -a -x "$QUOTACHECK" ]; then
+	action "Checking filesystem quotas: " "$QUOTACHECK" -v -R -a
 fi
 
 # Configure machine if necessary.
 if [ -f /.unconfigured ]; then
-	if [ -x /usr/bin/passwd ]; then 
-		usr/bin/passwd root
-	fi
-	if [ -x /usr/sbin/netconfig ]; then
-		/usr/sbin/netconfig
-	fi
-	if [ -x /usr/sbin/timeconfig ]; then
-		/usr/sbin/timeconfig
-	fi
-	if [ -x /usr/sbin/authconfig ]; then
-		/usr/sbin/authconfig --nostart
-	fi
-	if [ -x /usr/sbin/ntsysv ]; then
-		/usr/sbin/ntsysv --level 35
-	fi
+	ExecIfExecutable /usr/bin/passwd root
+	ExecIfExecutable /usr/sbin/netconfig
+	ExecIfExecutable /usr/sbin/timeconfig
+	ExecIfExecutable /usr/sbin/authconfig --nostart
+	ExecIfExecutable /usr/sbin/ntsysv --level 35
 
 	# Reread in network configuration data.
-	if [ -s /etc/sysconfig/network ]; then
-		. /etc/sysconfig/network
-
+	if SourceIfNotEmpty /etc/sysconfig/network ]; then
 		# Reset the hostname.
 		action "Resetting hostname $HOSTNAME: " hostname "$HOSTNAME"
 
@@ -442,14 +422,11 @@ swapon -a &>/dev/null
 action "Enabling swap space: " /bin/true
 
 # Initialize the serial ports.
-if [ -x /etc/rc.d/rc.serial ]; then
-	. /etc/rc.d/rc.serial
-fi
+ExecIfExecutable /etc/rc.d/rc.serial
 
 # Initialize firewall.
 for f in /etc/rc.d/rc.firewall /etc/rc.firewall; do
-	if [ -x "$f" ]; then
-		. "$f"
+	if ExecIfExecutable "$f"; then
 		break
 	fi
 done

@@ -13,30 +13,24 @@
 # Source function library.
 . /etc/init.d/functions
 
-[ -f /usr/bin/raw ] || exit 0
-[ -f /etc/sysconfig/rawdevices ] || exit 0
+[ -x /usr/bin/raw ] || exit 0
+[ -s /etc/sysconfig/rawdevices ] || exit 0
 
 # If the file just has the default comments, exit.
-grep -q -v "^#" /etc/sysconfig/rawdevices 2>/dev/null || exit 0
-
-PATH=/usr/bin:/bin:/usr/sbin:/sbin
+grep -qsv "^#" /etc/sysconfig/rawdevices || exit 0
 
 function assign_raw()
 {
-   cat /etc/sysconfig/rawdevices | egrep -v '^ *#' | while read RAW BLOCK; do 
+   cat /etc/sysconfig/rawdevices | grep -v '^ *#' | while read RAW BLOCK; do 
      if [ -n "$RAW" -a -n "$BLOCK" ]; then 
-         if [ "`dirname $RAW`" = "/dev" -a -d /dev/raw ]; then
+         if [ "${RAW%/*}" = "/dev" -a -d /dev/raw ]; then
            echo "  Please correct your /etc/sysconfig/rawdevices:"
            echo "     rawdevices are now located in the directory /dev/raw/ "
-           echo "  If the command 'raw' still refers to /dev/raw as a file."
-           echo "   you'll have to upgrade your util-linux package"
            exit 0
          fi
-         if [ "`dirname $RAW`" = "/dev/raw" -a -f /dev/raw ]; then
+         if [ "${RAW%/*}" = "/dev/raw" -a -f /dev/raw ]; then
            echo "  Please correct your /etc/sysconfig/rawdevices:"
-           echo "     rawdevices are now located in the directory /dev/raw/ "
-           echo "  If the command 'raw' still refers to /dev/raw as a file."
-           echo "   you'll have to upgrade your util-linux package"
+           echo "     rawdevices are not yet located in the directory /dev/raw/ "
            exit 0
          fi
 
@@ -72,7 +66,7 @@ case "$1" in
         ;;
 
   *)
-        echo "Usage: rawdevice {start|stop|status|restart}"
+        echo "Usage: ${0##*/} {start|stop|status|restart}"
         exit 1
 esac
 

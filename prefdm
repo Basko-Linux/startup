@@ -1,34 +1,52 @@
 #!/bin/sh
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/X11R6/bin
+HOME=/root
+export HOME
 
 # We need to source this so that the login screens get translated
 . /etc/profile.d/lang.sh
 
+killed () {
+    kill -TERM $!
+    exit
+}
+
+# trap signals to be able to kill autologin
+trap killed SIGHUP SIGPIPE SIGINT SIGTERM
+
 # Run preferred X display manager
+
+# Try autologin first, if wanted...
+AUTOLOGIN=/usr/sbin/autologin
+if [ -s /etc/sysconfig/autologin -a -x "$AUTOLOGIN" ]; then
+	"$AUTOLOGIN" &
+	wait $!
+fi
+
 preferred=
 if [ -f /etc/sysconfig/desktop ]; then
-	if grep -q GNOME /etc/sysconfig/desktop 2>/dev/null; then
+	if fgrep -qs GNOME /etc/sysconfig/desktop; then
 		preferred=gdm
-	elif grep -q KDE /etc/sysconfig/desktop 2> /dev/null; then
+	elif fgrep -qs KDE /etc/sysconfig/desktop; then
 		preferred=kdm
-	elif grep -q AnotherLevel /etc/sysconfig/desktop 2> /dev/null; then
-                preferred=xdm
+	elif fgrep -qs AnotherLevel /etc/sysconfig/desktop; then
+		preferred=xdm
 	fi
 fi
-if [ -n "$preferred" ] && which $preferred >/dev/null 2>&1; then 
+if [ -n "$preferred" ] && which $preferred &>/dev/null; then 
 	exec $preferred $*
 fi
 
-	if which kdm >/dev/null 2>&1; then
+	if which kdm &>/dev/null; then
 		preferred=kdm
-	elif which gdm >/dev/null 2>&1; then
+	elif which gdm &>/dev/null; then
 		preferred=gdm
-	elif which xdm >/dev/null 2>&1; then
+	elif which xdm &>/dev/null; then
 		preferred=xdm
 	fi
 
-if [ -n "$preferred" ] && which $preferred >/dev/null 2>&1; then 
-	exec $preferred $*
+if [ -n "$preferred" ] && which $preferred &>/dev/null; then 
+	exec `which $preferred` $*
 fi
 exit 1								
