@@ -74,7 +74,7 @@ fi
 for f in /var/{log/wtmp,run/utmp}; do
 	if [ ! -f "$f" ]; then
 		:>>"$f"
-		%__chown root.utmp "$f"
+		%__chown root:utmp "$f"
 		%__chmod 664 "$f"
 	fi
 done
