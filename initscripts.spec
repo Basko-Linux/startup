@@ -2,7 +2,7 @@
 
 Name: initscripts
 Version: 5.49
-Release: ipl47mdk
+Release: ipl48mdk
 
 Summary: The inittab file and the %_sysconfdir/init.d scripts.
 License: GPL
@@ -236,6 +236,9 @@ fi
 %doc sysconfig.txt sysvinitfiles ChangeLog*
 
 %changelog
+* Sat Dec 28 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl48mdk
+- init.d/outformat: fixed MOVE_TO_COL (#0001767).
+
 * Sun Dec 15 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl47mdk
 - rc.sysinit, init.d/outformat: back to use $COLUMNS (#0001117).
 - scripts/cleanup:
