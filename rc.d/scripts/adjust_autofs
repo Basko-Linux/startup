@@ -8,7 +8,7 @@ TABFILE=/etc/auto.tab
 # Parse autofs config.
 SourceIfNotEmpty /etc/sysconfig/autofs &&
 	[ "$ENABLE" != no ] &&
-	[ -s "$TABFILE" ] ||
+	[ ! -s "$TABFILE" ] ||
 	exit 0
 	
 devices="/mnt/cdrom /mnt/floppy /mnt/zip"
