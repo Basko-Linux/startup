@@ -67,6 +67,3 @@ ud::once:/sbin/update
 
 # Fix fonts for framebuffer.
 fb:2345:once:/etc/rc.d/scripts/framebuffer_setfont
-
-# Run desktop manager in runlevel 5
-x:5:respawn:/etc/X11/prefdm -nodaemon
