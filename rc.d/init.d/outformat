@@ -35,7 +35,9 @@ MOVE_TO_COL()
 { 
 	# `tput cols` reports 80 on dumb terms, the real width when appropriate;
 	# `tput hpa N` moves to col N; on dumb terms does nothing.
-	tput hpa $((COLUMNS - RES_OFFSET)) # Horizontal Position Absolute.
+	local pos=$((COLUMNS - RES_OFFSET))
+	[ $pos -le 0 ] ||
+		tput hpa $((COLUMNS - RES_OFFSET)) # Horizontal Position Absolute.
 }
 
 # Enumerate colors
