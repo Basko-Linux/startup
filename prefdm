@@ -30,6 +30,8 @@ if [ -s /etc/sysconfig/desktop ]; then
 		preferred=gdm
 	elif fgrep -qs KDE /etc/sysconfig/desktop; then
 		preferred=kdm
+	elif fgrep -qs WindowMaker /etc/sysconfig/desktop; then
+		preferred=wdm
 	elif fgrep -qs AnotherLevel /etc/sysconfig/desktop; then
 		preferred=xdm
 	fi
@@ -42,6 +44,8 @@ if which kdm &>/dev/null; then
 	preferred=kdm
 elif which gdm &>/dev/null; then
 	preferred=gdm
+elif which wdm &>/dev/null; then
+	preferred=wdm
 elif which xdm &>/dev/null; then
 	preferred=xdm
 fi
