@@ -77,10 +77,6 @@ if [ -d "/etc/rc.d/rc$runlevel.d" ]; then
 		# Check if the subsystem is already up.
 		[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] || continue
 		
-		if egrep -q '^#[[:space:]]+halt:[[:space:]]+yes' "$i"; then
-			"$i" stop
-		fi
-
 		# Bring the subsystem down.
 		if egrep -q '(action|killproc) ' "$i"; then
 			"$i" stop
