@@ -5,9 +5,9 @@
 
 . /etc/init.d/functions
 
-SourceIfNotEmpty /etc/sysconfig/system
-
 echo -n "Cleaning up temporary files from previous boot: "
+
+SourceIfNotEmpty /etc/sysconfig/system
 
 # Clean up /
 rm -f /fastboot /fsckoptions /forcefsck /halt /poweroff
