@@ -32,15 +32,19 @@ if R=$(cat /etc/altlinux-release 2>/dev/null) || R=$(cat /etc/mandrake-release 2
 	# This will overwrite /etc/issue at every boot. So, make any changes you
 	# want to make to /etc/issue here or you will lose them when you reboot.
 
+	W2L=/usr/bin/welcome2l
 	LINUX_LOGO=/usr/bin/linux_logo
-	if [ -x "$LINUX_LOGO" ]; then
+	if [ -x "$W2L" ]; then
+		"$W2L" -gt "$R" >/etc/issue
+	elif [ -x "$LINUX_LOGO" ]; then
 		"$LINUX_LOGO" -c -n -f >/etc/issue
 		echo >>/etc/issue
+		echo "$R" >>/etc/issue
+		echo "Kernel $(uname -r) on $a $SMP$(uname -m) / \l" >>/etc/issue
 	else
-		:>/etc/issue
+		echo "$R" >/etc/issue
+		echo "Kernel $(uname -r) on $a $SMP$(uname -m) / \l" >>/etc/issue
 	fi
-	echo "$R" >>/etc/issue
-	echo "Kernel $(uname -r) on $a $SMP$(uname -m) / \l" >>/etc/issue
 
 	if [ "$SECURITY" -le 3 ]; then
 		echo "Welcome to %h" >/etc/issue.net
