@@ -123,7 +123,6 @@ fi
 /sbin/setsysfont
 %ghost %attr(664,root,utmp) /var/log/wtmp
 %ghost %attr(664,root,utmp) /var/run/utmp
-%_mandir/man?/*
 %dir /var/run/kernel
 %ghost /var/run/kernel/*
 %dir %_localstatedir/rsbac
