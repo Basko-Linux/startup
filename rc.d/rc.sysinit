@@ -32,7 +32,7 @@ OLD_COLUMNS="$COLUMNS"
 
 # Print a banner. ;)
 WELCOME="\t\t\t\tWelcome to "
-BANNER="ALTLinux"
+BANNER="ALT Linux"
 if [ "$BOOTUP" != "serial" ]; then
 	echo -e "$WELCOME\e[1;36m$BANNER\e[0;39m"
 else
