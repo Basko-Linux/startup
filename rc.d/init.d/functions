@@ -42,9 +42,16 @@ ExecIfExecutable()
 	[ -x "$f" ] && "$f" "$@"
 }
 
-TEXTDOMAIN=initscripts
-TEXTDOMAINDIR=/etc/locale
-[ -z "$NOLOCALE" ] && SourceIfNotEmpty /etc/sysconfig/i18n
+if [ "$UID" = 0 ]; then
+	LANG=POSIX
+	LC_ALL=POSIX
+	LINGUAS=POSIX
+	LANGUAGE=POSIX
+elif [ -z "$NOLOCALE" ]; then
+	TEXTDOMAIN=initscripts
+	TEXTDOMAINDIR=/etc/locale
+	SourceIfNotEmpty /etc/sysconfig/i18n
+fi
 
 # Get a sane screen width
 [ -n "$COLUMNS" ] || COLUMNS=80
@@ -517,14 +524,14 @@ UnmountFilesystems()
 	local message2="$1"
 	shift
 
-	local remaining=`awk "$pattern" /proc/mounts`
+	local remaining=`awk "$pattern" /proc/mounts |LC_COLLATE=C /bin/sort -r`
 	while [ -n "$remaining" -a "$retry" -gt 0 ]; do
 		if [ "$retry" -lt 3 ]; then
 			action "$message2" umount -f -t noproc $remaining
 		else
 			action "$message1" umount -f -t noproc $remaining
 		fi
-		local remaining=`awk "$pattern" /proc/mounts`
+		remaining=`awk "$pattern" /proc/mounts |LC_COLLATE=C /bin/sort -r`
 		[ -n "$remaining" ] || break
 		/sbin/fuser -k -m $sig $remaining >/dev/null
 		sleep $delay
