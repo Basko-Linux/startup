@@ -55,9 +55,6 @@ elif [ -z "$NOLOCALE" ]; then
 	SourceIfNotEmpty /etc/sysconfig/i18n
 fi
 
-# Get a sane screen width
-[ -n "$COLUMNS" ] || COLUMNS=80
-
 # Read in our configuration
 if [ -z "$BOOTUP" ]; then
 	SourceIfNotEmpty /etc/sysconfig/init
@@ -75,24 +72,7 @@ if [ "$BOOTUP" != "color" ]; then
 	SETCOLOR_WARNING(){ :; }
 	SETCOLOR_NORMAL(){ :; }
 else
-	# This all seem confusing? Look in /etc/sysconfig/init,
-	# or in /usr/share/doc/initscripts-*/sysconfig.txt
-	[ -n "$RES_OFFSET" ] && [ "$RES_OFFSET" -gt 0 ] 2>/dev/null || RES_OFFSET=8
-	if [ "`type -t MOVE_TO_COL`" != "function" ]; then
-		MOVE_TO_COL(){ echo -en "\033[$[COLUMNS-RES_OFFSET]G"; }
-	fi
-	if [ "`type -t SETCOLOR_SUCCESS`" != 'function' ]; then
-		SETCOLOR_SUCCESS(){ echo -en '\033[1;32m'; }
-	fi
-	if [ "`type -t SETCOLOR_FAILURE`" != 'function' ]; then
-		SETCOLOR_FAILURE(){ echo -en '\033[1;31m'; }
-	fi
-	if [ "`type -t SETCOLOR_WARNING`" != 'function' ]; then
-		SETCOLOR_WARNING(){ echo -en '\033[1;33m'; }
-	fi
-	if [ "`type -t SETCOLOR_NORMAL`" != 'function' ]; then
-		SETCOLOR_NORMAL(){ echo -en '\033[0;39m'; }
-	fi
+	. /etc/init.d/outformat
 fi
 
 if [ "$BOOTUP" != "verbose" ]; then

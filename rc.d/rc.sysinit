@@ -32,31 +32,25 @@ fi
 
 # Set system font.
 /sbin/setsysfont &>/dev/null && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
-OLD_COLUMNS="$COLUMNS"
 
 PrintMargin()
 {
 	if [ "$BOOTUP" != serial ]; then
 		local n=`echo -n "$*" |wc -c`
-		n=$[(COLUMNS-n)/2]
-		local s=
-		while [ $n -gt 1 ]; do
-			s="$s "
-			n=$[n-1]
-		done
-		echo -n "$s"
+		tput hpa $(( ($(tput cols)-n)/2 ))
 	fi
 }
 
 # Print a banner. ;)
 WELCOME="Welcome to "
 BANNER="ALT Linux"
-if [ "$BOOTUP" != serial ]; then
-	PrintMargin "$WELCOME$BANNER"
-	echo -e "$WELCOME\e[1;36m$BANNER\e[0;39m"
-else
-	echo "$WELCOME$BANNER"
-fi
+PrintMargin "$WELCOME$BANNER"
+echo -n "$WELCOME"
+SETCOLOR_INFO
+echo -n "$BANNER"
+SETCOLOR_NORMAL
+echo
+
 if [ -n "$PROMPT" -a "$PROMPT" != no ]; then
 	PROMPT=1
 	MESSAGE="Press 'I' to enter interactive startup"
@@ -274,6 +268,8 @@ if [ -f /proc/sys/kernel/modprobe ]; then
 	fi
 fi
 
+OLD_COLUMNS=$(tput cols)
+
 # Load modules
 /etc/rc.d/scripts/load_modules
 
@@ -281,7 +277,7 @@ fi
 /etc/rc.d/scripts/framebuffer_init
 
 # Set system font again, if required.
-if [ "$OLD_COLUMNS" != "$COLUMNS" ]; then
+if [ "$OLD_COLUMNS" != "$(tput cols)" ]; then
 	/sbin/setsysfont &>/dev/null && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
 fi
 
