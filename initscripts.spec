@@ -15,7 +15,7 @@ Obsoletes: rhsound sapinit
 
 Conflicts: kernel <= 2.2, timeconfig < 0:3.0, ppp < 0:2.3.9, wvdial < 0:1.40
 Conflicts: sysklogd < 0:1.3.33, lilo < 0:21.5, e2fsprogs < 0:1.19-ipl2mdk
-Conflicts: shadow-utils < 0:19990827-ipl9mdk, autofs < 4.0.0-alt0.4.pre10
+Conflicts: shadow-utils < 0:19990827-ipl9mdk, autofs < 4.0.0-alt0.5.pre10
 
 PreReq: setup >= 0:2.1.9-ipl18mdk, chkconfig, gawk, grep, sed, coreutils, control
 Requires: findutils >= 0:4.0.33, modutils >= 0:2.4.12-alt4, mount >= 0:2.10q-ipl1mdk
@@ -238,6 +238,7 @@ fi
 %changelog
 * Sat Dec 28 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl48mdk
 - init.d/outformat: fixed MOVE_TO_COL (#0001767).
+- scripts/adjust_autofs: relocated to autofs package.
 
 * Sun Dec 15 2002 Dmitry V. Levin <ldv@altlinux.org> 5.49-ipl47mdk
 - rc.sysinit, init.d/outformat: back to use $COLUMNS (#0001117).

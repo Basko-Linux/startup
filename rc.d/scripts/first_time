@@ -29,8 +29,6 @@ if [ -x /usr/bin/update-menus ]; then
 	action "Updating application menus:" /usr/bin/update-menus
 fi
 
-action "Adjusting automounter configuration:" /etc/rc.d/scripts/adjust_autofs
-
 # Create new mail files if it doesn't exists.
 for i in `awk -F: '{if ($3>=400) print $1}' </etc/passwd`; do
 	[ -e "/var/mail/$i" ] || action "Creating mailbox for $i:" install --owner="$i" --group=mail --mode=660 /dev/null "/var/mail/$i"
