@@ -49,7 +49,7 @@ if [ -f /etc/mandrake-release ]; then
 		echo "$R" >>/etc/issue.net
 		echo "Kernel $(uname -r) on $a $SMP$(uname -m)" >>/etc/issue.net
 	else	
-		echo "Welcome to Linux-Mandrake" >/etc/issue.net
-		echo "-------------------------" >>/etc/issue.net
+		echo "Welcome to ALT Linux" >/etc/issue.net
+		echo "--------------------" >>/etc/issue.net
 	fi
 fi
