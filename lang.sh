@@ -23,7 +23,7 @@ CondSet()
 	done
 }
 
-if [ -n "sourced" ]; then
+if [ -n "$sourced" ]; then
 	CondSet LANGUAGE LC_ADDRESS LC_COLLATE LC_CTYPE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE
 	if [ -n "$LANG" ]; then
 		if [ "$LANG" = C ]; then LANG="en_US"; fi
