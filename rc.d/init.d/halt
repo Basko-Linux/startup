@@ -106,8 +106,6 @@ UnmountFilesystems()
 		local remaining=`awk "$pattern" /proc/mounts`
 		[ -n "$remaining" ] || break
 		/sbin/fuser -k -m $sig $remaining >/dev/null
-		local remaining=`awk "$pattern" /proc/mounts`
-		[ -n "$remaining" ] || break
 		sleep $delay
 		retry=$[retry-1]
 		sig=-9
