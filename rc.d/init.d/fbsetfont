@@ -27,6 +27,16 @@ RETVAL=0
 # See how we were called.
 case "$1" in
 	start|reload|restart)
+		# Initializing ttys.
+		sed -ne 's,^\([0-9]\+\):[0-9]\+:respawn:/sbin/mingetty.*,/dev/tty\1,pg' </etc/inittab |
+			while read t; do
+				[ ! -c "$t" ] || : >>"$t"
+			done
+		for i in $TTYS; do
+			t="/dev/tty$i"
+			[ ! -c "$t" ] || : >>"$t"
+		done
+
 		# Setup videomode if requested.
 		if [ -n "$MODE" -a -x "$FBSET" ]; then
 			: >>"$LOGDEVICE"
@@ -36,10 +46,15 @@ case "$1" in
 		# Update system font.
 		if [ -n "$MODULE" ] || [ -n "$MODE" -a -x "$FBSET" ]; then
 			: >>"$LOGDEVICE"
+			sed -ne 's,^\([0-9]\+\):[0-9]\+:respawn:/sbin/mingetty.*,/dev/tty\1,pg' </etc/inittab |
+				while read t; do
+					[ ! -c "$t" ] ||
+						/sbin/setsysfont --tty="$t" >>"$LOGDEVICE" 2>&1
+				done
 			for i in $TTYS; do
 				t="/dev/tty$i"
-				: >>"$t"
-				/sbin/setsysfont --tty="$t" >>"$LOGDEVICE" 2>&1
+				[ ! -c "$t" ] ||
+					/sbin/setsysfont --tty="$t" >>"$LOGDEVICE" 2>&1
 			done
 		fi
 		;;
