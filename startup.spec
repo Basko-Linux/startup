@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.8.1
+Version: 0.8.2
 Release: alt1
 
 Summary: The system startup scripts
@@ -142,6 +142,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Thu Jan 29 2004 Dmitry V. Levin <ldv@altlinux.org> 0.8.2-alt1
+- rc.d/rc.sysinit: do not initialize console powersaver so early.
+- setsysfont: source /etc/sysconfig/consolefont.
+
 * Sun Jan 18 2004 Dmitry V. Levin <ldv@altlinux.org> 0.8.1-alt1
 - sysctl.conf: fixed comment for net.ipv4.tcp_timestamps,
   thanks to Solar for the hint.
