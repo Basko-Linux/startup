@@ -13,7 +13,7 @@ SourceIfNotEmpty /etc/sysconfig/i18n
 for n in "$LANG" "$(expr substr "$LANG" 1 2)"; do
 	d="/etc/skel.$n"
 	if [ -d "$d" ]; then
-		useradd -D -k "$d" &>/dev/null
+		useradd -D -k "$d" >/dev/null 2>&1
 		chmod 600 /etc/default/useradd
 		break;
 	fi
