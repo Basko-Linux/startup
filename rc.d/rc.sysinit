@@ -70,12 +70,12 @@ else
 fi
 
 # Mount /proc (done here so volume labels can work with fsck).
-action "Mounting proc filesystem" mount -n -t proc proc /proc
+action "Mounting proc filesystem:" mount -n -t proc proc /proc
 chgrp proc /proc >/dev/null 2>&1 ||:
 
 # Mount /sys where appropriate.
 if [ "`kernelversion_major`" -eq 2 ] && [ "`kernelversion_minor`" -ge 5 ]; then
-	action "Mounting sys filesystem" mount -n -t sysfs sysfs /sys
+	action "Mounting sys filesystem:" mount -n -t sysfs sysfs /sys
 fi
 
 # Set the system clock (when /etc/adjtime is missing).
@@ -92,7 +92,7 @@ if [ -n "$NISDOMAIN" ] && ! is_no "$NISDOMAIN"; then
 	action "Setting NIS domain name $NISDOMAIN:" domainname "$NISDOMAIN"
 fi
 
-if [ -f /fastboot ] || fgrep -iwqs fastboot /proc/cmdline; then
+if [ -f /fastboot ] || grep -iwqs fastboot /proc/cmdline; then
 	fastboot=yes
 else
 	fastboot=
@@ -112,15 +112,6 @@ if [ "$BOOTUP" != "serial" ]; then
 	fsckoptions="-C $fsckoptions"
 else
 	fsckoptions="-V $fsckoptions"
-fi
-
-# LVM Setting
-VGCHANGE=/sbin/vgchange
-if [ -x "$VGCHANGE" -a -s /etc/lvmtab ]; then
-	modprobe lvm-mod >/dev/null 2>&1
-	if [ -e /proc/lvm ]; then
-		action "Setting up LVM:" "$VGCHANGE" -a y
-	fi
 fi
 
 _RUN_QUOTACHECK=0
@@ -175,7 +166,7 @@ fi
 
 # check for arguments 
 
-if fgrep -iqs nopnp /proc/cmdline; then
+if grep -iwqs nopnp /proc/cmdline; then
 	PNP=
 else
 	PNP=yes
@@ -224,7 +215,7 @@ fi
 echo "$HOSTNAME" >/etc/HOSTNAME
 
 if [ -z "$USEMODULES" ]; then
-	if [ -f /proc/ksyms -o -f /proc/kallsyms ] && ! fgrep -iwqs nomodules /proc/cmdline; then
+	if [ -f /proc/ksyms -o -f /proc/kallsyms ] && ! grep -iwqs nomodules /proc/cmdline; then
 		USEMODULES=y
 	else
 		USEMODULES=n
@@ -258,21 +249,34 @@ OLD_COLUMNS="$COLUMNS"
 # Load framebuffer device settings
 /etc/rc.d/scripts/framebuffer_init
 
-# Set system font again, if required.
+# Set system font again, if required
 if [ "$OLD_COLUMNS" != "$COLUMNS" ]; then
 	setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
+fi
+
+# Load device-mapper, create its device file
+if [ ! -e /dev/.devfsd -a -e /proc/devices -a -e /proc/misc ]; then
+	rm -f /dev/mapper/control
+	modprobe dm-mod >/dev/null 2>&1
+	MAJOR="$(sed -ne 's/^ *\([0-9]\+\) \+misc$/\1/p' /proc/devices)"
+	MINOR="$(sed -ne 's/^ *\([0-9]\+\) \+device-mapper$/\1/p' /proc/misc)"
+	if [ -n "$MAJOR" -a -n "$MINOR" ]; then
+		action "Creating device-mapper character device ($MAJOR, $MINOR):" \
+			mknod --mode=600 /dev/mapper/control c "$MAJOR" "$MINOR"
+	fi
+	unset MAJOR MINOR
 fi
 
 # Activate EVMS
 EVMS_ACTIVE=
 STARTEVMS=/sbin/startevms
-if [ -x "$STARTEVMS" ] && ! fgrep -iwqs noevms /proc/cmdline; then
+if [ -x "$STARTEVMS" ] && ! grep -iwqs noevms /proc/cmdline; then
 	action "Starting up EVMS:" "$STARTEVMS" init
 	EVMS_ACTIVE=1
 fi
 
 # Add raid devices
-if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat -a -s /etc/raidtab ] && ! fgrep -iwqs noraidtab /proc/cmdline; then
+if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat -a -s /etc/raidtab ] && ! grep -iwqs noraidtab /proc/cmdline; then
 	echo -n "Starting up RAID devices: " 
 
 	rc=0
@@ -320,6 +324,23 @@ if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat -a -s /etc/raidtab ] && ! fgrep -i
 		mount -n -o remount,ro /
 		echo "Automatic reboot in progress."
 		reboot -f
+	fi
+fi
+
+# Activate LVM
+VGSCAN=/sbin/vgscan
+VGCHANGE=/sbin/vgchange
+if [ -e "$VGCHANGE" -a -e "$VGSCAN" -a -s /etc/lvmtab ]; then
+	modprobe lvm-mod >/dev/null 2>&1
+	# for 2.4.x kernel and LVM1 binaris
+	if [ -d /proc/lvm -a ! -c /dev/mapper/control -a ! -x /sbin/lvm ]; then
+		"$VGSCAN" >/dev/null 2>&1
+		action "Setting up LVM:" "$VGCHANGE" -a y
+	fi
+	# for 2.6.x kernel and LVM2 binaris
+	if [ ! -d /proc/lvm -a -c /dev/mapper/control  -a -x /sbin/lvm ]; then
+		"$VGSCAN" >/dev/null 2>&1
+		action "Setting up LVM2:" "$VGCHANGE" -a y
 	fi
 fi
 
@@ -458,7 +479,7 @@ if [ -f /proc/scsi/scsi ] && fgrep -qs 'Type:   Sequential-Access' /proc/scsi/sc
 fi
 
 # If they asked for ide-scsi, load it
-if fgrep -iwqs ide-scsi /proc/cmdline; then
+if grep -iwqs ide-scsi /proc/cmdline; then
 	modprobe ide-cd >/dev/null 2>&1
 	modprobe ide-scsi >/dev/null 2>&1
 fi
