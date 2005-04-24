@@ -285,39 +285,9 @@ if [ -x "$STARTEVMS" ] && ! grep -iwqs noevms /proc/cmdline; then
 fi
 
 # Add raid devices
-if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat -a -s /etc/raidtab ] && ! grep -iwqs noraidtab /proc/cmdline; then
-	echo -n "Starting up RAID devices: "
-
-	rc=0
-	for i in `grep -s "^raiddev" /etc/raidtab | awk '{print $2}'`; do
-		RAIDDEV="${i##*/}"
-		RAIDSTAT=`grep -s "^$RAIDDEV : active" /proc/mdstat`
-		if [ -z "$RAIDSTAT" ]; then
-			# Try raidstart first...if that fails then
-			# fall back to raidadd, raidrun.  If that
-			# also fails, then we drop to a shell
-			RESULT=1
-			ExecIfExecutable /sbin/raidstart "$i"
-			RESULT=$?
-			if [ $RESULT -gt 0 ]; then
-				ExecIfExecutable /sbin/raid0run "$i"
-				RESULT=$?
-			fi
-			if [ $RESULT -gt 0 ]; then
-				ExecIfExecutable /sbin/raidadd "$i"
-				ExecIfExecutable /sbin/raidrun "$i"
-				RESULT=$?
-			fi
-			if [ $RESULT -gt 0 ]; then
-				rc=1
-			fi
-		fi
-		echo -n "$RAIDDEV "
-	done
-	echo
-
+if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat ]; then
 	# A non-zero return means there were problems.
-	if [ $rc -gt 0 ]; then
+	if ! /etc/rc.d/scripts/raidstart; then
 		echo
 		echo
 		echo "*** An error occurred during the RAID startup"

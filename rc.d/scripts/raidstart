@@ -1,0 +1,97 @@
+#!/bin/sh
+
+exec_if_executable()
+{
+	local f
+	f="$1"
+	shift
+	[ -x "$f" ] && "$f" "$@"
+}
+
+mdadm_found()
+{
+	[ -s /etc/mdadm.conf ] || return 1
+	local f
+	for f in /sbin/mdadm /usr/sbin/mdadm /sbin/mdassemble /usr/sbin/mdassemble; do
+		[ -x "$f" ] && return 0
+	done
+	return 1
+}
+
+raidtools_found()
+{
+	[ -s /etc/raidtab ] || return 1
+	local f
+	for f in /sbin/raidstart /sbin/raid0run /sbin/raidadd; do
+		[ -x "$f" ] && return 0
+	done
+	return 1
+}
+
+start_raid_using_mdadm()
+{
+	[ -s /etc/mdadm.conf ] || return 1
+	local f
+	for f in /sbin/mdadm /usr/sbin/mdadm; do
+		[ -x "$f" ] || continue
+		echo -n "(using mdadm) "
+		"$f" --assemble --scan
+		return $?
+	done
+	for f in /sbin/mdassemble /usr/sbin/mdassemble; do
+		[ -x "$f" ] || continue
+		echo -n "(using mdassemble) "
+		"$f"
+		return $?
+	done
+	return 1
+}
+
+start_raid_using_raidtools()
+{
+	[ -s /etc/raidtab ] || return 1
+	local rc=0 i dev stat res
+	echo -n "(using raidtools) "
+	for i in `grep -s "^raiddev" /etc/raidtab | awk '{print $2}'`; do
+		dev="${i##*/}"
+		stat=`grep -s "^$dev : active" /proc/mdstat`
+		if [ -z "$stat" ]; then
+			# Try raidstart first...if that fails then
+			# fall back to raidadd, raidrun.  If that
+			# also fails, then we drop to a shell
+			res=1
+			exec_if_executable /sbin/raidstart "$i"
+			res=$?
+			if [ $res -gt 0 ]; then
+				exec_if_executable /sbin/raid0run "$i"
+				res=$?
+			fi
+			if [ $res -gt 0 ]; then
+				exec_if_executable /sbin/raidadd "$i"
+				exec_if_executable /sbin/raidrun "$i"
+				res=$?
+			fi
+			if [ $res -gt 0 ]; then
+				rc=1
+			fi
+		fi
+		echo -n "$dev "
+	done
+	return $rc
+}
+
+[ -f /proc/mdstat ] && ! grep -iwqs noraidtab /proc/cmdline || exit 0
+
+rc=0
+if mdadm_found; then
+	echo -n "Starting up RAID devices: "
+	start_raid_using_mdadm
+	rc=$?
+	echo
+elif raidtools_found; then
+	echo -n "Starting up RAID devices: "
+	start_raid_using_raidtools
+	rc=$?
+	echo
+fi
+exit $rc
