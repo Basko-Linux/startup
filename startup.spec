@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.6.1
+Version: 0.9.7
 Release: alt1
 
 Summary: The system startup scripts
@@ -32,6 +32,8 @@ Conflicts: xinitrc < 0:2.4.13-alt1
 Conflicts: kernel-headers-common < 0:1.1
 # due to netfs
 Conflicts: net-scripts < 0:0.5.4-alt1
+# due to /sbin/setsysfont's package change
+Conflicts: interactivesystem < 1:sisyphus-alt12
 
 %description
 This package contains scripts used to boot your system,
@@ -43,7 +45,6 @@ change runlevels, and shut the system down cleanly.
 %install
 %__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc{0,1,2,3,4,5,6}.d
 %__install -p -m644 inittab modules sysctl.conf $RPM_BUILD_ROOT%_sysconfdir/
-%__install -pD -m755 setsysfont $RPM_BUILD_ROOT/sbin/setsysfont
 %__cp -a rc.d sysconfig $RPM_BUILD_ROOT%_sysconfdir/
 
 # these services do not support chkconfig:
@@ -62,10 +63,9 @@ done
 
 %__mkdir_p $RPM_BUILD_ROOT/var/{log,run}
 touch $RPM_BUILD_ROOT/var/{log/wtmp,run/utmp}
-touch $RPM_BUILD_ROOT%_sysconfdir/sysconfig/{clock,i18n,keyboard,mouse,system}
+touch $RPM_BUILD_ROOT%_sysconfdir/sysconfig/{clock,i18n,mouse,system}
 chmod -R +x $RPM_BUILD_ROOT%_sysconfdir/rc.d
-%__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/sysconfig/{console,harddisk}
-touch $RPM_BUILD_ROOT%_sysconfdir/sysconfig/console/setterm
+%__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/sysconfig/harddisk
 
 %__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/firsttime.d
 %__mkdir_p $RPM_BUILD_ROOT%_localstatedir/rsbac
@@ -112,7 +112,7 @@ if [ $1 -eq 0 ]; then
 fi
 
 %triggerpostun -- initscripts < 1:5.49.1-alt1
-for f in %_sysconfdir/{inittab,modules,sysctl.conf,sysconfig/{clock,console/setterm,framebuffer,i18n,init,keyboard,mouse,rawdevices,system}}; do
+for f in %_sysconfdir/{inittab,modules,sysctl.conf,sysconfig/{clock,framebuffer,i18n,init,mouse,rawdevices,system}}; do
 	if [ ! -f "$f" ]; then
 	        if [ -f "$f".rpmsave ]; then
 	                %__cp -pf "$f".rpmsave "$f"
@@ -144,13 +144,19 @@ done
 %config %_sysconfdir/rc.d/rc
 %config %_sysconfdir/rc.d/rc.sysinit
 %config %_sysconfdir/rc.d/rc.powerfail
-/sbin/setsysfont
 %ghost %attr(664,root,utmp) /var/log/wtmp
 %ghost %attr(664,root,utmp) /var/run/utmp
 %dir %_sysconfdir/firsttime.d
 %dir %_localstatedir/rsbac
 
 %changelog
+* Mon Apr  4 2005 Ivan Zakharyaschev <imz@altlinux.ru> 0.9.7-alt1
+- Moved console-related files to console-common-scripts package:
+  /sbin/setsysfont, %_sysconfdir/sysconfig/console/setterm, 
+  %_sysconfdir/sysconfig/keyboard
+  (no extra dependency on console-common-scripts required, it belongs 
+  to interactivesystem).
+
 * Sun Apr 03 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.6.1-alt1
 - rc.sysinit: reverted previous change.
 

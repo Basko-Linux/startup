@@ -39,7 +39,7 @@ if [ -z "$HOSTNAME" -o "$HOSTNAME" = "(none)" ]; then
 fi
 
 # Set system font
-setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
+ExecIfExecutable /sbin/setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
 
 PrintMargin()
 {
@@ -259,7 +259,7 @@ OLD_COLUMNS="$COLUMNS"
 
 # Set system font again, if required
 if [ "$OLD_COLUMNS" != "$COLUMNS" ]; then
-	setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
+	ExecIfExecutable /sbin/setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
 fi
 
 # Load device-mapper, create its device file
@@ -416,7 +416,7 @@ action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat
 # At this point everything should be mounted
 
 # Set system font again, if required
-[ -n "$SETSYSFONT_DONE" ] || setsysfont >/dev/null 2>&1
+[ -n "$SETSYSFONT_DONE" ] || ExecIfExecutable /sbin/setsysfont >/dev/null 2>&1
 
 if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
 	action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
