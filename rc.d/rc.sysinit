@@ -121,7 +121,7 @@ fi
 
 _RUN_QUOTACHECK=0
 ROOTFSTYPE=`fgrep ' / ' /proc/mounts |tail -1 |cut -d' ' -f3`
-if [ -z "$fastboot" -a "$ROOTFSTYPE" != nfs ]; then 
+if [ -z "$fastboot" -a "$ROOTFSTYPE" != nfs ]; then
 	STRING="Checking root filesystem"
 	echo "$STRING"
 	initlog -c "fsck -Tay $fsckoptions /"
@@ -169,7 +169,7 @@ if [ -z "$fastboot" -a "$ROOTFSTYPE" != nfs ]; then
 	fi
 fi
 
-# check for arguments 
+# check for arguments
 
 if grep -iwqs nopnp /proc/cmdline; then
 	PNP=
@@ -177,7 +177,7 @@ else
 	PNP=yes
 fi
 
-# set up pnp 
+# set up pnp
 if [ -x /sbin/isapnp -a -s /etc/isapnp.conf ]; then
 	if [ -n "$PNP" ]; then
 		action "Setting up ISA PNP devices:" /sbin/isapnp /etc/isapnp.conf
@@ -204,7 +204,7 @@ mount -f /initrd/loopfs 2>/dev/null
 mount -f /
 mount -f /proc
 [ -f /proc/bus/usb/devices ] && mount -f -t usbdevfs usbdevfs /proc/bus/usb
-[ -e /dev/.devfsd ] && mount -f -t devfs devfs /dev 
+[ -e /dev/.devfsd ] && mount -f -t devfs devfs /dev
 
 # Settin hard disk parameters
 /etc/rc.d/scripts/idetune
@@ -286,10 +286,9 @@ fi
 
 # Add raid devices
 if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat -a -s /etc/raidtab ] && ! grep -iwqs noraidtab /proc/cmdline; then
-	echo -n "Starting up RAID devices: " 
+	echo -n "Starting up RAID devices: "
 
 	rc=0
-	
 	for i in `grep -s "^raiddev" /etc/raidtab | awk '{print $2}'`; do
 		RAIDDEV="${i##*/}"
 		RAIDSTAT=`grep -s "^$RAIDDEV : active" /proc/mdstat`
