@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.7
+Version: 0.9.8
 Release: alt1
 
 Summary: The system startup scripts
@@ -150,6 +150,11 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Tue May 24 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.8-alt1
+- rc.d/scripts/raidstart: new file.
+- rc/sysinit: added mdadm support (#6397).
+- sysconfig/mouse: added default settings.
+
 * Mon Apr  4 2005 Ivan Zakharyaschev <imz@altlinux.ru> 0.9.7-alt1
 - Moved console-related files to console-common-scripts package:
   /sbin/setsysfont, %_sysconfdir/sysconfig/console/setterm, 
