@@ -63,7 +63,7 @@ done
 
 %__mkdir_p $RPM_BUILD_ROOT/var/{log,run}
 touch $RPM_BUILD_ROOT/var/{log/wtmp,run/utmp}
-touch $RPM_BUILD_ROOT%_sysconfdir/sysconfig/{clock,i18n,mouse,system}
+touch $RPM_BUILD_ROOT%_sysconfdir/sysconfig/{clock,i18n,system}
 chmod -R +x $RPM_BUILD_ROOT%_sysconfdir/rc.d
 %__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/sysconfig/harddisk
 
