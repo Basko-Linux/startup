@@ -93,7 +93,7 @@ case "$1" in
 		RETVAL=$?
 		;;
 	stop)
-		if is_yes "$HWCLOCK_SET_AT_HALT"; then
+		if is_yes "$HWCLOCK_SET_AT_HALT" && clock_unsynced; then
 			# action cannot be used in this context.
 			echo -n "Setting hardware clock$CLOCKDEF: `date` "
 			/sbin/hwclock --systohc $CLOCKFLAGS && echo_success || echo_failure
