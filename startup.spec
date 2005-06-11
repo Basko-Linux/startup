@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.8.1
+Version: 0.9.8.2
 Release: alt1
 
 Summary: The system startup scripts
@@ -23,8 +23,8 @@ PreReq: service >= 0.5.8
 Requires: modutils >= 0:2.4.15-alt1
 # due to /sys
 Requires: filesystem >= 0:2.1.7-alt1
-# due to %_sysconfdir/adjtime
-Requires: hwclock >= 2.23-alt1
+# due to /bin/clock_unsynced
+Requires: hwclock >= 0:2.23-alt6
 
 # due to update_wms
 Conflicts: xinitrc < 0:2.4.13-alt1
@@ -150,6 +150,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Sat Jun 11 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.2-alt1
+- init.d/clock:
+  + in "stop" mode, do not set hwclock if clock is in synced mode.
+
 * Fri May 27 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.1-alt1
 - rc.sysinit: Ignore unfilled /etc/mdadm.conf and /etc/raidtab.
 
