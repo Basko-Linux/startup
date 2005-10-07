@@ -178,20 +178,19 @@ else
 fi
 
 # set up pnp
-if [ -x /sbin/isapnp -a -s /etc/isapnp.conf ]; then
-	if [ -n "$PNP" ]; then
-		action "Setting up ISA PNP devices:" /sbin/isapnp /etc/isapnp.conf
-	else
-		action "Skipping ISA PNP configuration at users request:" /bin/true
-	fi
+if [ -n "$PNP" -a -x /sbin/isapnp -a -s /etc/isapnp.conf ]; then
+	action "Setting up ISA PNP devices:" /sbin/isapnp /etc/isapnp.conf
 fi
 
 # Remount the root filesystem read-write
 splash_update remount 2
 action "Remounting root filesystem in read/write mode:" mount -n -o remount,rw /
 
+# The root filesystem is now read-write, so we can now log via syslog() directly
+[ -z "$IN_INITLOG" ] || IN_INITLOG=
+
 # Clear mtab
-[ -L /etc/mtab ] ||  >/etc/mtab
+[ -L /etc/mtab ] || >/etc/mtab
 
 # Set the system clock (when /etc/adjtime is present)
 [ ! -s /etc/adjtime ] || /etc/init.d/clock start
@@ -215,9 +214,6 @@ if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
 	action "Checking root filesystem quotas:" "$QUOTACHECK" -v /
 fi
 
-# The root filesystem is now read-write, so we can now log via syslog() directly
-[ -z "$IN_INITLOG" ] || IN_INITLOG=
-
 echo "$HOSTNAME" >/etc/HOSTNAME
 
 if [ -z "$USEMODULES" ]; then
@@ -230,7 +226,7 @@ fi
 
 # Load modules where appropriate
 splash_update depmod 3
-if [ -x /sbin/depmod ] && is_yes "$USEMODULES"; then
+if [ -z "$fastboot" -a -x /sbin/depmod ] && is_yes "$USEMODULES"; then
 	INITLOG_ARGS= action "Finding module dependencies:" depmod -A
 fi
 
@@ -322,14 +318,13 @@ if [ -e "$VGCHANGE" -a -e "$VGSCAN" -a -s /etc/lvmtab ]; then
 	fi
 fi
 
-_RUN_QUOTACHECK=0
 # Check filesystems
-# (pixel) do not check loopback files, will be done later (aren't available yet)
+splash_update localfs 5
+_RUN_QUOTACHECK=0
 if [ -z "$fastboot" ]; then
-	splash_update localfs 5
-
 	STRING="Checking filesystems"
 	echo "$STRING"
+	# (pixel) do not check loopback files, will be done later (aren't available yet)
 	initlog -c "fsck -TRAay -t noloop $fsckoptions"
 	rc=$?
 
@@ -473,8 +468,8 @@ fi
 # Update vconfig symlinks for VLAN configuration program
 ExecIfExecutable /etc/rc.d/scripts/vconfig-update
 
+splash_update chrooted 8
 if [ -x /usr/sbin/update_chrooted ]; then
-	splash_update chrooted 8
 	action "Updating chrooted environments:" /usr/sbin/update_chrooted conf lib
 fi
 
