@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.8.2
+Version: 0.9.8.3
 Release: alt1
 
 Summary: The system startup scripts
@@ -150,6 +150,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Fri Oct 07 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.3-alt1
+- rc.sysinit: Do not run depmod in fastboot mode (#8130).
+
 * Sat Jun 11 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.2-alt1
 - init.d/clock:
   + in "stop" mode, do not set hwclock if clock is in synced mode.
