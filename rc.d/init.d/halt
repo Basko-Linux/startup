@@ -74,6 +74,12 @@ halt -w
 # Sync clock
 /etc/init.d/clock stop
 
+# Unmount non-/dev tmpfs.
+UnmountFilesystems 3 5 \
+	'$2 != "/dev" && $3 == "tmpfs" {print $2}' \
+	"Unmounting tmpfs filesystem" \
+	"Unmounting tmpfs filesystem (retry)"
+
 # Turn off swap, then unmount file systems.
 SWAPS=`awk '! /^Filename/ { print $1 }' /proc/swaps`
 [ -n "$SWAPS" ] && action "Turning off swap:" swapoff $SWAPS
