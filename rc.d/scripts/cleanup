@@ -45,15 +45,14 @@ rm -rf /tmp/ssh-*
 if [ -n "$CLEAN_TMP" ] && [ "$CLEAN_TMP" -ge 1 ]; then
 	(
 		cd /tmp &&
-		    find . -xdev \
-		    ! -ctime -$CLEAN_TMP \
-		    ! -name . \
+		    find -mindepth 1 -xdev \
+		    ! -ctime -"$CLEAN_TMP" \
 		    ! \( -name lost+found -uid 0 \) \
 		    ! \( -name quota.user -uid 0 \) \
 		    ! \( -name quota.group -uid 0 \) \
 		    ! \( -name aquota.user -uid 0 \) \
 		    ! \( -name aquota.group -uid 0 \) \
-		    -depth -print0 |xargs -r0 rm -rf --
+		    -delete 2>/dev/null
 	)
 fi
 
