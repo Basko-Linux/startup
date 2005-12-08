@@ -43,32 +43,32 @@ change runlevels, and shut the system down cleanly.
 %setup -q
 
 %install
-%__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc{0,1,2,3,4,5,6}.d
-%__install -p -m644 inittab modules sysctl.conf $RPM_BUILD_ROOT%_sysconfdir/
-%__cp -a rc.d sysconfig $RPM_BUILD_ROOT%_sysconfdir/
+mkdir -p %buildroot%_sysconfdir/rc.d/rc{0,1,2,3,4,5,6}.d
+install -p -m644 inittab modules sysctl.conf %buildroot%_sysconfdir/
+cp -a rc.d sysconfig %buildroot%_sysconfdir/
 
 # these services do not support chkconfig:
 # killall, halt, single local - Can't store symlinks in a CVS archive
-%__ln_s ../init.d/killall $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc0.d/S00killall
-%__ln_s ../init.d/killall $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc6.d/S00killall
+ln -s ../init.d/killall %buildroot%_sysconfdir/rc.d/rc0.d/S00killall
+ln -s ../init.d/killall %buildroot%_sysconfdir/rc.d/rc6.d/S00killall
 
-%__ln_s ../init.d/halt $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc0.d/S01halt
-%__ln_s ../init.d/halt $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc6.d/S01reboot
+ln -s ../init.d/halt %buildroot%_sysconfdir/rc.d/rc0.d/S01halt
+ln -s ../init.d/halt %buildroot%_sysconfdir/rc.d/rc6.d/S01reboot
 
-%__ln_s ../init.d/single $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc1.d/S00single
+ln -s ../init.d/single %buildroot%_sysconfdir/rc.d/rc1.d/S00single
 
 for i in `seq 2 5`; do
-	%__ln_s ../init.d/local $RPM_BUILD_ROOT%_sysconfdir/rc.d/rc$i.d/S99local
+	ln -s ../init.d/local %buildroot%_sysconfdir/rc.d/rc$i.d/S99local
 done
 
-%__mkdir_p $RPM_BUILD_ROOT/var/{log,run}
-touch $RPM_BUILD_ROOT/var/{log/wtmp,run/utmp}
-touch $RPM_BUILD_ROOT%_sysconfdir/sysconfig/{clock,i18n,system}
-chmod -R +x $RPM_BUILD_ROOT%_sysconfdir/rc.d
-%__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/sysconfig/harddisk
+mkdir -p %buildroot/var/{log,run}
+touch %buildroot/var/{log/wtmp,run/utmp}
+touch %buildroot%_sysconfdir/sysconfig/{clock,i18n,system}
+chmod -R +x %buildroot%_sysconfdir/rc.d
+mkdir -p %buildroot%_sysconfdir/sysconfig/harddisk
 
-%__mkdir_p $RPM_BUILD_ROOT%_sysconfdir/firsttime.d
-%__mkdir_p $RPM_BUILD_ROOT%_localstatedir/rsbac
+mkdir -p %buildroot%_sysconfdir/firsttime.d
+mkdir -p %buildroot%_localstatedir/rsbac
 
 %post
 if [ $1 -eq 1 ]; then
