@@ -1,7 +1,7 @@
 # $Id$
 
 Name: startup
-Version: 0.9.8.3
+Version: 0.9.8.4
 Release: alt1
 
 Summary: The system startup scripts
@@ -150,6 +150,12 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Thu Dec 08 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.4-alt1
+- init.d/halt:
+  + Unmount non-/dev tmpfs filesystems before deactivating swap.
+- scripts/cleanup:
+  + Shutup /tmp cleanup script.
+
 * Fri Oct 07 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.3-alt1
 - rc.sysinit: Do not run depmod in fastboot mode (#8130).
 
