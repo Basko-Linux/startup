@@ -1,7 +1,5 @@
 #!/bin/sh
 #
-# $Id$
-#
 # random	Script to snapshot random state and reload it at boot time.
 #
 # Author:       Theodore Ts'o <tytso@mit.edu>

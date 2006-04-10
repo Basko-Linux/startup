@@ -1,7 +1,5 @@
 #!/bin/sh
 #
-# $Id$
-#
 # rc.halt       This file is executed by init when it goes into runlevel
 #               0 (halt) or runlevel 6 (reboot). It kills all processes,
 #               unmounts file systems and then either halts or reboots.

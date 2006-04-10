@@ -1,5 +1,3 @@
-# $Id$
-
 Name: startup
 Version: 0.9.8.4
 Release: alt1

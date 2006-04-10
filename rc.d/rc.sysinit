@@ -1,6 +1,5 @@
 #!/bin/sh
 #
-# $Id$
 # /etc/rc.d/rc.sysinit - run once at boot time
 #
 # Taken in part from Miquel van Smoorenburg's bcheckrc.

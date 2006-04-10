@@ -1,6 +1,5 @@
 #!/bin/sh
 #
-# $Id$
 
 WITHOUT_RC_COMPAT=1
 

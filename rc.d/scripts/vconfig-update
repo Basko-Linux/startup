@@ -1,5 +1,4 @@
 #!/bin/sh -e
-# $Id$
 
 [ -d /etc/alternatives ] || exit 0
 

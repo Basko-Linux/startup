@@ -1,7 +1,5 @@
 #!/bin/sh
 #
-# $Id$
-#
 # /etc/init.d/clock - initialize system clock / sync hardware clock
 #
 

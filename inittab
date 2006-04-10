@@ -1,5 +1,4 @@
 # /etc/inittab: init(8) configuration.
-# $Id$
 
 # The default runlevel.
 id:3:initdefault:
