@@ -8,7 +8,7 @@ Group: System/Base
 Packager: Dmitry V. Levin <ldv@altlinux.org>
 BuildArch: noarch
 
-Source: %name-%version.tar.bz2
+Source: %name-%version.tar
 
 Provides: /etc/firsttime.d
 PreReq: chkconfig, gawk, grep, sed, coreutils, %__subst
