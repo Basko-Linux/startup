@@ -73,7 +73,7 @@ action "Mounting proc filesystem:" mount -n -t proc proc /proc
 chgrp proc /proc >/dev/null 2>&1 ||:
 
 # Mount /sys where appropriate
-if [ "`kernelversion_major`" -eq 2 ] && [ "`kernelversion_minor`" -ge 5 ]; then
+if grep -wqs sysfs /proc/filesystems; then
 	action "Mounting sys filesystem:" mount -n -t sysfs sysfs /sys
 fi
 
