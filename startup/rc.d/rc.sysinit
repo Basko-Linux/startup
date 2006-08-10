@@ -285,18 +285,30 @@ if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat ]; then
 	if ! /etc/rc.d/scripts/raidstart; then
 		echo
 		echo
-		echo "*** An error occurred during the RAID startup"
-		echo "*** Dropping you to a shell; the system will reboot"
-		echo "*** when you leave the shell."
+		echo "*** An error occurred during the RAID startup."
+		stop=
+		if grep -iwqs 'onraiderror=stop' /proc/cmdline; then
+			stop=1
+		elif ! grep -iwqs 'onraiderror=ignore' /proc/cmdline; then
+			echo "*** - Press ENTER for dropping you to a shell;"
+			echo "***   the system will reboot when you leave the shell."
+			echo "*** - Or wait 1 minute to continue normal startup."
+			read -t 60 && stop=1
+		fi
 
-		PS1="(RAID Repair) \# # "; export PS1
-		sulogin
+		if [ -n "$stop" ]; then
+			PS1="(RAID Repair) \# # "; export PS1
+			sulogin
 
-		echo "Unmounting file systems"
-		umount -arnf
-		mount -n -o remount,ro /
-		echo "Automatic reboot in progress."
-		reboot -f
+			echo "Unmounting file systems"
+			umount -arnf
+			mount -n -o remount,ro /
+			echo "Automatic reboot in progress."
+			reboot -f
+		else
+			echo "*** Trying to continue normal startup."
+		fi
+		unset stop
 	fi
 fi
 
