@@ -51,7 +51,7 @@ fi
 
 set_date()
 {
-	action "Setting system clock$CLOCKDEF:" /sbin/hwclock --hctosys $CLOCKFLAGS
+	action "Setting system clock$CLOCKDEF:" hwclock --hctosys $CLOCKFLAGS
 	RETVAL=$?
 	action "Today's date: `date`" true
 	return $RETVAL
@@ -82,25 +82,28 @@ case "$1" in
 			exit 1
 		fi
 		if is_yes "$HWCLOCK_ADJUST" && [ -s /etc/adjtime ]; then
-			action "Adjusting hardware clock:" /sbin/hwclock --adjust
+			action "Adjusting hardware clock:" hwclock --adjust
 		fi
 		set_date
 		;;
 	sync)
-		action "Setting hardware clock$CLOCKDEF: `date`" /sbin/hwclock --systohc $CLOCKFLAGS
+		action "Setting hardware clock$CLOCKDEF: `date`" hwclock --systohc $CLOCKFLAGS
 		RETVAL=$?
 		;;
 	stop)
 		if is_yes "$HWCLOCK_SET_AT_HALT" && clock_unsynced; then
 			# action cannot be used in this context.
 			echo -n "Setting hardware clock$CLOCKDEF: `date` "
-			/sbin/hwclock --systohc $CLOCKFLAGS && echo_success || echo_failure
+			hwclock --systohc $CLOCKFLAGS && echo_success || echo_failure
 			RETVAL=$?
 			echo
 		fi
 		;;
+	status)
+		hwclock --show
+		;;
 	*)
-		msg_usage "${0##*/} {set|tzset|start|sync|stop}"
+		msg_usage "${0##*/} {set|tzset|start|sync|stop|status}"
 		RETVAL=1
 		;;
 esac
