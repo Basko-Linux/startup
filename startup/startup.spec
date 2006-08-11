@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.4
+Version: 0.9.8.5
 Release: alt1
 
 Summary: The system startup scripts
@@ -148,6 +148,20 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Fri Aug 11 2006 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.5-alt1
+- rc.sysinit:
+  + Make sysfs mount logic based on /proc/filesystems.
+  + Enhanced RAID-related failures handling,
+    based on patch from Ilya Evseev (#9488).
+- sysctl.conf:
+  + Set "kernel.core_pattern = /dev/null" by default,
+    suggested by Michael Shigorin (#9780).
+- init.d/clock:
+  + Add status parameter, suggested by Vitaly Lipatov (#8718).
+- init.d/halt, scripts/raidstop:
+  + Use new scripts/raidstop file to stop RAID using mdadm
+    or raidtools, based on patch from Ilya Evseev (#7768).
+
 * Thu Dec 08 2005 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.4-alt1
 - init.d/halt:
   + Unmount non-/dev tmpfs filesystems before deactivating swap.
