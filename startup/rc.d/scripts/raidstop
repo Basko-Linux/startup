@@ -1,0 +1,18 @@
+#!/bin/sh
+
+[ -s /proc/mdstat ] || exit 0
+
+WITHOUT_RC_COMPAT=1
+. /etc/init.d/functions
+
+if [ -f /etc/mdadm.conf ] && absolute mdadm >/dev/null 2>&1; then
+	raidstop='mdadm --stop'
+elif [ -f /etc/raidtab ] && absolute raidstop >/dev/null 2>&1; then
+	raidstop=raidstop
+else
+	exit 1
+fi
+
+for mddev in $(sed -ne 's/^\(md[^[:space:]]*\).*/\1/p' /proc/mdstat); do
+	action "Turning off RAID for $mddev:" $raidstop "/dev/$mddev"
+done

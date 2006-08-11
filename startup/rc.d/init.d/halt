@@ -107,20 +107,7 @@ UnmountFilesystems 3 5 \
 	"Unmounting filesystem (retry)"
 
 # Turn off raid.
-RAIDSTOP=/sbin/raidstop
-if [ -x "$RAIDSTOP" -a -f /etc/raidtab ]; then
-	# we can not use raidstop -a here because this will only stop
-	# devices listed in the default config file which is not always
-	# the case. So we look only for the active raid devices
-	if [ -f /proc/mdstat ] ; then
-		mddevs=$(grep ^md /proc/mdstat | awk '{ print $1 }')
-		for mddev in $mddevs ; do
-			action "Turning off RAID for $mddev:" "$RAIDSTOP" "/dev/$mddev"
-		done
-		unset mddev mddevs
-	fi
-	#action "Turning off RAID:" /sbin/raidstop -a
-fi
+/etc/rc.d/scripts/raidstop
 
 [ -f /proc/bus/usb/devices ] && umount -n /proc/bus/usb >/dev/null 2>&1
 
