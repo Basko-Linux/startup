@@ -86,7 +86,7 @@ QUOTAOFF=/sbin/quotaoff
 [ -x "$QUOTAOFF" ] && action "Turning off quotas:" "$QUOTAOFF" -a
 
 ACCTOFF=/sbin/accton
-[ -x "$ACCTOFF" ] && action "Turning off accounting:" "$ACCTOFF"
+[ -x "$ACCTOFF" ] && action "Turning off accounting:" "$ACCTOFF" off
 
 # Unmount supermount and autofs*.
 UnmountFilesystems 3 5 \
