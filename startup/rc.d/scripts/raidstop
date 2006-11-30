@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ -s /proc/mdstat ] || exit 0
+[ -f /proc/mdstat ] || exit 0
 
 WITHOUT_RC_COMPAT=1
 . /etc/init.d/functions
