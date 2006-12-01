@@ -201,6 +201,7 @@ rm -f /etc/mtab~ /etc/mtab~~
 mount -f /initrd/loopfs 2>/dev/null
 mount -f /
 mount -f /proc
+[ -d /sys/bus ] && mount -f -t sysfs sysfs /sys
 [ -f /proc/bus/usb/devices ] && mount -f -t usbdevfs usbdevfs /proc/bus/usb
 [ -e /dev/.devfsd ] && mount -f -t devfs devfs /dev
 
