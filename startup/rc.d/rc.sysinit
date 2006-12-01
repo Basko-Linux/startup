@@ -379,7 +379,7 @@ fi
 # filesystems are NOT unmounted in single user mode
 # (pixel) also do not mount loopback, will be done later
 splash_update mount 6
-action "Mounting local filesystems:" mount -a -t nodavfs,ftpfs,loop,ncp,ncpfs,nfs,proc,smbfs,sshfs
+action "Mounting local filesystems:" mount -a -t nodavfs,ftpfs,loop,ncp,ncpfs,nfs,proc,smbfs,sshfs -O no_netdev
 
 # (pixel) Check loopback filesystems
 if [ -z "$fastboot" ]; then
@@ -418,7 +418,7 @@ if [ -z "$fastboot" ]; then
 fi
 
 # Mount loopback
-action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat
+action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat -O no_netdev
 
 # At this point everything should be mounted
 
