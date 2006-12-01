@@ -13,6 +13,13 @@ else
 	exit 1
 fi
 
-for mddev in $(sed -ne 's/^\(md[^[:space:]]*\).*/\1/p' /proc/mdstat); do
+mdlist="$(sed -ne 's/^\(md[^[:space:]]*\).*/\1/p' /proc/mdstat)"
+[ -n "$mdlist" ] || exit 0
+
+rootdev="$(mount 2>/dev/null |awk '$2=="on" && $3=="/" {print $1}')"
+rootdev="${rootdev#/dev/}"
+
+for mddev in ${mdlist}; do
+	[ "$mddev" != "$rootdev" ] || continue
 	action "Turning off RAID for $mddev:" $raidstop "/dev/$mddev"
 done
