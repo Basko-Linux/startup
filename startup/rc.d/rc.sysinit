@@ -314,20 +314,8 @@ if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat ]; then
 fi
 
 # Activate LVM
-VGSCAN=/sbin/vgscan
-VGCHANGE=/sbin/vgchange
-if [ -e "$VGCHANGE" -a -e "$VGSCAN" -a -s /etc/lvmtab ]; then
-	modprobe lvm-mod >/dev/null 2>&1
-	# for 2.4.x kernel and LVM1 binaris
-	if [ -d /proc/lvm -a ! -c /dev/mapper/control -a ! -x /sbin/lvm ]; then
-		"$VGSCAN" >/dev/null 2>&1
-		action "Setting up LVM:" "$VGCHANGE" -a y
-	fi
-	# for 2.6.x kernel and LVM2 binaris
-	if [ ! -d /proc/lvm -a -c /dev/mapper/control  -a -x /sbin/lvm ]; then
-		"$VGSCAN" >/dev/null 2>&1
-		action "Setting up LVM2:" "$VGCHANGE" -a y
-	fi
+if [ -z "$EVMS_ACTIVE" ]; then
+	/etc/rc.d/scripts/lvm_start
 fi
 
 # Check filesystems

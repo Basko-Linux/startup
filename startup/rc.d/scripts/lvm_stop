@@ -1,0 +1,9 @@
+#!/bin/sh
+
+VGCHANGE=/sbin/vgchange
+if [ -x "$VGCHANGE" -a -s /etc/lvm/lvm.conf ]; then
+	WITHOUT_RC_COMPAT=1
+	. /etc/init.d/functions
+
+	action "Turning off LVM:" "$VGCHANGE" -a n
+fi

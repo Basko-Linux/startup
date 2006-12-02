@@ -1,0 +1,12 @@
+#!/bin/sh
+
+VGSCAN=/sbin/vgscan
+VGCHANGE=/sbin/vgchange
+if [ -e "$VGCHANGE" -a -e "$VGSCAN" -a -s /etc/lvm/lvm.conf -a -c /dev/mapper/control ]; then
+	WITHOUT_RC_COMPAT=1
+	. /etc/init.d/functions
+
+	modprobe dm-mod >/dev/null 2>&1
+	"$VGSCAN" >/dev/null 2>&1
+	action "Setting up LVM2:" "$VGCHANGE" -a y
+fi

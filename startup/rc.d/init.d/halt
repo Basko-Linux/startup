@@ -106,6 +106,9 @@ UnmountFilesystems 3 5 \
 	"Unmounting filesystem" \
 	"Unmounting filesystem (retry)"
 
+# Turn off LVM.
+/etc/rc.d/scripts/lvm_stop
+
 # Turn off raid.
 /etc/rc.d/scripts/raidstop
 
