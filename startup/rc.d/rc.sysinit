@@ -202,10 +202,10 @@ mount -f /initrd/loopfs 2>/dev/null
 mount -f /
 mount -f /proc
 [ -d /sys/bus ] && mount -f -t sysfs sysfs /sys
-[ -f /proc/bus/usb/devices ] && mount -f -t usbdevfs usbdevfs /proc/bus/usb
+[ -f /proc/bus/usb/devices ] && mount -f -t usbfs usbfs /proc/bus/usb
 [ -e /dev/.devfsd ] && mount -f -t devfs devfs /dev
 
-# Settin hard disk parameters
+# Set hard disk parameters
 /etc/rc.d/scripts/idetune
 
 # Update quotas if fsck was run on /
