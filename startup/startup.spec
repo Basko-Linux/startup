@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.5
+Version: 0.9.8.6
 Release: alt1
 
 Summary: The system startup scripts
@@ -148,6 +148,17 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Mon Dec 04 2006 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.6-alt1
+- init.d/halt: Pass "off" argument to accton (#10063).
+- raidstop: Fix /proc/mdstat check.
+- rc.sysinit: If sysfs is mounted, add /sys to mtab.
+- rc.sysinit: Add "-O no_netdev" to "mount -a" invocations (#10349).
+- raidstop: Skip root device (#6614).
+- rc.sysinit: Add proper /proc/bus/usb entry to mtab when usbfs is mounted.
+- Move LVM support code to separate scripts (#6526, #6614, #7399, #10117).
+- raidstart: Fix /etc/mdadm.conf and /etc/raidtab checks.
+- raidstart: Cleanup.
+
 * Fri Aug 11 2006 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.5-alt1
 - rc.sysinit:
   + Make sysfs mount logic based on /proc/filesystems.
