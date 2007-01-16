@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.6
+Version: 0.9.8.7
 Release: alt1
 
 Summary: The system startup scripts
@@ -150,6 +150,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Tue Jan 16 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.7-alt1
+- init.d/halt: Make shutdown up to 5 seconds faster.
+
 * Mon Dec 04 2006 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.6-alt1
 - init.d/halt: Pass "off" argument to accton (#10063).
 - raidstop: Fix /proc/mdstat check.
