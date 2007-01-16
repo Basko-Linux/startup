@@ -21,7 +21,7 @@ unset action
 
 action_begin_msg()
 {
-	printf '%s ' "$*"
+	[ -z "$*" ] || printf '%s ' "$*"
 }
 
 action_end_msg()
@@ -80,11 +80,11 @@ sendsigs()
 # See how we were called.
 case "$0" in
 	*halt|*poweroff)
-		message="The system is halted"
+		message='The system is halted'
 		command=/sbin/poweroff
 		;;
 	*reboot)
-		message="Please stand by while rebooting the system..."
+		message='Please stand by while rebooting the system...'
 		command=/sbin/reboot
 		;;
 	*)
@@ -110,42 +110,42 @@ sendsigs
 # Write to wtmp file before unmounting /var
 halt -w
 
+ACCTOFF=/sbin/accton
+[ -x "$ACCTOFF" ] && "$ACCTOFF" off
+
 # Sync clock
 /etc/init.d/clock stop
+
+QUOTAOFF=/sbin/quotaoff
+[ -x "$QUOTAOFF" ] && action 'Turning off quotas:' "$QUOTAOFF" -a
 
 # Unmount non-/dev tmpfs.
 UnmountFilesystems 3 5 \
 	'$2 != "/dev" && $3 == "tmpfs" {print $2}' \
-	"Unmounting tmpfs filesystem" \
-	"Unmounting tmpfs filesystem (retry)"
+	'Unmounting tmpfs filesystem' \
+	'Unmounting tmpfs filesystem (retry)'
 
 # Turn off swap, then unmount file systems.
 SWAPS=`awk '! /^Filename/ { print $1 }' /proc/swaps`
-[ -n "$SWAPS" ] && action "Turning off swap:" swapoff $SWAPS
-
-QUOTAOFF=/sbin/quotaoff
-[ -x "$QUOTAOFF" ] && action "Turning off quotas:" "$QUOTAOFF" -a
-
-ACCTOFF=/sbin/accton
-[ -x "$ACCTOFF" ] && action "Turning off accounting:" "$ACCTOFF" off
+[ -n "$SWAPS" ] && action 'Turning off swap:' swapoff $SWAPS
 
 # Unmount supermount and autofs*.
 UnmountFilesystems 3 5 \
 	'$2 != "/" && (($3 == "supermount") || ($3 == "autofs") || ($3 == "autofs4")) {print $2}' \
-	"Unmounting automount filesystem" \
-	"Unmounting automount filesystem (retry)"
+	'Unmounting automount filesystem' \
+	'Unmounting automount filesystem (retry)'
 
 # Unmount loopback stuff first.
 UnmountFilesystems 3 5 \
 	'$2 != "/" && $1 ~ /^\/dev\/loop/ {print $2}' \
-	"Unmounting loopback filesystem" \
-	"Unmounting loopback filesystem (retry)"
+	'Unmounting loopback filesystem' \
+	'Unmounting loopback filesystem (retry)'
 
 # Unmount all the rest.
 UnmountFilesystems 3 5 \
 	'$2 != "/" && $3 != "proc" && $3 != "devfs" && $3 != "loopfs" && !($1 ~ /^none/) {print $2}' \
-	"Unmounting filesystem" \
-	"Unmounting filesystem (retry)"
+	'Unmounting filesystem' \
+	'Unmounting filesystem (retry)'
 
 # Turn off LVM.
 /etc/rc.d/scripts/lvm_stop
@@ -156,23 +156,23 @@ UnmountFilesystems 3 5 \
 [ -f /proc/bus/usb/devices ] && umount -n /proc/bus/usb >/dev/null 2>&1
 
 # Remount read-only anything that's left mounted.
-action "Remounting remaining filesystems (if any) read-only:" umount -anrf
-action "Remounting root filesystem read-only:" mount -n -o remount,ro /
+action 'Remounting remaining filesystems (if any) read-only:' umount -anrf
+action 'Remounting root filesystem read-only:' mount -n -o remount,ro /
 
-action "Unmounting proc filesystem:" umount -n /proc
+action 'Unmounting proc filesystem:' umount -n /proc
 
 # See if this is a powerfail situation.
 UPSCTL=/etc/apcupsd/apccontrol
 if [ -x "$UPSCTL" -a -f /etc/apcupsd/powerfail ]; then
-	action "Attempting to turn the UPS off:" "$UPSCTL" killpower
-	message="The system is halted"
+	action 'Attempting to turn the UPS off:' "$UPSCTL" killpower
+	message='The system is halted'
 	command=/sbin/poweroff
 fi
 
 UPSCTL=/sbin/upsdrvctl
 if [ -x "$UPSCTL" -a -f /etc/killpower ]; then
-	action "Attempting to turn the UPS off:" "$UPSCTL" shutdown
-	message="The system is halted"
+	action 'Attempting to turn the UPS off:' "$UPSCTL" shutdown
+	message='The system is halted'
 	command=/sbin/poweroff
 fi
 
@@ -182,9 +182,9 @@ if [ "$command" = /sbin/poweroff ]; then
 fi
 
 if [ -f /fastboot ]; then
-	echo "On the next boot fsck will be skipped."
+	echo 'On the next boot fsck will be skipped.'
 elif [ -f /forcefsck ]; then
-	echo "On the next boot fsck will be forced."
+	echo 'On the next boot fsck will be forced.'
 fi
 
 # Now halt or reboot.
