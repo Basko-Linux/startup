@@ -23,6 +23,8 @@ Requires: modutils >= 0:2.4.15-alt1
 Requires: filesystem >= 0:2.1.7-alt1
 # due to /bin/clock_unsynced
 Requires: hwclock >= 0:2.23-alt6
+# due to killall5 return code semantics
+Requires: SysVinit >= 0:2.86-alt1
 
 # due to update_wms
 Conflicts: xinitrc < 0:2.4.13-alt1
