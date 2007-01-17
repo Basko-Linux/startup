@@ -57,23 +57,27 @@ sendsigs()
 	local rc=$?
 	if [ "$rc" = 2 ]; then
 		action_passed_msg
+		return
 	else
 		action_end_msg "$rc"
 	fi
+
+	local seq=5
 	if [ "$rc" = 0 ]; then
-		local seq
 		for seq in 1 2 3 4 5; do
 			killall5 -18 || break
 			sleep 1
 		done
-		action_begin_msg 'Killing all remaining processes'
-		killall5 -9
-		rc=$?
-		if [ "$rc" = 2 ]; then
-			action_passed_msg
-		else
-			action_end_msg "$rc"
-		fi
+	fi
+
+	[ "$seq" = 5 ] || return 0
+	action_begin_msg 'Killing all remaining processes'
+	killall5 -9
+	rc=$?
+	if [ "$rc" = 2 ]; then
+		action_passed_msg
+	else
+		action_end_msg "$rc"
 	fi
 }
 
