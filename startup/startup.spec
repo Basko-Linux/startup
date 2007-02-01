@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.7
+Version: 0.9.8.8
 Release: alt1
 
 Summary: The system startup scripts
@@ -150,6 +150,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Thu Feb 01 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.8-alt1
+- rc.sysinit: Removed st module loading support.
+- /etc/rc.d/scripts/vconfig-update: Removed.
+
 * Tue Jan 16 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.7-alt1
 - init.d/halt: Make shutdown up to 5 seconds faster.
 
