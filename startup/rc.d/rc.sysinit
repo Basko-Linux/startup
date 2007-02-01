@@ -454,9 +454,6 @@ fi
 [ -d /mnt/cdrom ] || action "Creating /mnt/cdrom:" mkdir -p /mnt/cdrom
 [ -d /mnt/floppy ] || action "Creating /mnt/floppy:" mkdir -p /mnt/floppy
 
-# Update vconfig symlinks for VLAN configuration program
-ExecIfExecutable /etc/rc.d/scripts/vconfig-update
-
 splash_update chrooted 8
 if [ -x /usr/sbin/update_chrooted ]; then
 	action "Updating chrooted environments:" /usr/sbin/update_chrooted conf lib

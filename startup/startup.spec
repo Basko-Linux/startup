@@ -17,8 +17,6 @@ Requires: findutils >= 0:4.0.33, mount >= 0:2.10q-ipl1mdk
 Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk, util-linux >= 0:2.10q-ipl1mdk
 # due to bootsplash functions
 PreReq: service >= 0.5.8
-# due to /sbin/kernelversion_{major,minor}
-Requires: modutils >= 0:2.4.15-alt1
 # due to /sys
 Requires: filesystem >= 0:2.1.7-alt1
 # due to /bin/clock_unsynced
@@ -34,6 +32,8 @@ Conflicts: kernel-headers-common < 0:1.1
 Conflicts: net-scripts < 0:0.5.4-alt1
 # due to /sbin/setsysfont's package change
 Conflicts: interactivesystem < 1:sisyphus-alt12
+# due to vconfig
+Conflicts: vlan-utils < 0:1.9
 
 %description
 This package contains scripts used to boot your system,
