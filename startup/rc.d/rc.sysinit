@@ -168,19 +168,6 @@ if [ -z "$fastboot" -a "$ROOTFSTYPE" != nfs ]; then
 	fi
 fi
 
-# check for arguments
-
-if grep -iwqs nopnp /proc/cmdline; then
-	PNP=
-else
-	PNP=yes
-fi
-
-# set up pnp
-if [ -n "$PNP" -a -x /sbin/isapnp -a -s /etc/isapnp.conf ]; then
-	action "Setting up ISA PNP devices:" /sbin/isapnp /etc/isapnp.conf
-fi
-
 # Remount the root filesystem read-write
 splash_update remount 2
 action "Remounting root filesystem in read/write mode:" mount -n -o remount,rw /
