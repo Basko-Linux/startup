@@ -82,6 +82,18 @@ splash_init 5
 
 splash_update start 1
 
+RUN_UDEV=
+udevd_exe=/etc/init.d/udevd
+[ ! -x "$udevd_exe" ] ||
+	grep -iwqs noudev /proc/cmdline ||
+	RUN_UDEV=1
+
+# Start udev
+if [ -n "$RUN_UDEV" ]; then
+	RUN_FROM_SYSINIT=1 "$udevd_exe" start
+	[ -c /dev/rtc ] || modprobe rtc >/dev/null 2>&1
+fi
+
 # Set the system clock (when /etc/adjtime is missing)
 [ -s /etc/adjtime ] || /etc/init.d/clock start
 
@@ -190,7 +202,8 @@ mount -f /
 mount -f /proc
 [ -d /sys/bus ] && mount -f -t sysfs sysfs /sys
 [ -f /proc/bus/usb/devices ] && mount -f -t usbfs usbfs /proc/bus/usb
-[ -e /dev/.devfsd ] && mount -f -t devfs devfs /dev
+! mountpoint -q /dev || mount -f -t tmpfs udevfs /dev
+! mountpoint -q /dev/pts || mount -f -t devpts devpts /dev/pts
 
 # Set hard disk parameters
 /etc/rc.d/scripts/idetune
@@ -246,17 +259,19 @@ if [ "$OLD_COLUMNS" != "$COLUMNS" ]; then
 fi
 
 # Load device-mapper, create its device file
-if [ ! -e /dev/.devfsd -a -e /proc/devices -a -e /proc/misc ]; then
+if [ -e /proc/devices -a -e /proc/misc ]; then
 	rm -f /dev/mapper/control
 	modprobe dm-mod >/dev/null 2>&1
-	MAJOR="$(sed -ne 's/^ *\([0-9]\+\) \+misc$/\1/p' /proc/devices)"
-	MINOR="$(sed -ne 's/^ *\([0-9]\+\) \+device-mapper$/\1/p' /proc/misc)"
-	if [ -n "$MAJOR" -a -n "$MINOR" ]; then
-		mkdir -p -m755 /dev/mapper
-		action "Creating device-mapper character device ($MAJOR, $MINOR):" \
-			mknod --mode=600 /dev/mapper/control c "$MAJOR" "$MINOR"
+	if [ -z "$RUN_UDEV" ]; then
+		MAJOR="$(sed -ne 's/^ *\([0-9]\+\) \+misc$/\1/p' /proc/devices)"
+		MINOR="$(sed -ne 's/^ *\([0-9]\+\) \+device-mapper$/\1/p' /proc/misc)"
+		if [ -n "$MAJOR" -a -n "$MINOR" ]; then
+			mkdir -p -m755 /dev/mapper
+			action "Creating device-mapper character device ($MAJOR, $MINOR):" \
+				mknod --mode=600 /dev/mapper/control c "$MAJOR" "$MINOR"
+		fi
+		unset MAJOR MINOR
 	fi
-	unset MAJOR MINOR
 fi
 
 # Activate EVMS
