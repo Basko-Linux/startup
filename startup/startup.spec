@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.8
+Version: 0.9.8.9
 Release: alt1
 
 Summary: The system startup scripts
@@ -21,7 +21,7 @@ PreReq: service >= 0.5.8
 Requires: filesystem >= 0:2.1.7-alt1
 # due to /bin/clock_unsynced
 Requires: hwclock >= 0:2.23-alt6
-# due to killall5 return code semantics
+# due to killall5 return code semantics and mountpoint utility
 Requires: SysVinit >= 0:2.86-alt1
 
 # due to update_wms
@@ -150,6 +150,15 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Fri Feb 16 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.9-alt1
+- rc.sysinit:
+  + Dropped ISA PNP support
+  + Dropped devfs support.
+  + Implemented udev early startup (legion@).
+- init.d/halt:
+  + Dropped devfs support.
+  + Chaged unmount sequence to unmount /dev late.
+
 * Thu Feb 01 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.8-alt1
 - rc.sysinit: Removed st module loading support.
 - /etc/rc.d/scripts/vconfig-update: Removed.
