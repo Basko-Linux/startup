@@ -147,7 +147,7 @@ UnmountFilesystems 3 5 \
 
 # Unmount all the rest.
 UnmountFilesystems 3 5 \
-	'$2 != "/" && $3 != "proc" && $3 != "devfs" && $3 != "loopfs" && !($1 ~ /^none/) {print $2}' \
+	'$2 != "/" && $2 != "/dev" && $3 != "proc" && $3 != "loopfs" && !($1 ~ /^none/) {print $2}' \
 	'Unmounting filesystem' \
 	'Unmounting filesystem (retry)'
 
@@ -157,13 +157,15 @@ UnmountFilesystems 3 5 \
 # Turn off raid.
 /etc/rc.d/scripts/raidstop
 
-[ -f /proc/bus/usb/devices ] && umount -n /proc/bus/usb >/dev/null 2>&1
+# Unmount /dev.
+UnmountFilesystems 3 5 \
+	'$2 == "/dev" {print $2}' \
+	'Unmounting filesystem' \
+	'Unmounting filesystem (retry)'
 
 # Remount read-only anything that's left mounted.
 action 'Remounting remaining filesystems (if any) read-only:' umount -anrf
 action 'Remounting root filesystem read-only:' mount -n -o remount,ro /
-
-action 'Unmounting proc filesystem:' umount -n /proc
 
 # See if this is a powerfail situation.
 UPSCTL=/etc/apcupsd/apccontrol
