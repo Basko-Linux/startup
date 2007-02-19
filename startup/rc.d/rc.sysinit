@@ -236,8 +236,10 @@ action "Configuring kernel parameters:" sysctl -e -p /etc/sysctl.conf
 
 if [ -f /proc/sys/kernel/modprobe ]; then
 	if is_yes "$USEMODULES"; then
-		sysctl -w kernel.modprobe="/sbin/modprobe" >/dev/null 2>&1
-		sysctl -w kernel.hotplug="/sbin/hotplug" >/dev/null 2>&1
+		if [ -z "$RUN_UDEV" ]; then
+			sysctl -w kernel.modprobe="/sbin/modprobe" >/dev/null 2>&1
+			sysctl -w kernel.hotplug="/sbin/hotplug" >/dev/null 2>&1
+		fi
 	else
 		# We used to set this to NULL, but that causes 'failed to exec' messages"
 		sysctl -w kernel.modprobe="/bin/true" >/dev/null 2>&1
