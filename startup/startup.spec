@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.9
+Version: 0.9.8.10
 Release: alt1
 
 Summary: The system startup scripts
@@ -150,6 +150,11 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Tue Feb 20 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.10-alt1
+- rc.sysinit:
+  + Do not set kernel.{modprobe,hotplug} if udevd is running (vsu@).
+  + Add /dev/shm to mtab if it was mounted early (vsu@).
+
 * Fri Feb 16 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.9-alt1
 - rc.sysinit:
   + Dropped ISA PNP support
