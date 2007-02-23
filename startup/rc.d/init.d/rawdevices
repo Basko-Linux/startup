@@ -16,7 +16,9 @@ WITHOUT_RC_COMPAT=1
 . /etc/init.d/functions
 
 CONFIG=/etc/sysconfig/rawdevices
-[ -x /usr/bin/raw -a -s "$CONFIG" ] || exit 0
+[ -s "$CONFIG" ] &&
+	grep -qs '^[[:space:]]*[^#[:space:]]' "$CONFIG" ||
+	exit 0
 
 LOCKFILE=/var/lock/subsys/rawdevices
 
