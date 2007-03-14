@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.10
+Version: 0.9.8.11
 Release: alt1
 
 Summary: The system startup scripts
@@ -150,6 +150,12 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed Mar 14 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.11-alt1
+- init.d/rawdevices:
+  Changed to exit not only when /etc/sysconfig/rawdevices is
+  missing or empty but also when it does not contain data.
+- inittab: Added --noclear option to "mingetty tty1".
+
 * Tue Feb 20 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.10-alt1
 - rc.sysinit:
   + Do not set kernel.{modprobe,hotplug} if udevd is running (vsu@).
