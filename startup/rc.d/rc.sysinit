@@ -82,6 +82,9 @@ splash_init 5
 
 splash_update start 1
 
+# Load modules
+/etc/rc.d/scripts/load_modules
+
 RUN_UDEV=
 udevd_exe=/etc/init.d/udevd
 [ ! -x "$udevd_exe" ] ||
@@ -249,9 +252,6 @@ if [ -f /proc/sys/kernel/modprobe ]; then
 fi
 
 OLD_COLUMNS="$COLUMNS"
-
-# Load modules
-/etc/rc.d/scripts/load_modules
 
 # Load framebuffer device settings
 /etc/rc.d/scripts/framebuffer_init
