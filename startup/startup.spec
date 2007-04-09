@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.11
+Version: 0.9.8.12
 Release: alt1
 
 Summary: The system startup scripts
@@ -150,6 +150,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Tue Apr 10 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.12-alt1
+- rc.sysinit: Load modules before udevd start (legion, #11085).
+
 * Wed Mar 14 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.11-alt1
 - init.d/rawdevices:
   Changed to exit not only when /etc/sysconfig/rawdevices is
