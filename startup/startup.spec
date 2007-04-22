@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.13
+Version: 0.9.8.14
 Release: alt1
 
 Summary: The system startup scripts
@@ -150,6 +150,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Sun Apr 22 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.14-alt1
+- init.d/netfs: Added nfs4 support (#11593).
+
 * Wed Apr 11 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.13-alt1
 - lvm_stop: Do not execute vgchange if /proc/partitions contains no dm devices.
 
