@@ -6,8 +6,7 @@
 # 		Miquel van Smoorenburg, <miquels@drinkel.nl.mugnet.org>
 #
 # chkconfig: 345 25 75
-# description: Mounts and unmounts all Network File System (NFS), \
-#	SMB (Lan Manager/Windows), and NCP (NetWare) mount points.
+# description: Mounts and unmounts all NFS, SMB, CIFS and NCP mount points.
 
 WITHOUT_RC_COMPAT=1
 
@@ -20,14 +19,13 @@ SourceIfNotEmpty /etc/sysconfig/network || exit 1
 
 LOCKFILE=/var/lock/subsys/netfs
 
-NFSFSTAB=`grep -vs '^#' /etc/fstab |awk '{ if (($3 == "nfs") && ($4 !~ /noauto/)) print $2}'`
-SMBFSTAB=`grep -vs '^#' /etc/fstab |awk '{ if (($3 == "smbfs") && ($4 !~ /noauto/)) print $2}'`
-CIFSFSTAB=`grep -vs '^#' /etc/fstab |awk '{ if (($3 == "cifs") && ($4 !~ /noauto/)) print $2}'`
-NCPFSTAB=`grep -vs '^#' /etc/fstab |awk '{ if ((($3 == "ncp") || ($3 == "ncpfs")) && ($4 !~ /noauto/)) print $2}'`
-NFSMTAB=`grep -vs '^#' /proc/mounts |awk '{ if (($3 == "nfs") && ($2 != "/")) print $2}'`
-SMBMTAB=`grep -vs '^#' /proc/mounts |awk '{ if (($3 == "smbfs") && ($2 != "/")) print $2}'`
-CIFSMTAB=`grep -vs '^#' /proc/mounts |awk '{ if (($3 == "cifs") && ($2 != "/")) print $2}'`
-NCPMTAB=`grep -vs '^#' /proc/mounts |awk '{ if ((($3 == "ncp") || ($3 == "ncpfs")) && ($2 != "/")) print $2}'`
+NFSFSTAB=`grep -vs '^#' /etc/fstab |awk '($3 == "nfs" || $3 == "nfs4") && ($4 !~ /noauto/) {print $2}'`
+SMBFSTAB=`grep -vs '^#' /etc/fstab |awk '($3 == "smbfs" || $3 == "cifs") && ($4 !~ /noauto/) {print $2}'`
+NCPFSTAB=`grep -vs '^#' /etc/fstab |awk '($3 == "ncp" || $3 == "ncpfs") && ($4 !~ /noauto/) {print $2}'`
+
+NFSMTAB=`grep -vs '^#' /proc/mounts |awk '($3 == "nfs" || $3 == "nfs4") && ($2 != "/") {print $2}'`
+SMBMTAB=`grep -vs '^#' /proc/mounts |awk '($3 == "smbfs" || $3 == "cifs") && ($2 != "/") {print $2}'`
+NCPMTAB=`grep -vs '^#' /proc/mounts |awk '($3 == "ncp" || $3 == "ncpfs") && ($2 != "/") {print $2}'`
 
 start()
 {
@@ -37,11 +35,12 @@ start()
 		[ -f /var/lock/subsys/portmap ] ||
 			service portmap start
 		[ -f /var/lock/subsys/portmap ] &&
-			action "Mounting NFS filesystems:" mount -a -t nfs
+			action "Mounting NFS filesystems:" mount -a -t nfs,nfs4
 	fi
-	[ -z "$SMBFSTAB" ] || action "Mounting SMB filesystems:" mount -a -t smbfs
-	[ -z "$CIFSFSTAB" ] || action "Mounting CIFS filesystems:" mount -a -t cifs
-	[ -z "$NCPFSTAB" ] || action "Mounting NCP filesystems:" mount -a -t ncp,ncpfs
+	[ -z "$SMBFSTAB" ] ||
+		action "Mounting Samba filesystems:" mount -a -t smbfs,cifs
+	[ -z "$NCPFSTAB" ] ||
+		action "Mounting NCP filesystems:" mount -a -t ncp,ncpfs
 
 	touch "$LOCKFILE"
 }
@@ -50,28 +49,21 @@ stop()
 {
 	if [ -n "$NFSMTAB" ]; then
 		UnmountFilesystems 3 5 \
-			'($3 == "nfs") && ($2 != "/") {print $2}' \
+			'($3 == "nfs" || $3 == "nfs4") && ($2 != "/") {print $2}' \
 			"Unmounting NFS filesystem" \
 			"Unmounting NFS filesystem (retry)"
 	fi
 
 	if [ -n "$SMBMTAB" ]; then
 		UnmountFilesystems 3 5 \
-			'($3 == "smbfs") && ($2 != "/") {print $2}' \
-			"Unmounting SMB filesystem" \
-			"Unmounting SMB filesystem (retry)"
-	fi
-
-	if [ -n "$CIFSMTAB" ]; then
-		UnmountFilesystems 3 5 \
-			'($3 == "cifs") && ($2 != "/") {print $2}' \
-			"Unmounting CIFS filesystem" \
-			"Unmounting CIFS filesystem (retry)"
+			'($3 == "smbfs" || $3 == "cifs") && ($2 != "/") {print $2}' \
+			"Unmounting Samba filesystem" \
+			"Unmounting Samba filesystem (retry)"
 	fi
 
 	if [ -n "$NCPMTAB" ]; then
 		UnmountFilesystems 3 5 \
-			'(($3 == "ncp") || ($3 == "ncpfs")) && $2 != "/" {print $2}' \
+			'($3 == "ncp" || $3 == "ncpfs") && ($2 != "/") {print $2}' \
 			"Unmounting NCP filesystem" \
 			"Unmounting NCP filesystem (retry)"
 	fi
@@ -88,19 +80,20 @@ status()
 			for fs in $NFSFSTAB; do echo $fs; done
 		fi
 		if [ -n "$SMBFSTAB" ]; then
-			echo "Configured SMB mountpoints: "
+			echo "Configured Samba mountpoints: "
 			for fs in $SMBFSTAB; do echo $fs; done
 		fi
 		if [ -n "$NCPFSTAB" ]; then
 			echo "Configured NCP mountpoints: "
 			for fs in $NCPFSTAB; do echo $fs; done
 		fi
+
 		if [ -n "$NFSMTAB" ]; then
 			echo "Active NFS mountpoints: "
 			for fs in $NFSMTAB; do echo $fs; done
 		fi
 		if [ -n "$SMBMTAB" ]; then
-			echo "Active SMB mountpoints: "
+			echo "Active Samba mountpoints: "
 			for fs in $SMBMTAB; do echo $fs; done
 		fi
 		if [ -n "$NCPMTAB" ]; then
