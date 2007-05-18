@@ -185,7 +185,7 @@ fi
 
 # Remount the root filesystem read-write
 splash_update remount 2
-action "Remounting root filesystem in read/write mode:" mount -n -o remount,rw /
+action "Remounting root filesystem in read/write mode:" ${REMOUNT_ROOTFS_RW_COMMAND:-mount -n -o remount,rw /}
 
 # The root filesystem is now read-write, so we can now log via syslog() directly
 [ -z "$IN_INITLOG" ] || IN_INITLOG=
