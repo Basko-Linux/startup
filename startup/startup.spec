@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.14
+Version: 0.9.8.15
 Release: alt1
 
 Summary: The system startup scripts
@@ -150,6 +150,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Mon May 21 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.15-alt1
+- rc.sysinit: Parametrized remounting root filesystem (#11806).
+
 * Sun Apr 22 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.14-alt1
 - init.d/netfs: Added nfs4 support (#11593).
 
