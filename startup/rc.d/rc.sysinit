@@ -77,11 +77,6 @@ if grep -wqs sysfs /proc/filesystems; then
 	action "Mounting sys filesystem:" mount -n -t sysfs sysfs /sys
 fi
 
-# Initialize bootsplash subsystem.
-splash_init 5
-
-splash_update start 1
-
 # Load modules
 /etc/rc.d/scripts/load_modules
 
@@ -96,6 +91,11 @@ if [ -n "$RUN_UDEV" ]; then
 	RUN_FROM_SYSINIT=1 "$udevd_exe" start
 	[ -c /dev/rtc ] || modprobe rtc >/dev/null 2>&1
 fi
+
+# Initialize bootsplash subsystem.
+splash_init 5
+
+splash_update start 1
 
 # Set the system clock (when /etc/adjtime is missing)
 [ -s /etc/adjtime ] || /etc/init.d/clock start
