@@ -19,3 +19,6 @@ UTC=true
 # ZONE="filename" indicates the zonefile under /usr/share/zoneinfo
 # that /etc/localtime is a copy of, for example:
 #ZONE="Europe/Moscow"
+
+# FAST=true run hwclock with the --fast option.
+#FAST=false

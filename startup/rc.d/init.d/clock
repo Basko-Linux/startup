@@ -15,6 +15,7 @@ UTC=false
 HWCLOCK_SET_AT_HALT=false
 HWCLOCK_ADJUST=false
 ZONEDIR=/usr/share/zoneinfo
+FAST=false
 
 CLOCKMODE=
 if SourceIfNotEmpty /etc/sysconfig/clock; then
@@ -47,6 +48,11 @@ fi
 if is_yes "$SRM"; then
 	CLOCKFLAGS="$CLOCKFLAGS --srm"
 	CLOCKDEF="$CLOCKDEF (srm)"
+fi
+
+if is_yes "$FAST"; then
+	CLOCKFLAGS="$CLOCKFLAGS --fast"
+	CLOCKDEF="$CLOCKDEF (fast)"
 fi
 
 set_date()
