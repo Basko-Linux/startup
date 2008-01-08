@@ -267,12 +267,12 @@ fi
 
 # Load device-mapper, create its device file
 if [ -e /proc/devices -a -e /proc/misc ]; then
-	rm -f /dev/mapper/control
 	modprobe dm-mod >/dev/null 2>&1
 	if [ -z "$RUN_UDEV" ]; then
 		MAJOR="$(sed -ne 's/^ *\([0-9]\+\) \+misc$/\1/p' /proc/devices)"
 		MINOR="$(sed -ne 's/^ *\([0-9]\+\) \+device-mapper$/\1/p' /proc/misc)"
 		if [ -n "$MAJOR" -a -n "$MINOR" ]; then
+	                rm -f /dev/mapper/control
 			mkdir -p -m755 /dev/mapper
 			action "Creating device-mapper character device ($MAJOR, $MINOR):" \
 				mknod --mode=600 /dev/mapper/control c "$MAJOR" "$MINOR"
