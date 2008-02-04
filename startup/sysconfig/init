@@ -8,3 +8,7 @@ RES_OFFSET=8
 LOGLEVEL=1
 # Set to anything other than 'no' to allow hotkey interactive startup...
 PROMPT=yes
+# custom rootfs remounter, useful for unionfs or nfsroot
+#REMOUNT_ROOTFS_RW_COMMAND=/path/to/program
+# custom hostname resolver, useful for nfsroot
+#RESOLVE_HOSTNAME_COMMAND=/path/to/program

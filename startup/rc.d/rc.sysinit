@@ -33,6 +33,10 @@ if ! SourceIfNotEmpty /etc/sysconfig/network; then
 	NETWORKING=no
 fi
 
+if [ -x "$RESOLVE_HOSTNAME_COMMAND" ]; then
+	HOSTNAME="$("$RESOLVE_HOSTNAME_COMMAND")"
+fi
+
 if [ -z "$HOSTNAME" -o "$HOSTNAME" = "(none)" ]; then
 	HOSTNAME=localhost
 fi
