@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.17
+Version: 0.9.8.18
 Release: alt1
 
 Summary: The system startup scripts
@@ -150,6 +150,14 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Tue Feb 05 2008 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.18-alt1
+- init.d/clock:
+  + Added "FAST" parameter (solo, #13633).
+- rc.sysinit:
+  + Added support for custom hostname resolver (inger).
+- sysconfig/init:
+  + Documented REMOUNT_ROOTFS_RW_COMMAND and RESOLVE_HOSTNAME_COMMAND (inger).
+
 * Thu Aug 09 2007 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.17-alt1
 - rc.sysinit: Added cifs to network fs list (#12140).
 
