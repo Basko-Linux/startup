@@ -195,4 +195,4 @@ fi
 
 # Now halt or reboot.
 echo "$message"
-$command -i -d
+$command -d -f -i
