@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.18
+Version: 0.9.8.19
 Release: alt1
 
 Summary: The system startup scripts
@@ -23,8 +23,8 @@ PreReq: service >= 0.5.8
 Requires: filesystem >= 0:2.1.7-alt1
 # due to /bin/clock_unsynced
 Requires: hwclock >= 0:2.23-alt6
-# due to killall5 return code semantics and mountpoint utility
-Requires: SysVinit >= 0:2.86-alt1
+# due to killall5 return code semantics and mountpoint utility (SysVinit >= 0:2.86-alt1)
+Requires: sysvinit-utils
 
 # due to update_wms
 Conflicts: xinitrc < 0:2.4.13-alt1
@@ -152,6 +152,13 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Thu Apr 24 2008 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.19-alt1
+- rc.sysinit:
+  + Unlink /dev/mapper/control iff it is going to be re-created right away.
+- init.d/halt:
+  + Pass -f option to halt.
+- Require sysvinit-utils instead of versioned SysVinit.
+
 * Tue Feb 05 2008 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.18-alt1
 - init.d/clock:
   + Added "FAST" parameter (solo, #13633).
