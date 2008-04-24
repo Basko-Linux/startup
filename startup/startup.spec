@@ -11,7 +11,9 @@ BuildArch: noarch
 Source: %name-%version.tar
 
 Provides: /etc/firsttime.d
-PreReq: chkconfig, gawk, grep, sed, coreutils, %__subst
+PreReq: chkconfig, gawk, grep, sed, coreutils
+# due to sed -i
+PreReq: sed >= 1:4.1.1
 # Who could remind me where these dependencies came from?
 Requires: findutils >= 0:4.0.33, mount >= 0:2.10q-ipl1mdk
 Requires: procps >= 0:2.0.7-ipl5mdk, psmisc >= 0:19-ipl2mdk, util-linux >= 0:2.10q-ipl1mdk
@@ -81,26 +83,26 @@ fi
 for f in /var/{log/wtmp,run/utmp}; do
 	if [ ! -f "$f" ]; then
 		:>>"$f"
-		%__chown root:utmp "$f"
-		%__chmod 664 "$f"
+		chown root:utmp "$f"
+		chmod 664 "$f"
 	fi
 done
 
 # Dup of timeconfig %%post - here to avoid a dependency.
 if [ -L %_sysconfdir/localtime ]; then
-	_FNAME=`/bin/ls -ld %_sysconfdir/localtime |/bin/awk '{print $11}' |/bin/sed 's/lib/share/'`
+	_FNAME=`ls -ld %_sysconfdir/localtime |awk '{print $11}' |sed 's/lib/share/'`
 	if [ -f "$_FNAME" ]; then
-		%__rm %_sysconfdir/localtime
-		%__cp -fp "$_FNAME" %_sysconfdir/localtime
-		if ! %__grep -q "^ZONE=" %_sysconfdir/sysconfig/clock; then
-			echo "ZONE=\"$_FNAME"\" |/bin/sed -e "s|[^\"]*/usr/share/zoneinfo/||" >>%_sysconfdir/sysconfig/clock
+		rm %_sysconfdir/localtime
+		cp -fp "$_FNAME" %_sysconfdir/localtime
+		if ! grep -q "^ZONE=" %_sysconfdir/sysconfig/clock; then
+			echo "ZONE=\"$_FNAME"\" |sed -e "s|[^\"]*/usr/share/zoneinfo/||" >>%_sysconfdir/sysconfig/clock
 		fi
 	fi
 fi
 
-if %__grep -qs '^fb:[0-9]*:once:/etc/rc.d/scripts/framebuffer_setfont' /etc/inittab; then
+if grep -qs '^fb:[0-9]*:once:/etc/rc.d/scripts/framebuffer_setfont' /etc/inittab; then
 	/sbin/chkconfig --add fbsetfont
-	%__subst 's,^\(fb:[0-9]*:once:/etc/rc.d/scripts/framebuffer_setfont\),#\1,' /etc/inittab
+	sed -i 's,^\(fb:[0-9]*:once:/etc/rc.d/scripts/framebuffer_setfont\),#\1,' /etc/inittab
 fi
 
 %preun
@@ -115,9 +117,9 @@ fi
 for f in %_sysconfdir/{inittab,modules,sysctl.conf,sysconfig/{clock,framebuffer,i18n,init,mouse,rawdevices,system}}; do
 	if [ ! -f "$f" ]; then
 	        if [ -f "$f".rpmsave ]; then
-	                %__cp -pf "$f".rpmsave "$f"
+	                cp -pf "$f".rpmsave "$f"
 	        elif [ -f "$f".rpmnew ]; then
-	                %__cp -pf "$f".rpmnew "$f"
+	                cp -pf "$f".rpmnew "$f"
 	        fi
 	fi
 done
