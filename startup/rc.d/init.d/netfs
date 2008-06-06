@@ -22,10 +22,12 @@ LOCKFILE=/var/lock/subsys/netfs
 NFSFSTAB=`grep -vs '^#' /etc/fstab |awk '($3 == "nfs" || $3 == "nfs4") && ($4 !~ /noauto/) {print $2}'`
 SMBFSTAB=`grep -vs '^#' /etc/fstab |awk '($3 == "smbfs" || $3 == "cifs") && ($4 !~ /noauto/) {print $2}'`
 NCPFSTAB=`grep -vs '^#' /etc/fstab |awk '($3 == "ncp" || $3 == "ncpfs") && ($4 !~ /noauto/) {print $2}'`
+PANFSTAB=`grep -vs '^#' /etc/fstab |awk '($3 == "panfs") && ($4 !~ /noauto/) {print $2}'`
 
 NFSMTAB=`grep -vs '^#' /proc/mounts |awk '($3 == "nfs" || $3 == "nfs4") && ($2 != "/") {print $2}'`
 SMBMTAB=`grep -vs '^#' /proc/mounts |awk '($3 == "smbfs" || $3 == "cifs") && ($2 != "/") {print $2}'`
 NCPMTAB=`grep -vs '^#' /proc/mounts |awk '($3 == "ncp" || $3 == "ncpfs") && ($2 != "/") {print $2}'`
+PANMTAB=`grep -vs '^#' /proc/mounts |awk '($3 == "panfs") && ($2 != "/") {print $2}'`
 
 start()
 {
@@ -41,6 +43,8 @@ start()
 		action "Mounting Samba filesystems:" mount -a -t smbfs,cifs
 	[ -z "$NCPFSTAB" ] ||
 		action "Mounting NCP filesystems:" mount -a -t ncp,ncpfs
+	[ -z "$PANFSTAB" ] ||
+		action "Mounting panfs filesystems:" mount -a -t panfs
 
 	touch "$LOCKFILE"
 }
@@ -68,6 +72,13 @@ stop()
 			"Unmounting NCP filesystem (retry)"
 	fi
 
+	if [ -n "$PANMTAB" ]; then
+		UnmountFilesystems 3 5 \
+			'($3 == "panfs") && ($2 != "/") {print $2}' \
+			"Unmounting panfs filesystem" \
+			"Unmounting panfs filesystem (retry)"
+	fi
+
 	rm -f "$LOCKFILE"
 }
 
@@ -87,6 +98,10 @@ status()
 			echo "Configured NCP mountpoints: "
 			for fs in $NCPFSTAB; do echo $fs; done
 		fi
+		if [ -n "$PANFSTAB" ]; then
+			echo "Configured panfs mountpoints: "
+			for fs in $PANFSTAB; do echo $fs; done
+		fi
 
 		if [ -n "$NFSMTAB" ]; then
 			echo "Active NFS mountpoints: "
@@ -99,6 +114,10 @@ status()
 		if [ -n "$NCPMTAB" ]; then
 			echo "Active NCP mountpoints: "
 			for fs in $NCPMTAB; do echo $fs; done
+		fi
+		if [ -n "$PANMTAB" ]; then
+			echo "Active panfs mountpoints: "
+			for fs in $PANMTAB; do echo $fs; done
 		fi
 	else
 		echo "/proc filesystem unavailable"
