@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.19
+Version: 0.9.8.20
 Release: alt1
 
 Summary: The system startup scripts
@@ -22,7 +22,7 @@ PreReq: service >= 0.5.8
 # due to /sys
 Requires: filesystem >= 0:2.1.7-alt1
 # due to /bin/clock_unsynced
-Requires: hwclock >= 0:2.23-alt6
+Requires: hwclock >= 1:2.14-alt1
 # due to killall5 return code semantics and mountpoint utility (SysVinit >= 0:2.86-alt1)
 Requires: sysvinit-utils
 
@@ -152,6 +152,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Sun Aug 03 2008 Alexey Gladkov <legion@altlinux.ru> 0.9.8.20-alt1
+- Remove "FAST" parameter since hwclock from util-linux
+  does not have --fast option.
+
 * Thu Apr 24 2008 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.19-alt1
 - rc.sysinit:
   + Unlink /dev/mapper/control iff it is going to be re-created right away.
