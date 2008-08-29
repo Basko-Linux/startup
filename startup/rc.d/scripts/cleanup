@@ -14,21 +14,7 @@ SourceIfNotEmpty /etc/sysconfig/system
 rm -f /fastboot /fsckoptions /forcefsck /halt /poweroff
 
 # Clean up /var
-# I'd use find, but /usr may not be mounted.
-for f in /var/lock/* /var/run/*; do
-	if [ -d "$f" ]; then
-		case "${f##*/}" in
-			news|sudo)
-				;;
-			*)
-				rm -rf -- "$f"/*
-		esac
-	else
-		if [ "$f" != "/var/lock/TMP_1ST" ]; then
-			rm -f -- "$f"
-		fi
-	fi
-done
+find /var/run/ /var/lock/ -type f -not -path /var/lock/TMP_1ST -delete
 
 rm -rf /tmp/.X*-lock /tmp/.ICE-unix /tmp/.X11-unix /tmp/.esd /tmp/.font-unix
 rm -f /tmp/esrv*
