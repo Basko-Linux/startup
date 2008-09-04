@@ -222,7 +222,10 @@ if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
 	action "Checking root filesystem quotas:" "$QUOTACHECK" -v /
 fi
 
-echo "$HOSTNAME" >/etc/HOSTNAME
+if [ -f /proc/sys/kernel/hostname ]; then
+	[ "$(readlink /etc/HOSTNAME)" = /proc/sys/kernel/hostname ] ||
+		ln -snf /proc/sys/kernel/hostname /etc/HOSTNAME
+fi
 
 if [ -z "$USEMODULES" ]; then
 	if [ -f /proc/ksyms -o -f /proc/kallsyms ] && ! grep -iwqs nomodules /proc/cmdline; then
