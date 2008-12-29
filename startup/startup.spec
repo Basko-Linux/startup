@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.20
+Version: 0.9.8.21
 Release: alt1
 
 Summary: The system startup scripts
@@ -152,6 +152,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Mon Dec 29 2008 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.21-alt1
+- scripts/cleanup: Fixed /var cleanup (closes: #16647).
+- rc.sysinit: Turned /etc/HOSTNAME into symlink to /proc/sys/kernel/hostname.
+
 * Sun Aug 03 2008 Alexey Gladkov <legion@altlinux.ru> 0.9.8.20-alt1
 - Remove "FAST" parameter since hwclock from util-linux
   does not have --fast option.
