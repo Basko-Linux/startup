@@ -12,6 +12,7 @@ WITHOUT_RC_COMPAT=1
 ARC=false
 SRM=false
 UTC=false
+HWCLOCK_SET_TIME_AT_START=true
 HWCLOCK_SET_AT_HALT=false
 HWCLOCK_ADJUST=false
 ZONEDIR=/usr/share/zoneinfo
@@ -84,7 +85,8 @@ case "$1" in
 		if is_yes "$HWCLOCK_ADJUST" && [ -s /etc/adjtime ]; then
 			action "Adjusting hardware clock:" hwclock --adjust
 		fi
-		set_date
+		is_no "$HWCLOCK_SET_TIME_AT_START" ||
+			set_date
 		;;
 	sync)
 		action "Setting hardware clock$CLOCKDEF: `date`" hwclock --systohc $CLOCKFLAGS

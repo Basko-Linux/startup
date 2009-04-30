@@ -1,3 +1,7 @@
+# Whether system time should be set from Hardware Clock
+# at start.
+HWCLOCK_SET_TIME_AT_START=true
+
 # Whether Hardware Clock should be set to system time
 # at reboot/halt/poweroff.
 HWCLOCK_SET_AT_HALT=false
