@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.21
+Version: 0.9.8.22
 Release: alt1
 
 Summary: The system startup scripts
@@ -152,6 +152,11 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Mon Aug 17 2009 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.22-alt1
+- rc.d/init.d/clock, sysconfig/clock: Introduced
+  HWCLOCK_SET_TIME_AT_START (closes: #19787).
+- sysctl.conf: Added "vm.mmap_min_addr = 65536".
+
 * Mon Dec 29 2008 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.21-alt1
 - scripts/cleanup: Fixed /var cleanup (closes: #16647).
 - rc.sysinit: Turned /etc/HOSTNAME into symlink to /proc/sys/kernel/hostname.
