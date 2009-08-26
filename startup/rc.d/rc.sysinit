@@ -284,6 +284,9 @@ if [ -e /proc/devices -a -e /proc/misc ]; then
 	fi
 fi
 
+# Activate multipath devices
+/etc/rc.d/scripts/multipath_start
+
 # Activate EVMS
 EVMS_ACTIVE=
 STARTEVMS=/sbin/startevms
