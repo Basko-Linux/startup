@@ -1,9 +1,12 @@
 #!/bin/sh
 
-if ! grep -iwqs nompath /proc/cmdline && [ -f /etc/multipath.conf -a -x /sbin/multipath ]; then
+MULTIPATH=/sbin/multipath
+KPARTX=/sbin/kpartx
+DMSETUP=/sbin/dmsetup
+if ! grep -iwqs nompath /proc/cmdline && [ -f /etc/multipath.conf -a -x "$MULTIPATH" ]; then
 	modprobe dm-multipath > /dev/null 2>&1
-	/sbin/multipath -v 0
-	if [ -x /sbin/kpartx ]; then
-		/sbin/dmsetup ls --target multipath --exec "/sbin/kpartx -a -p p" >/dev/null
+	"$MULTIPATH" -v 0
+	if [ -x "$KPARTX" ]; then
+		"$DMSETUP" ls --target multipath --exec "$KPARTX -a -p p" >/dev/null
 	fi
 fi
