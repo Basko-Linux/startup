@@ -1,0 +1,6 @@
+#!/bin/sh
+
+MULTIPATH=/sbin/multipath
+if [ -x "$MULTIPATH" -a -f /etc/multipath.conf ]; then
+	action "Turning off multipath devices:" "$MULTIPATH" -F
+fi

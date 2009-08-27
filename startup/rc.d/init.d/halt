@@ -157,6 +157,9 @@ UnmountFilesystems 3 5 \
 # Turn off raid.
 /etc/rc.d/scripts/raidstop
 
+# Turn off multipath devices.
+/etc/rc.d/scripts/multipath_stop
+
 # Unmount /dev.
 UnmountFilesystems 3 5 \
 	'$2 == "/dev" {print $2}' \
