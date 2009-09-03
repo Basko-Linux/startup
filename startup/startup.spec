@@ -1,9 +1,9 @@
 Name: startup
-Version: 0.9.8.22
+Version: 0.9.8.23
 Release: alt1
 
 Summary: The system startup scripts
-License: GPL
+License: GPLv2+
 Group: System/Base
 Packager: Dmitry V. Levin <ldv@altlinux.org>
 BuildArch: noarch
@@ -152,6 +152,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Thu Sep 03 2009 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.23-alt1
+- Added multipath devices support (Konstantin Pavlov; closes: #21385).
+
 * Mon Aug 17 2009 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.22-alt1
 - rc.d/init.d/clock, sysconfig/clock: Introduced
   HWCLOCK_SET_TIME_AT_START (closes: #19787).
