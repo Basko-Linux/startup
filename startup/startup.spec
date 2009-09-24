@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.23
+Version: 0.9.8.24
 Release: alt1
 
 Summary: The system startup scripts
@@ -152,6 +152,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Fri Sep 25 2009 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.24-alt1
+- scripts/multipath_stop: Made output less noisy (Konstantin Pavlov).
+
 * Thu Sep 03 2009 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.23-alt1
 - Added multipath devices support (Konstantin Pavlov; closes: #21385).
 
