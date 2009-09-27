@@ -228,7 +228,7 @@ if [ -f /proc/sys/kernel/hostname ]; then
 fi
 
 if [ -z "$USEMODULES" ]; then
-	if [ -f /proc/ksyms -o -f /proc/kallsyms ] && ! grep -iwqs nomodules /proc/cmdline; then
+	if [ -f /proc/modules ] && ! grep -iwqs nomodules /proc/cmdline; then
 		USEMODULES=y
 	else
 		USEMODULES=n
