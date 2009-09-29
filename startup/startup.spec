@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.24
+Version: 0.9.8.25
 Release: alt1
 
 Summary: The system startup scripts
@@ -152,6 +152,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed Sep 30 2009 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.25-alt1
+- rc.sysinit: Detect USEMODULES by /proc/modules only (Led; closes: #21738).
+
 * Fri Sep 25 2009 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.24-alt1
 - scripts/multipath_stop: Made output less noisy (Konstantin Pavlov).
 
