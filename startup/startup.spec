@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.25
+Version: 0.9.8.26
 Release: alt1
 
 Summary: The system startup scripts
@@ -152,6 +152,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed Sep 30 2009 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.26-alt1
+- rc.sysinit: Removed creation of /mnt/cdrom and /mnt/floppy (Led).
+- scripts/lvm_start: Pass --mknodes to vgscan (Eugene Ostapets; closes: ALT#21492)
+
 * Wed Sep 30 2009 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.25-alt1
 - rc.sysinit: Detect USEMODULES by /proc/modules only (Led; closes: #21738).
 
