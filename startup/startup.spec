@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.26
+Version: 0.9.8.27
 Release: alt1
 
 Summary: The system startup scripts
@@ -158,6 +158,11 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Mon Nov 16 2009 Kirill A. Shutemov <kas@altlinux.org> 0.9.8.27-alt1
+- sysctl.conf: Set "vm.mmap_min_addr = 32768" if arch isn't ia64 ppc64
+  or x86
+- startup package isn't noarch any more
+
 * Wed Sep 30 2009 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.26-alt1
 - rc.sysinit: Removed creation of /mnt/cdrom and /mnt/floppy (Led).
 - scripts/lvm_start: Pass --mknodes to vgscan (Eugene Ostapets; closes: ALT#21492)
