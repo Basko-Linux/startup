@@ -6,7 +6,12 @@ Summary: The system startup scripts
 License: GPLv2+
 Group: System/Base
 Packager: Dmitry V. Levin <ldv@altlinux.org>
-BuildArch: noarch
+
+%ifarch ia64 %ix86 ppc64 x86_64
+%define mmap_min_addr 65536
+%else
+%define mmap_min_addr 32768
+%endif
 
 Source: %name-%version.tar
 
@@ -43,6 +48,7 @@ change runlevels, and shut the system down cleanly.
 
 %prep
 %setup -q
+sed "s|@MMAP_MIN_ADDR@|%mmap_min_addr|g" < sysctl.conf.in > sysctl.conf
 
 %install
 mkdir -p %buildroot%_sysconfdir/rc.d/rc{0,1,2,3,4,5,6}.d

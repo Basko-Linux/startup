@@ -18,7 +18,7 @@ kernel.core_pattern = /dev/null
 # accidentally operate based on the information in the first couple of pages
 # of memory userspace processes should not be allowed to write to them.
 # By default this value is set to 0 and no protections will be enforced
-# by the security module.  Setting this value to something like 64k will
+# by the security module.  Setting this value to something >= 32k will
 # allow the vast majority of applications to work correctly and provide
 # defense in depth against future potential kernel bugs.
-vm.mmap_min_addr = 65536
+vm.mmap_min_addr = @MMAP_MIN_ADDR@
