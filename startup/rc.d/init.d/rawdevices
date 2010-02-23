@@ -2,7 +2,7 @@
 #
 # rawdevices       This shell script assignes rawdevices to block devices
 #
-# chkconfig: 345 56 44
+# chkconfig: - 56 44
 # description: This scripts assignes raw devices to block devices \
 #              (such as hard drive partitions). This is for the use \
 #	       of applications such as Oracle. You can set up the \
