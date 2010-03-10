@@ -30,6 +30,8 @@ Requires: filesystem >= 0:2.1.7-alt1
 Requires: hwclock >= 1:2.14-alt1
 # due to killall5 return code semantics and mountpoint utility (SysVinit >= 0:2.86-alt1)
 Requires: sysvinit-utils
+# due to fsck in rc.sysinit (ALT#22410)
+Requires: /sbin/fsck
 
 # due to update_wms
 Conflicts: xinitrc < 0:2.4.13-alt1
