@@ -449,11 +449,42 @@ if [ -x /sbin/quotaon ]; then
 	action "Turning on user and group quotas for local filesystems:" /sbin/quotaon -a
 fi
 
+# Check SELinux status
+SELINUX_STATE=
+RESTORECON=/sbin/restorecon
+if [ -x "$RESTORECON" ] && mountpoint -q /selinux; then
+	if [ -r /selinux/enforce ]; then
+		SELINUX_STATE="$(head -1 /selinux/enforce)"
+	else
+		# if the value cannnot be read, assume enforcing mode
+		SELINUX_STATE=1
+	fi
+fi
+
+# Check whether a full relabel is needed
+if [ -n "$SELINUX_STATE" ]; then
+	if [ -f /etc/selinux/.autorelabel -o -f /.autorelabel ] ||
+	   grep -iwqs autorelabel /proc/cmdline; then
+		/etc/rc.d/scripts/selinux_relabel "$SELINUX_STATE"
+		if [ $? -eq 3 ]; then
+			automatic_reboot
+		fi
+	fi
+elif [ -d /etc/selinux ]; then
+	[ -f /etc/selinux/.autorelabel -o -f /.autorelabel ] ||
+		touch /etc/selinux/.autorelabel
+fi
+
 # Do the following while waiting for an 'I' from the user...
 {
 
 # Cleanup everything :)
 action "Cleaning up temporary files from previous boot:" /etc/rc.d/scripts/cleanup
+
+# Set SELinux context
+[ -z "$SELINUX_STATE" ] ||
+	action 'Setting SELinux context:' \
+		$RESTORECON -R /tmp /var/run/utmp* /var/log/wtmp*
 
 # Language fixes
 /etc/rc.d/scripts/lang
