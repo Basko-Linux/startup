@@ -147,7 +147,7 @@ UnmountFilesystems 3 5 \
 
 # Unmount all the rest.
 UnmountFilesystems 3 5 \
-	'$2 != "/" && $2 != "/dev" && $3 != "proc" && $3 != "loopfs" && !($1 ~ /^none/) {print $2}' \
+	'$2 != "/" && $2 != "/dev" && $3 != "proc" && $3 != "sysfs" && $3 != "loopfs" && !($1 ~ /^none/) {print $2}' \
 	'Unmounting filesystem' \
 	'Unmounting filesystem (retry)'
 
