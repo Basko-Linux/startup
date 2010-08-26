@@ -188,11 +188,6 @@ if [ -x "$UPSCTL" -a -f /etc/killpower ]; then
 	command="$HALTCMD"
 fi
 
-if [ "$command" = /sbin/poweroff ]; then
-	# Modprobe apm for automatic poweroff at ATX cases.
-	/sbin/modprobe apm >/dev/null 2>&1
-fi
-
 if [ -f /fastboot ]; then
 	echo 'On the next boot fsck will be skipped.'
 elif [ -f /forcefsck ]; then
