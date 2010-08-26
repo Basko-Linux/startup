@@ -203,15 +203,18 @@ action "Remounting root filesystem in read/write mode:" ${REMOUNT_ROOTFS_RW_COMM
 # Remove stale backups
 rm -f /etc/mtab~ /etc/mtab~~
 
-# Enter root and /proc into mtab. (pixel) also added /initrd/loopfs for loopback root
-mount -f /initrd/loopfs 2>/dev/null
-mount -f /
-mount -f /proc
-[ -d /sys/bus ] && mount -f -t sysfs sysfs /sys
-[ -f /proc/bus/usb/devices ] && mount -f -t usbfs usbfs /proc/bus/usb
-! mountpoint -q /dev || mount -f -t tmpfs udevfs /dev
-! mountpoint -q /dev/pts || mount -f -t devpts devpts /dev/pts
-! mountpoint -q /dev/shm || mount -f -t tmpfs shmfs /dev/shm
+# /etc/mtab may point to /proc/mounts, in this case no update needed
+if [ ! -L /etc/mtab ]; then
+	# Enter root and /proc into mtab. (pixel) also added /initrd/loopfs for loopback root
+	mount -f /initrd/loopfs 2>/dev/null
+	mount -f /
+	mount -f /proc
+	[ -d /sys/bus ] && mount -f -t sysfs sysfs /sys
+	[ -f /proc/bus/usb/devices ] && mount -f -t usbfs usbfs /proc/bus/usb
+	! mountpoint -q /dev || mount -f -t tmpfs udevfs /dev
+	! mountpoint -q /dev/pts || mount -f -t devpts devpts /dev/pts
+	! mountpoint -q /dev/shm || mount -f -t tmpfs shmfs /dev/shm
+fi
 
 # Set hard disk parameters
 /etc/rc.d/scripts/idetune
