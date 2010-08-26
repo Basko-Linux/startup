@@ -53,6 +53,22 @@ PrintMargin()
 	fi
 }
 
+rootfs_mounted=
+localfs_mounted=
+automatic_reboot()
+{
+	if [ -n "$localfs_mounted" ]; then
+		echo 'Unmounting file systems.'
+		umount -arnf
+	fi
+	if [ -n "$rootfs_mounted" ]; then
+		echo 'Remounting root filesystem readonly.'
+		mount -n -o remount,ro /
+	fi
+	echo 'Automatic reboot in progress.'
+	reboot -f
+}
+
 # Print a banner. ;)
 WELCOME="Welcome to "
 BANNER="ALT Linux"
@@ -190,14 +206,11 @@ if [ -z "$fastboot" -a "$ROOTFSTYPE" != nfs ]; then
 			echo "*** Dropping you to a shell; the system will reboot"
 			echo "*** when you leave the shell."
 
-			PS1="(Repair filesystem) \# # "; export PS1
+			PS1="(ROOTFS Repair) \# # "; export PS1
 			sulogin
 		fi
 
-		echo "Remounting root filesystem readonly."
-		mount -n -o remount,ro /
-		echo "Automatic reboot in progress."
-		reboot -f
+		automatic_reboot
 	elif [ $rc = 1 ]; then
 		_RUN_QUOTACHECK=1
 	fi
@@ -206,6 +219,7 @@ fi
 # Remount the root filesystem read-write
 splash_update remount 2
 action "Remounting root filesystem in read/write mode:" ${REMOUNT_ROOTFS_RW_COMMAND:-mount -n -o remount,rw /}
+rootfs_mounted=1
 
 # The root filesystem is now read-write, so we can now log via syslog() directly
 [ -z "$IN_INITLOG" ] || IN_INITLOG=
@@ -327,11 +341,7 @@ if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat ]; then
 			PS1="(RAID Repair) \# # "; export PS1
 			sulogin
 
-			echo "Unmounting file systems"
-			umount -arnf
-			mount -n -o remount,ro /
-			echo "Automatic reboot in progress."
-			reboot -f
+			automatic_reboot
 		else
 			echo "*** Trying to continue normal startup."
 		fi
@@ -373,16 +383,11 @@ if [ -z "$fastboot" ]; then
 			echo "*** Dropping you to a shell; the system will reboot"
 			echo "*** when you leave the shell."
 
-			PS1="(Repair filesystem) \# # "; export PS1
+			PS1="(FS Repair) \# # "; export PS1
 			sulogin
 		fi
 
-		echo "Unmounting file systems."
-		umount -arnf
-		echo "Remounting root filesystem readonly."
-		mount -n -o remount,ro /
-		echo "Automatic reboot in progress."
-		reboot -f
+		automatic_reboot
 	elif [ $rc = 1 ]; then
 		_RUN_QUOTACHECK=1
 	fi
@@ -394,6 +399,7 @@ fi
 # (pixel) also do not mount loopback, will be done later
 splash_update mount 6
 action 'Mounting local filesystems:' mount -a -t nocifs,davfs,ftpfs,loop,ncp,ncpfs,nfs,panfs,proc,smbfs,sshfs -O no_netdev
+localfs_mounted=1
 
 # (pixel) Check loopback filesystems
 if [ -z "$fastboot" ]; then
@@ -418,14 +424,10 @@ if [ -z "$fastboot" ]; then
 		echo "*** Dropping you to a shell; the system will reboot"
 		echo "*** when you leave the shell."
 
-		PS1="(Repair filesystem) \#"; export PS1
+		PS1="(FS Repair) \# #"; export PS1
 		sulogin
 
-		echo "Unmounting file systems"
-		umount -arnf
-		mount -n -o remount,ro /
-		echo "Automatic reboot in progress."
-		reboot -f
+		automatic_reboot
 	elif [ "$rc" = "1" -a -x "$QUOTACHECK" ]; then
 		action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
 	fi
