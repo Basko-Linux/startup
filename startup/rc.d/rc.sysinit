@@ -73,12 +73,14 @@ else
 fi
 
 # Mount /proc (done here so volume labels can work with fsck)
-action "Mounting proc filesystem:" mount -n -t proc proc /proc
+mountpoint -q /proc ||
+	action 'Mounting proc filesystem:' mount -n -t proc proc /proc
 chgrp proc /proc >/dev/null 2>&1 ||:
 
 # Mount /sys where appropriate
 if grep -wqs sysfs /proc/filesystems; then
-	action "Mounting sys filesystem:" mount -n -t sysfs sysfs /sys
+	mountpoint -q /sys ||
+		action 'Mounting sys filesystem:' mount -n -t sysfs sysfs /sys
 fi
 
 # Load modules
