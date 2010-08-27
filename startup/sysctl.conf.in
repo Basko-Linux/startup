@@ -15,10 +15,12 @@ kernel.core_pattern = /dev/null
 
 # Indicates the amount of address space which a user process will be
 # restricted from mmaping.  Since kernel null dereference bugs could
-# accidentally operate based on the information in the first couple of pages
-# of memory userspace processes should not be allowed to write to them.
-# By default this value is set to 0 and no protections will be enforced
-# by the security module.  Setting this value to something >= 32k will
-# allow the vast majority of applications to work correctly and provide
-# defense in depth against future potential kernel bugs.
+# accidentally operate based on the information in the first couple of
+# pages of memory userspace processes should not be allowed to write to
+# them.  By default, this value in kernel is set to 0 and no protections
+# will be enforced by the security module.  Setting this value to
+# something >= 32k will allow the vast majority of applications to work
+# correctly and provide defense in depth against future potential kernel
+# bugs.  This value is somewhat architecture-dependent, though.
+# Recommended default for @ARCH@ is @MMAP_MIN_ADDR@.
 vm.mmap_min_addr = @MMAP_MIN_ADDR@

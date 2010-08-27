@@ -50,7 +50,8 @@ change runlevels, and shut the system down cleanly.
 
 %prep
 %setup -q
-sed "s|@MMAP_MIN_ADDR@|%mmap_min_addr|g" < sysctl.conf.in > sysctl.conf
+sed 's/@ARCH@/%_arch/;s/@MMAP_MIN_ADDR@/%mmap_min_addr/' \
+	< sysctl.conf.in > sysctl.conf
 
 %install
 mkdir -p %buildroot%_sysconfdir/rc.d/rc{0,1,2,3,4,5,6}.d
