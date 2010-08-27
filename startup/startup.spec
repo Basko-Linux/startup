@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.27
+Version: 0.9.8.28
 Release: alt1
 
 Summary: The system startup scripts
@@ -161,6 +161,28 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Fri Aug 27 2010 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.28-alt1
+- Added dependence on /sbin/fsck (closes: #22410).
+- init.d/rawdevices: turned off by default
+  (by Michael Shigorin; closes: #10906).
+- rc.sysinit:
+  + Disable update of /etc/mtab when the latter is a symlink
+    (by Alexey I. Froloff; closes: #23133).
+  + No longer try to mount already mounted /proc and /sys
+    (closes: #23660).
+  + Disable USEMODULES when /sbin/modprobe is not available,
+    thus removed hard dependence on module-init-tools
+    (closes: #11033).
+  + Refactored automatic reboot.
+  + Added SELinux support
+    (by Mikhail Efremov and me).
+- init.d/halt:
+  + Made halt action configurable, default remains unchanged
+    (by Sergey Y. Afonin and me; closes: #10326).
+  + Reworked unmounting of virtual filesystems so that /proc, /sys,
+    /dev and any usbfs inside /dev are nor longer unmounted
+    (closes: #11888, #22118).
+
 * Mon Nov 16 2009 Kirill A. Shutemov <kas@altlinux.org> 0.9.8.27-alt1
 - sysctl.conf: Set "vm.mmap_min_addr = 32768" if arch isn't ia64 ppc64
   or x86
