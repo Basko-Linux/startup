@@ -83,8 +83,22 @@ if grep -wqs sysfs /proc/filesystems; then
 		action 'Mounting sys filesystem:' mount -n -t sysfs sysfs /sys
 fi
 
-# Load modules
-/etc/rc.d/scripts/load_modules
+if [ -z "$USEMODULES" ]; then
+	if [ -f /proc/modules -a -x /sbin/modprobe ] &&
+	   ! grep -iwqs nomodules /proc/cmdline; then
+		USEMODULES=y
+	else
+		USEMODULES=n
+	fi
+fi
+
+if is_yes "$USEMODULES"; then
+	MODPROBE=/sbin/modprobe
+	# Load modules
+	/etc/rc.d/scripts/load_modules
+else
+	MODPROBE=/bin/true
+fi
 
 RUN_UDEV=
 udevd_exe=/etc/init.d/udevd
@@ -95,7 +109,7 @@ udevd_exe=/etc/init.d/udevd
 # Start udev
 if [ -n "$RUN_UDEV" ]; then
 	RUN_FROM_SYSINIT=1 "$udevd_exe" start
-	[ -c /dev/rtc ] || modprobe rtc >/dev/null 2>&1
+	[ -c /dev/rtc ] || $MODPROBE rtc >/dev/null 2>&1
 fi
 
 # Initialize bootsplash subsystem.
@@ -232,14 +246,6 @@ if [ -f /proc/sys/kernel/hostname ]; then
 		ln -snf /proc/sys/kernel/hostname /etc/HOSTNAME
 fi
 
-if [ -z "$USEMODULES" ]; then
-	if [ -f /proc/modules ] && ! grep -iwqs nomodules /proc/cmdline; then
-		USEMODULES=y
-	else
-		USEMODULES=n
-	fi
-fi
-
 # Load modules where appropriate
 splash_update depmod 3
 if [ -z "$fastboot" -a -x /sbin/depmod ] && is_yes "$USEMODULES"; then
@@ -275,7 +281,7 @@ fi
 
 # Load device-mapper, create its device file
 if [ -e /proc/devices -a -e /proc/misc ]; then
-	modprobe dm-mod >/dev/null 2>&1
+	$MODPROBE dm-mod >/dev/null 2>&1
 	if [ -z "$RUN_UDEV" ]; then
 		MAJOR="$(sed -ne 's/^ *\([0-9]\+\) \+misc$/\1/p' /proc/devices)"
 		MINOR="$(sed -ne 's/^ *\([0-9]\+\) \+device-mapper$/\1/p' /proc/misc)"
@@ -466,8 +472,8 @@ done
 
 # If they asked for ide-scsi, load it
 if grep -iwqs ide-scsi /proc/cmdline; then
-	modprobe ide-cd >/dev/null 2>&1
-	modprobe ide-scsi >/dev/null 2>&1
+	$MODPROBE ide-cd >/dev/null 2>&1
+	$MODPROBE ide-scsi >/dev/null 2>&1
 fi
 
 splash_update chrooted 8
