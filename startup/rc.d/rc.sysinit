@@ -41,9 +41,6 @@ if [ -z "$HOSTNAME" -o "$HOSTNAME" = "(none)" ]; then
 	HOSTNAME=localhost
 fi
 
-# Set system font
-ExecIfExecutable /sbin/setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
-
 PrintMargin()
 {
 	if [ "$BOOTUP" != serial ]; then
@@ -283,15 +280,8 @@ if [ -f /proc/sys/kernel/modprobe ]; then
 	fi
 fi
 
-OLD_COLUMNS="$COLUMNS"
-
 # Load framebuffer device settings
 /etc/rc.d/scripts/framebuffer_init
-
-# Set system font again, if required
-if [ "$OLD_COLUMNS" != "$COLUMNS" ]; then
-	ExecIfExecutable /sbin/setsysfont >/dev/null 2>&1 && SETSYSFONT_DONE=1 || SETSYSFONT_DONE=
-fi
 
 # Load device-mapper, create its device file
 if [ -e /proc/devices -a -e /proc/misc ]; then
@@ -438,8 +428,8 @@ action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat -O no_netdev
 
 # At this point everything should be mounted
 
-# Set system font again, if required
-[ -n "$SETSYSFONT_DONE" ] || ExecIfExecutable /sbin/setsysfont >/dev/null 2>&1
+# Set system font
+ExecIfExecutable /sbin/setsysfont >/dev/null 2>&1
 
 if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
 	action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
