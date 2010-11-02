@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.28
+Version: 0.9.8.29
 Release: alt1
 
 Summary: The system startup scripts
@@ -161,6 +161,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Tue Nov 02 2010 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.29-alt1
+- rc.sysinit: run setsysfont only once, at the point where everything
+  mountable should be already mounted (closes: #24070).
+
 * Fri Aug 27 2010 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.28-alt1
 - Added dependence on /sbin/fsck (closes: #22410).
 - init.d/rawdevices: turned off by default
