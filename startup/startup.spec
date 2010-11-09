@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.29
+Version: 0.9.8.30
 Release: alt1
 
 Summary: The system startup scripts
@@ -161,6 +161,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Tue Nov 09 2010 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.30-alt1
+- init.d/netfs: do not start portmap (closes: #24517).
+
 * Tue Nov 02 2010 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.29-alt1
 - rc.sysinit: run setsysfont only once, at the point where everything
   mountable should be already mounted (closes: #24070).
