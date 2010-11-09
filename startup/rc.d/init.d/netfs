@@ -33,12 +33,8 @@ start()
 {
 	is_yes "$NETWORKING" || return 0
 
-	if [ -n "$NFSFSTAB" ]; then
-		[ -f /var/lock/subsys/portmap ] ||
-			service portmap start
-		[ -f /var/lock/subsys/portmap ] &&
-			action "Mounting NFS filesystems:" mount -a -t nfs,nfs4
-	fi
+	[ -z "$NFSFSTAB" ] ||
+		action "Mounting NFS filesystems:" mount -a -t nfs,nfs4
 	[ -z "$SMBFSTAB" ] ||
 		action "Mounting Samba filesystems:" mount -a -t smbfs,cifs
 	[ -z "$NCPFSTAB" ] ||
