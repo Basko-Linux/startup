@@ -1,11 +1,10 @@
 Name: startup
-Version: 0.9.8.30
+Version: 0.9.8.31
 Release: alt1
 
 Summary: The system startup scripts
 License: GPLv2+
 Group: System/Base
-Packager: Dmitry V. Levin <ldv@altlinux.org>
 
 %ifarch ia64 %ix86 ppc64 x86_64
 %define mmap_min_addr 65536
@@ -49,7 +48,7 @@ This package contains scripts used to boot your system,
 change runlevels, and shut the system down cleanly.
 
 %prep
-%setup -q
+%setup
 sed 's/@ARCH@/%_arch/;s/@MMAP_MIN_ADDR@/%mmap_min_addr/' \
 	< sysctl.conf.in > sysctl.conf
 
@@ -161,6 +160,13 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed Oct 05 2011 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.31-alt1
+- rc.sysinit: do not check the root filesystem when it is already
+  mounted in read-write mode.
+- init.d/halt: added $INIT_HALT support (closes: #26391).
+- init.d/halt: do not unmount devtmpfs (closes: #26416).
+- Added /etc/sysconfig/halt file (closes: #25905).
+
 * Tue Nov 09 2010 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.30-alt1
 - init.d/netfs: do not start portmap (closes: #24517).
 
