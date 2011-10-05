@@ -167,8 +167,15 @@ else
 fi
 
 _RUN_QUOTACHECK=0
-ROOTFSTYPE=`fgrep ' / ' /proc/mounts |tail -1 |cut -d' ' -f3`
-if [ -z "$fastboot" -a "$ROOTFSTYPE" != nfs ]; then
+check_rootfs=1
+if [ -n "$fastboot" ]; then
+	check_rootfs=
+elif fgrep ' / ' /proc/mounts | tail -1 | cut -d' ' -f4 | fgrep -wqs 'rw'; then
+	check_rootfs=
+elif fgrep ' / ' /proc/mounts | tail -1 | cut -d' ' -f3 | grep -qs '^nfs'; then
+	check_rootfs=
+fi
+if [ -n "$check_rootfs" ]; then
 	STRING="Checking root filesystem"
 	echo "$STRING"
 	initlog -c "fsck -Tay $fsckoptions /"
