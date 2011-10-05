@@ -170,7 +170,7 @@ UnmountFilesystems 3 5 \
 
 # Unmount and remount read-only anything that's left mounted.
 action 'Remounting remaining filesystems (if any) read-only:' \
-	umount -afnr -t noproc,nosysfs,notmpfs,nodevfs,nousbfs,norpc_pipefs,nonfsd
+	umount -afnr -t noproc,nosysfs,notmpfs,nodevfs,nodevtmpfs,nousbfs,norpc_pipefs,nonfsd
 action 'Remounting root filesystem read-only:' mount -n -o remount,ro /
 
 # See if this is a powerfail situation.
