@@ -19,6 +19,11 @@ HALTCMD=
 SourceIfNotEmpty /etc/sysconfig/halt
 [ -x "$HALTCMD" ] || HALTCMD=/sbin/poweroff
 
+case "${INIT_HALT-}" in
+	HALT) HALTCMD=/sbin/halt ;;
+	POWEROFF) HALTCMD=/sbin/poweroff ;;
+esac
+
 unset TEXTDOMAIN TEXTDOMAINDIR
 
 unset action
