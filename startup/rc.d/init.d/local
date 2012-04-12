@@ -28,3 +28,5 @@ fi
 # You can put your own initialization stuff in this script
 # if you don't want to do the full Sys V style init stuff.
 ExecIfExecutable /etc/rc.d/rc.local
+
+exit 0
