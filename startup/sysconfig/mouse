@@ -1,2 +1,2 @@
 MOUSETYPE=ps/2
-device=psaux
+device=input/mice
