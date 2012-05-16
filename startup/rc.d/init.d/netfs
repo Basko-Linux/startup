@@ -32,6 +32,9 @@ PANMTAB=`grep -vs '^#' /proc/mounts |awk '($3 == "panfs") && ($2 != "/") {print 
 start()
 {
 	is_yes "$NETWORKING" || return 0
+	local ip=/sbin/ip
+	[ -x "$ip" ] || return 0
+	$ip route list | grep -aqs . || return 0
 
 	[ -z "$NFSFSTAB" ] ||
 		action "Mounting NFS filesystems:" mount -a -t nfs,nfs4
