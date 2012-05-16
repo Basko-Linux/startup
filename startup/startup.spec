@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.31
+Version: 0.9.8.32
 Release: alt1
 
 Summary: The system startup scripts
@@ -160,6 +160,11 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed May 16 2012 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.32-alt1
+- init.d/local: exit 0 in the end (by glebfm@).
+- sysconfig/mouse: update device name (by glebfm@; closes: #25110).
+- init.d/netfs (start): do not start without routing (closes: #27303).
+
 * Wed Oct 05 2011 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.31-alt1
 - rc.sysinit: do not check the root filesystem when it is already
   mounted in read-write mode.
