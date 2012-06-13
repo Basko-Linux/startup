@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.32
+Version: 0.9.8.33
 Release: alt1
 
 Summary: The system startup scripts
@@ -42,6 +42,8 @@ Conflicts: net-scripts < 0:0.5.4-alt1
 Conflicts: interactivesystem < 1:sisyphus-alt12
 # due to vconfig
 Conflicts: vlan-utils < 0:1.9
+# due to kexec support in halt
+Conflicts: sysvinit < 2.88-alt4
 
 %description
 This package contains scripts used to boot your system,
@@ -160,6 +162,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed Jun 13 2012 Sergey Bolshakov <sbolshakov@altlinux.ru> 0.9.8.33-alt1
+- init.d/halt: pass -k to halt for kexec support
+
 * Wed May 16 2012 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.32-alt1
 - init.d/local: exit 0 in the end (by glebfm@).
 - sysconfig/mouse: update device name (by glebfm@; closes: #25110).
