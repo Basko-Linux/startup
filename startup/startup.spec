@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.33
+Version: 0.9.8.34
 Release: alt1
 
 Summary: The system startup scripts
@@ -162,6 +162,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Tue Jun 19 2012 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.34-alt1
+- scripts/first_time: cleaned up antediluvian mess.
+
 * Wed Jun 13 2012 Sergey Bolshakov <sbolshakov@altlinux.ru> 0.9.8.33-alt1
 - init.d/halt: pass -k to halt for kexec support
 
