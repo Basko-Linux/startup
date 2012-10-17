@@ -306,6 +306,12 @@ if [ -e /proc/devices -a -e /proc/misc ]; then
 	fi
 fi
 
+# Setup early encrypted block devices
+cryptdisks_early_exe=/etc/init.d/cryptdisks-early
+if [ -x "$cryptdisks_early_exe" ]; then
+	$cryptdisks_early_exe start
+fi
+
 # Activate multipath devices
 /etc/rc.d/scripts/multipath_start
 
@@ -349,6 +355,12 @@ fi
 # Activate LVM
 if [ -z "$EVMS_ACTIVE" ]; then
 	/etc/rc.d/scripts/lvm_start
+fi
+
+# Setup remaining encrypted block devices
+cryptdisks_exe=/etc/init.d/cryptdisks
+if [ -x "$cryptdisks_exe" ]; then
+	$cryptdisks_exe start
 fi
 
 # Check filesystems
