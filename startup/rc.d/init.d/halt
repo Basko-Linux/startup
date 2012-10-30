@@ -164,6 +164,12 @@ UnmountFilesystems 3 5 \
 	'Unmounting filesystem' \
 	'Unmounting filesystem (retry)'
 
+# Turn off encrypted block devices
+cryptdisks_exe=/etc/rc.d/scripts/cryptdisks
+if [ -x "$cryptdisks_exe" ]; then
+	$cryptdisks_exe stop
+fi
+
 # Turn off LVM.
 /etc/rc.d/scripts/lvm_stop
 
@@ -172,6 +178,12 @@ UnmountFilesystems 3 5 \
 
 # Turn off multipath devices.
 /etc/rc.d/scripts/multipath_stop
+
+# Turn off early encrypted block devices
+cryptdisks_early_exe=/etc/rc.d/scripts/cryptdisks-early
+if [ -x "$cryptdisks_early_exe" ]; then
+	$cryptdisks_early_exe stop
+fi
 
 # Unmount and remount read-only anything that's left mounted.
 action 'Remounting remaining filesystems (if any) read-only:' \
