@@ -307,7 +307,7 @@ if [ -e /proc/devices -a -e /proc/misc ]; then
 fi
 
 # Setup early encrypted block devices
-cryptdisks_early_exe=/etc/init.d/cryptdisks-early
+cryptdisks_early_exe=/etc/rc.d/scripts/cryptdisks-early
 if [ -x "$cryptdisks_early_exe" ]; then
 	$cryptdisks_early_exe start
 fi
@@ -358,7 +358,7 @@ if [ -z "$EVMS_ACTIVE" ]; then
 fi
 
 # Setup remaining encrypted block devices
-cryptdisks_exe=/etc/init.d/cryptdisks
+cryptdisks_exe=/etc/rc.d/scripts/cryptdisks
 if [ -x "$cryptdisks_exe" ]; then
 	$cryptdisks_exe start
 fi
