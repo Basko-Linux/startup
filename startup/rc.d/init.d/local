@@ -21,9 +21,7 @@ if [ ! -f /etc/issue.net ]; then
 	cat /etc/altlinux-release >>/etc/issue.net 2>/dev/null
 fi
 
-if [ -f /var/lock/TMP_1ST ]; then
-	/etc/rc.d/scripts/first_time
-fi
+/etc/rc.d/scripts/first_time
 
 # You can put your own initialization stuff in this script
 # if you don't want to do the full Sys V style init stuff.

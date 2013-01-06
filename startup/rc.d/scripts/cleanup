@@ -14,7 +14,7 @@ SourceIfNotEmpty /etc/sysconfig/system
 rm -f /fastboot /fsckoptions /forcefsck /halt /poweroff
 
 # Clean up /var
-find /var/run/ /var/lock/ -type f -not -path /var/lock/TMP_1ST -delete
+find /var/run/ /var/lock/ -type f -delete
 
 rm -rf /tmp/.X*-lock /tmp/.ICE-unix /tmp/.X11-unix /tmp/.esd /tmp/.font-unix
 rm -f /tmp/esrv*

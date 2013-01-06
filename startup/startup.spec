@@ -74,7 +74,7 @@ for i in `seq 2 5`; do
 done
 
 mkdir -p %buildroot/var/{log,run}
-touch %buildroot/var/{log/wtmp,run/utmp}
+touch %buildroot{/etc/firsttime.flag,/var/{log/wtmp,run/utmp}}
 touch %buildroot%_sysconfdir/sysconfig/{clock,i18n,system}
 chmod -R +x %buildroot%_sysconfdir/rc.d
 mkdir -p %buildroot%_sysconfdir/sysconfig/harddisk
@@ -88,6 +88,7 @@ if [ $1 -eq 1 ]; then
 	/sbin/chkconfig --add netfs
 	/sbin/chkconfig --add random
 	/sbin/chkconfig --add rawdevices
+	touch /etc/firsttime.flag
 fi
 
 for f in /var/{log/wtmp,run/utmp}; do
@@ -158,6 +159,7 @@ done
 %config %_sysconfdir/rc.d/rc.powerfail
 %ghost %attr(664,root,utmp) /var/log/wtmp
 %ghost %attr(664,root,utmp) /var/run/utmp
+%ghost %config(missingok) /etc/firsttime.flag
 %dir %_sysconfdir/firsttime.d
 %dir %_localstatedir/rsbac
 

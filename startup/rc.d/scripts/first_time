@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# On fail/exit erase the temporary file
-trap 'rm -f /var/lock/TMP_1ST' EXIT HUP INT QUIT TERM
-
+[ -f /etc/firsttime.flag ] || exit 0
+rm -f /etc/firsttime.flag
 run-parts /etc/firsttime.d
