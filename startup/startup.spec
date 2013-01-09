@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.36
+Version: 0.9.8.37
 Release: alt1
 
 Summary: The system startup scripts
@@ -164,6 +164,9 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Wed Jan 09 2013 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.37-alt1
+- Fixed /etc/firsttime.d support (closes: #28308).
+
 * Thu Nov 01 2012 Timur Aitov <timonbl4@altlinux.org> 0.9.8.36-alt1
 - rc.sysinit: activate encrypted block devices.
 - init.d/halt: turn off encrypted block devices.
