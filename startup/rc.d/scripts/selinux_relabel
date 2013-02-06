@@ -12,6 +12,11 @@ SourceIfNotEmpty /etc/selinux/config
 
 rm -f /.autorelabel /etc/selinux/.autorelabel
 
+plymouth=plymouth
+if $plymouth --ping >/dev/null 2>&1; then
+	$plymouth --hide-splash
+fi
+
 if is_no "$AUTORELABEL"; then
 	echo
 	echo "*** Warning -- SELinux ${SELINUXTYPE-} policy relabel is required."

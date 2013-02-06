@@ -166,6 +166,15 @@ else
 	fsckoptions="-V $fsckoptions"
 fi
 
+hide_plymouth()
+{
+	local plymouth=plymouth
+
+	if $plymouth --ping >/dev/null 2>&1; then
+		$plymouth --hide-splash
+	fi
+}
+
 _RUN_QUOTACHECK=0
 check_rootfs=1
 if [ -n "$fastboot" ]; then
@@ -205,6 +214,7 @@ if [ -n "$check_rootfs" ]; then
 	if [ $rc -gt 1 ]; then
 		# A return of 3 or higher means there were serious problems.
 		if [ $rc -gt 3 ]; then
+			hide_plymouth
 			echo
 			echo "*** An error occurred during the file system check."
 			echo "*** Dropping you to a shell; the system will reboot"
@@ -327,6 +337,7 @@ fi
 if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat ]; then
 	# A non-zero return means there were problems.
 	if ! /etc/rc.d/scripts/raidstart; then
+		hide_plymouth
 		echo
 		echo
 		echo "*** An error occurred during the RAID startup."
@@ -387,6 +398,7 @@ if [ -z "$fastboot" ]; then
 	if [ $rc -gt 1 ]; then
 		# A return of 3 or higher means there were serious problems.
 		if [ $rc -gt 3 ]; then
+			hide_plymouth
 			echo
 			echo "*** An error occurred during the file system check."
 			echo "*** Dropping you to a shell; the system will reboot"
@@ -427,6 +439,7 @@ if [ -z "$fastboot" ]; then
 	# A return of 2 or higher means there were serious problems.
 	if [ $rc -gt 1 ]; then
 		failure "$STRING"
+		hide_plymouth
 		echo
 		echo
 		echo "*** An error occurred during the file system check."
@@ -438,6 +451,7 @@ if [ -z "$fastboot" ]; then
 
 		automatic_reboot
 	elif [ "$rc" = "1" -a -x "$QUOTACHECK" ]; then
+		hide_plymouth
 		action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
 	fi
 fi
