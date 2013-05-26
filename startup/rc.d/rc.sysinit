@@ -282,7 +282,7 @@ fi
 
 # Configure kernel parameters
 splash_update kernel 4
-action "Configuring kernel parameters:" sysctl -e -p /etc/sysctl.conf
+action 'Configuring kernel parameters:' systemd-sysctl
 
 if [ -f /proc/sys/kernel/modprobe ]; then
 	if is_yes "$USEMODULES"; then

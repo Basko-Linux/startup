@@ -5,12 +5,7 @@ Release: alt1
 Summary: The system startup scripts
 License: GPLv2+
 Group: System/Base
-
-%ifarch ia64 %ix86 ppc64 x86_64
-%define mmap_min_addr 65536
-%else
-%define mmap_min_addr 32768
-%endif
+BuildArch: noarch
 
 Source: %name-%version.tar
 
@@ -31,6 +26,8 @@ Requires: hwclock >= 1:2.14-alt1
 Requires: sysvinit-utils
 # due to fsck in rc.sysinit (ALT#22410)
 Requires: /sbin/fsck
+# due to systemd-sysctl (ALT#20938)
+Requires: systemd-utils >= 204-alt2
 
 # due to update_wms
 Conflicts: xinitrc < 0:2.4.13-alt1
@@ -51,8 +48,6 @@ change runlevels, and shut the system down cleanly.
 
 %prep
 %setup
-sed 's/@ARCH@/%_arch/;s/@MMAP_MIN_ADDR@/%mmap_min_addr/' \
-	< sysctl.conf.in > sysctl.conf
 
 %install
 mkdir -p %buildroot%_sysconfdir/rc.d/rc{0,1,2,3,4,5,6}.d
