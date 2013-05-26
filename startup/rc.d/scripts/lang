@@ -9,6 +9,7 @@ WITHOUT_RC_COMPAT=1
 . /etc/init.d/functions
 
 SourceIfNotEmpty /etc/sysconfig/i18n
+SourceIfNotEmpty /etc/locale.conf
 
 umask 077
 

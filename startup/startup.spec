@@ -94,6 +94,11 @@ for f in /var/{log/wtmp,run/utmp}; do
 	fi
 done
 
+if [ -s /etc/sysconfig/i18n -a ! -e /etc/locale.conf ]; then
+	grep -E '^(LANG|LANGUAGE|LC_ADDRESS|LC_COLLATE|LC_CTYPE|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MESSAGES|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME)=' /etc/sysconfig/i18n > /etc/locale.conf
+	chmod 644 /etc/locale.conf
+fi
+
 # Dup of timeconfig %%post - here to avoid a dependency.
 if [ -L %_sysconfdir/localtime ]; then
 	_FNAME=`ls -ld %_sysconfdir/localtime |awk '{print $11}' |sed 's/lib/share/'`
