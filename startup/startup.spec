@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.8.38
+Version: 0.9.9.0
 Release: alt1
 
 Summary: The system startup scripts
@@ -164,6 +164,13 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Mon May 27 2013 Dmitry V. Levin <ldv@altlinux.org> 0.9.9.0-alt1
+- rc.sysinit:
+  + added sysctl.d support using systemd-sysctl (closes: #20938);
+  + added modules-load.d support using systemd-modules-load;
+  + added tmpfiles.d support using systemd-tmpfiles.
+- scripts/lang: added /etc/locale.conf support (closes: #28525).
+
 * Wed Feb 06 2013 Dmitry V. Levin <ldv@altlinux.org> 0.9.8.38-alt1
 - rc.sysinit: hide plymouth when appropriate (closes: #28515).
 
