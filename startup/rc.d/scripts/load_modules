@@ -1,19 +1,2 @@
 #!/bin/sh
-#
-# /etc/rc.d/scripts/load_modules - run once at boot time from rc.sysinit
-#
-
-[ -s /etc/modules ] || exit 0
-
-WITHOUT_RC_COMPAT=1
-
-# Source function library.
-. /etc/init.d/functions
-
-# Loop over every line in /etc/modules.
-(cat /etc/modules; echo) | while read module args; do
-	# Ignore empty lines and comments.
-	[ -n "${module##\#*}" ] || continue
-
-	action "Loading module $module:" modprobe "$module" $args 2>/dev/null
-done
+exec systemd-modules-load

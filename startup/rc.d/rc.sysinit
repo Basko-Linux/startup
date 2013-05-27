@@ -108,7 +108,7 @@ fi
 if is_yes "$USEMODULES"; then
 	MODPROBE=/sbin/modprobe
 	# Load modules
-	/etc/rc.d/scripts/load_modules
+	systemd-modules-load
 else
 	MODPROBE=/bin/true
 fi
