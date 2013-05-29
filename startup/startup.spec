@@ -27,7 +27,7 @@ Requires: sysvinit-utils
 # due to fsck in rc.sysinit (ALT#22410)
 Requires: /sbin/fsck
 # due to systemd-sysctl, systemd-tmpfiles, and systemd-modules-load.
-Requires: systemd-utils >= 204-alt3
+Requires: systemd-utils >= 204-alt4
 
 # due to update_wms
 Conflicts: xinitrc < 0:2.4.13-alt1

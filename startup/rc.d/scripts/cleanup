@@ -44,9 +44,6 @@ fi
 
 systemd-tmpfiles --clean
 
-# Recreate some directories.
-mkdir -m1777 /tmp/.ICE-unix /tmp/.X11-unix /tmp/.esd /tmp/.font-unix
-
 # Possibly create lastlog, faillog, utmp and wtmp, reset utmp and possibly utmpx.
 for f in /var/log/{lastlog,faillog}; do
 	if [ ! -e $f ]; then
