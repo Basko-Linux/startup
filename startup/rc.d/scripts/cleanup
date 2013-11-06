@@ -59,6 +59,6 @@ done
 > /var/run/utmp
 test -f /var/run/utmpx && > /var/run/utmpx
 
-systemd-tmpfiles --create
+systemd-tmpfiles --remove --create --exclude-prefix=/dev
 
 exit 0
