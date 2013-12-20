@@ -474,10 +474,12 @@ fi
 
 # Check SELinux status
 SELINUX_STATE=
+SELINUX_MP="$(sed '/^selinuxfs \(\/[^ ]\+\) .*/!d;s//\1/;q' /proc/mounts)"
 RESTORECON=/sbin/restorecon
-if [ -x "$RESTORECON" ] && mountpoint -q /selinux; then
-	if [ -r /selinux/enforce ]; then
-		SELINUX_STATE="$(head -1 /selinux/enforce)"
+
+if [ -n "$SELINUX_MP" -a -x "$RESTORECON" ]; then
+	if [ -r "$SELINUX_MP"/enforce ]; then
+		SELINUX_STATE="$(head -1 "$SELINUX_MP"/enforce)"
 	else
 		# if the value cannnot be read, assume enforcing mode
 		SELINUX_STATE=1
@@ -488,7 +490,7 @@ fi
 if [ -n "$SELINUX_STATE" ]; then
 	if [ -f /etc/selinux/.autorelabel -o -f /.autorelabel ] ||
 	   grep -iwqs autorelabel /proc/cmdline; then
-		/etc/rc.d/scripts/selinux_relabel "$SELINUX_STATE"
+		/etc/rc.d/scripts/selinux_relabel "$SELINUX_STATE" "$SELINUX_MP"
 		if [ $? -eq 3 ]; then
 			automatic_reboot
 		fi

@@ -1,6 +1,7 @@
 #!/bin/sh
 
 SELINUX_STATE="$1"; shift
+SELINUX_MP="$1"; shift
 
 # Do not load RH compatibility interface.
 WITHOUT_RC_COMPAT=1
@@ -24,10 +25,10 @@ if is_no "$AUTORELABEL"; then
 	echo "*** problems.  Dropping you to a shell; the system will reboot"
 	echo "*** when you leave the shell."
 
-	echo 0 > /selinux/enforce
+	echo 0 > "$SELINUX_MP"/enforce
 	PS1="(SELinux Repair) \# #"; export PS1
 	sulogin
-	echo "$SELINUX_STATE" > /selinux/enforce
+	echo "$SELINUX_STATE" > "$SELINUX_MP"/enforce
 
 	exit 3 # should result to automatic reboot
 else
@@ -41,9 +42,9 @@ else
 	REBOOTFLAG="$(restorecon -v /sbin/init)"
 	FIXFILES=fixfiles
 
-	echo 0 > /selinux/enforce
+	echo 0 > "$SELINUX_MP"/enforce
 	$FIXFILES -F restore > /dev/null 2>&1
-	echo "$SELINUX_STATE" > /selinux/enforce
+	echo "$SELINUX_STATE" > "$SELINUX_MP"/enforce
 
 	if [ -n "$REBOOTFLAG" ]; then
 		exit 3 # should result to automatic reboot
