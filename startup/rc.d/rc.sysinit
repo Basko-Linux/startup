@@ -86,14 +86,20 @@ else
 fi
 
 # Mount /proc (done here so volume labels can work with fsck)
-mountpoint -q /proc ||
-	action 'Mounting proc filesystem:' mount -n -t proc proc /proc
+if mountpoint -q /proc; then
+	action 'Remounting /proc:' mount -n /proc -o remount
+else
+	action 'Mounting /proc:' mount -n -t proc proc /proc
+fi
 chgrp proc /proc >/dev/null 2>&1 ||:
 
 # Mount /sys where appropriate
 if grep -wqs sysfs /proc/filesystems; then
-	mountpoint -q /sys ||
-		action 'Mounting sys filesystem:' mount -n -t sysfs sysfs /sys
+	if mountpoint -q /sys; then
+		action 'Remounting /sys:' mount -n /sys -o remount
+	else
+		action 'Mounting /sys:' mount -n -t sysfs sysfs /sys
+	fi
 fi
 
 if [ -z "$USEMODULES" ]; then
