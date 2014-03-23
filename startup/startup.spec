@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.9.4
+Version: 0.9.9.5
 Release: alt1
 
 Summary: The system startup scripts
@@ -164,6 +164,10 @@ done
 %dir %_localstatedir/rsbac
 
 %changelog
+* Sun Mar 23 2014 Dmitry V. Levin <ldv@altlinux.org> 0.9.9.5-alt1
+- scripts/cleanup: pass --boot to systemd-tmpfiles --remove --create
+  (once more closes: #29537)
+
 * Wed Mar 19 2014 Dmitry V. Levin <ldv@altlinux.org> 0.9.9.4-alt1
 - rc.sysinit: remount /proc and /sys.
 
