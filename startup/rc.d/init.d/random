@@ -14,7 +14,7 @@ WITHOUT_RC_COMPAT=1
 . /etc/init.d/functions
 
 LOCKFILE=/var/lock/subsys/random
-random_seed=/var/run/random-seed
+random_seed=/var/lib/random/random-seed
 umask 077
 
 # See how we were called.
