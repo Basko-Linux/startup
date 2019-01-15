@@ -2,13 +2,21 @@
 # verbose => old-style bootup
 # anything else => new style bootup without ANSI colors or positioning
 BOOTUP=color
+
 # offset from right margin of the screen to start status labels at.
 RES_OFFSET=8
+
 # default kernel loglevel on boot (syslog will reset this)
 LOGLEVEL=1
+
 # Set to anything other than 'no' to allow hotkey interactive startup...
 PROMPT=yes
+
 # custom rootfs remounter, useful for unionfs or nfsroot
 #REMOUNT_ROOTFS_RW_COMMAND=/path/to/program
+
 # custom hostname resolver, useful for nfsroot
 #RESOLVE_HOSTNAME_COMMAND=/path/to/program
+
+# udev service for rc.sysinit
+UDEV_SERVICE=/etc/init.d/udevd

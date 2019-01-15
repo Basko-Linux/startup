@@ -119,17 +119,17 @@ else
 	MODPROBE=/bin/true
 fi
 
+UDEV_SERVICE="${UDEV_SERVICE:-/etc/init.d/udevd}"
 RUN_UDEV=
-udevd_exe=/etc/init.d/udevd
-[ ! -x "$udevd_exe" ] ||
-	grep -iwqs noudev /proc/cmdline ||
+[ ! -x "$UDEV_SERVICE" ] || grep -iwqs noudev /proc/cmdline ||
 	RUN_UDEV=1
 
 # Start udev
-if [ -n "$RUN_UDEV" ]; then
-	RUN_FROM_SYSINIT=1 "$udevd_exe" start
-	[ -c /dev/rtc ] || $MODPROBE rtc >/dev/null 2>&1
-fi
+[ -z "$RUN_UDEV" ] ||
+	RUN_FROM_SYSINIT=1 "$UDEV_SERVICE" start
+
+[ -c /dev/rtc ] ||
+	$MODPROBE rtc >/dev/null 2>&1
 
 # Initialize bootsplash subsystem.
 splash_init 5
