@@ -24,7 +24,7 @@ LOCKFILE=/var/lock/subsys/rawdevices
 
 assign_raw()
 {
-   grep -v '^ *#' "$CONFIG" | while read RAW BLOCK; do 
+   grep -v '^ *#' "$CONFIG" | while read RAW BLOCK; do
      if [ -n "$RAW" ] && [ -n "$BLOCK" ]; then
          if [ "${RAW%/*}" = "/dev" ] && [ -d /dev/raw ]; then
            echo "  Please correct your $CONFIG:"
@@ -37,7 +37,7 @@ assign_raw()
            exit 0
          fi
 
-       echo "           $RAW  -->   $BLOCK"; 
+       echo "           $RAW  -->   $BLOCK";
        raw $RAW $BLOCK
      fi
    done
@@ -57,7 +57,7 @@ case "$1" in
 		rm -f "$LOCKFILE"
 		;;
 	status)
-		if [ "$(id -u)" -eq 0 ]; then 
+		if [ "$(id -u)" -eq 0 ]; then
 			raw -qa
 		else
 			echo $"You need to be root to use this command."
