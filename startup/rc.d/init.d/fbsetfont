@@ -35,23 +35,29 @@ start()
 		[ ! -c "$t" ] || : >>"$t"
 	done
 
+	do_setsysfont=
+
 	# Setup videomode if requested.
-	if [ -n "$MODE" -a -x "$FBSET" ]; then
+	if [ -n "$MODE" ] && [ -x "$FBSET" ]; then
 		: >>"$LOGDEVICE"
 		"$FBSET" -a "$MODE" >>"$LOGDEVICE" 2>&1
+		do_setsysfont=1
 	fi
 
+	[ -z "$MODULE" ] ||
+		do_setsysfont=1
+
 	# Update system font.
-	if [ -n "$MODULE" ] || [ -n "$MODE" -a -x "$FBSET" ]; then
+	if [ -x /sbin/setsysfont ] && [ -n "$do_setsysfont" ]; then
 		sed -ne 's,^\([0-9]\+\):[0-9]\+:respawn:/sbin/mingetty.*,/dev/tty\1,pg' </etc/inittab |
 			while read t; do
 				[ ! -c "$t" ] ||
-					ExecIfExecutable /sbin/setsysfont <"$t" >>"$t" 2>&1
+					/sbin/setsysfont <"$t" >>"$t" 2>&1
 			done
 		for i in $TTYS; do
 			t="/dev/tty$i"
 			[ ! -c "$t" ] ||
-				ExecIfExecutable /sbin/setsysfont <"$t" >>"$t" 2>&1
+				/sbin/setsysfont <"$t" >>"$t" 2>&1
 		done
 	fi
 	touch "$LOCKFILE"

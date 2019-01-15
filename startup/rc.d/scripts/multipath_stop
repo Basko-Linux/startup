@@ -1,6 +1,6 @@
 #!/bin/sh
 
 MULTIPATH=/sbin/multipath
-if [ -x "$MULTIPATH" -a -f /etc/multipath.conf ]; then
+if [ -x "$MULTIPATH" ] && [ -f /etc/multipath.conf ]; then
 	"$MULTIPATH" -F
 fi

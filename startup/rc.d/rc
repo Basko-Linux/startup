@@ -48,7 +48,7 @@ check_script()
 	[ -x "$1" ] || return 1
 
 	# Don't run *.rpm* and *~ scripts.
-	[ "${1%.rpm*}" = "$1" -a "${1%\~}" = "$1" ] || return 1
+	[ -n "${1##*.rpm*}" ] && [ -n "${1##*\~}" ] || return 1
 
 	return 0
 }
@@ -62,7 +62,7 @@ for i in "/etc/rc.d/rc$runlevel.d"/K*; do
 	splash_update "$subsys"
 
 	# Check if the subsystem is already up.
-	[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] || continue
+	[ -f "/var/lock/subsys/$subsys" ] || [ -f "/var/lock/subsys/$subsys.init" ] || continue
 
 	# Bring the subsystem down.
 	if egrep -qs '(action|stop_daemon|killproc|msg_) ' "$i"; then
@@ -81,7 +81,8 @@ for i in "/etc/rc.d/rc$runlevel.d"/S*; do
 	splash_update "$subsys"
 
 	# Check if the subsystem is already up.
-	[ -f "/var/lock/subsys/$subsys" -o -f "/var/lock/subsys/$subsys.init" ] && continue
+	[ ! -f "/var/lock/subsys/$subsys" ] && [ ! -f "/var/lock/subsys/$subsys.init" ] ||
+		continue
 
 	# If we're in confirmation mode, get user confirmation.
 	if [ -n "$CONFIRM" ]; then
@@ -93,14 +94,14 @@ for i in "/etc/rc.d/rc$runlevel.d"/S*; do
 		esac
 	fi
 
-	if [ "$subsys" = halt -o "$subsys" = reboot -o "$subsys" = single -o "$subsys" = local ] \
-		|| egrep -qs '(action|daemon|msg_) ' "$i"; then
+	if [ "$subsys" = halt ] || [ "$subsys" = reboot ] || [ "$subsys" = single ] || [ "$subsys" = local ] ||
+		egrep -qs '(action|daemon|msg_) ' "$i"; then
 		"$i" start
 	else
 		action "Starting $subsys:" "$i" start
 	fi
 done
 
-if [ "$runlevel" != 0 -a "$runlevel" != 6 ]; then
+if [ "$runlevel" != 0 ] && [ "$runlevel" != 6 ]; then
 	splash_update stop
 fi

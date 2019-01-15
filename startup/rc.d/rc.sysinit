@@ -14,9 +14,8 @@ ulimit -Sc 0 >/dev/null 2>&1
 trap '' SIGPIPE
 
 # Rerun ourselves through initlog
-if [ -z "$IN_INITLOG" -a -x /sbin/initlog ]; then
+[ -n "$IN_INITLOG" ] || [ ! -x /sbin/initlog ] ||
 	exec /sbin/initlog $INITLOG_ARGS -r /etc/rc.d/rc.sysinit
-fi
 
 WITHOUT_RC_COMPAT=1
 
@@ -33,13 +32,11 @@ if ! SourceIfNotEmpty /etc/sysconfig/network; then
 	NETWORKING=no
 fi
 
-if [ -x "$RESOLVE_HOSTNAME_COMMAND" ]; then
+[ ! -x "$RESOLVE_HOSTNAME_COMMAND" ] ||
 	HOSTNAME="$("$RESOLVE_HOSTNAME_COMMAND")"
-fi
 
-if [ -z "$HOSTNAME" -o "$HOSTNAME" = "(none)" ]; then
-	HOSTNAME=localhost
-fi
+[ -z "$HOSTNAME" ] || [ "$HOSTNAME" = "(none)" ] &&
+	HOSTNAME=localhost ||:
 
 PrintMargin()
 {
@@ -103,12 +100,9 @@ if grep -wqs sysfs /proc/filesystems; then
 fi
 
 if [ -z "$USEMODULES" ]; then
-	if [ -f /proc/modules -a -x /sbin/modprobe ] &&
-	   ! grep -iwqs nomodules /proc/cmdline; then
-		USEMODULES=y
-	else
+	[ -f /proc/modules ] && [ -x /sbin/modprobe ] && ! grep -iwqs nomodules /proc/cmdline &&
+		USEMODULES=y ||
 		USEMODULES=n
-	fi
 fi
 
 if is_yes "$USEMODULES"; then
@@ -271,7 +265,7 @@ fi
 
 # Update quotas if fsck was run on /
 QUOTACHECK=/sbin/quotacheck
-if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
+if [ "$_RUN_QUOTACHECK" = 1 ] && [ -x "$QUOTACHECK" ]; then
 	action "Checking root filesystem quotas:" "$QUOTACHECK" -v /
 fi
 
@@ -282,7 +276,7 @@ fi
 
 # Load modules where appropriate
 splash_update depmod 3
-if [ -z "$fastboot" -a -x /sbin/depmod ] && is_yes "$USEMODULES"; then
+if [ -z "$fastboot" ] && [ -x /sbin/depmod ] && is_yes "$USEMODULES"; then
 	INITLOG_ARGS= action "Finding module dependencies:" depmod -A
 fi
 
@@ -307,12 +301,12 @@ fi
 /etc/rc.d/scripts/framebuffer_init
 
 # Load device-mapper, create its device file
-if [ -e /proc/devices -a -e /proc/misc ]; then
+if [ -e /proc/devices ] && [ -e /proc/misc ]; then
 	$MODPROBE dm-mod >/dev/null 2>&1
 	if [ -z "$RUN_UDEV" ]; then
 		MAJOR="$(sed -ne 's/^ *\([0-9]\+\) \+misc$/\1/p' /proc/devices)"
 		MINOR="$(sed -ne 's/^ *\([0-9]\+\) \+device-mapper$/\1/p' /proc/misc)"
-		if [ -n "$MAJOR" -a -n "$MINOR" ]; then
+		if [ -n "$MAJOR" ] && [ -n "$MINOR" ]; then
 	                rm -f /dev/mapper/control
 			mkdir -p -m755 /dev/mapper
 			action "Creating device-mapper character device ($MAJOR, $MINOR):" \
@@ -456,7 +450,7 @@ if [ -z "$fastboot" ]; then
 		sulogin
 
 		automatic_reboot
-	elif [ "$rc" = "1" -a -x "$QUOTACHECK" ]; then
+	elif [ "$rc" = "1" ] && [ -x "$QUOTACHECK" ]; then
 		hide_plymouth
 		action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
 	fi
@@ -470,7 +464,7 @@ action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat -O no_netdev
 # Set system font
 ExecIfExecutable /sbin/setsysfont >/dev/null 2>&1
 
-if [ "$_RUN_QUOTACHECK" = 1 -a -x "$QUOTACHECK" ]; then
+if [ "$_RUN_QUOTACHECK" = 1 ] && [ -x "$QUOTACHECK" ]; then
 	action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
 fi
 
@@ -483,7 +477,7 @@ SELINUX_STATE=
 SELINUX_MP="$(sed '/^selinuxfs \(\/[^ ]\+\) .*/!d;s//\1/;q' /proc/mounts)"
 RESTORECON=/sbin/restorecon
 
-if [ -n "$SELINUX_MP" -a -x "$RESTORECON" ]; then
+if [ -n "$SELINUX_MP" ] && [ -x "$RESTORECON" ]; then
 	if [ -r "$SELINUX_MP"/enforce ]; then
 		SELINUX_STATE="$(head -1 "$SELINUX_MP"/enforce)"
 	else
@@ -494,7 +488,7 @@ fi
 
 # Check whether a full relabel is needed
 if [ -n "$SELINUX_STATE" ]; then
-	if [ -f /etc/selinux/.autorelabel -o -f /.autorelabel ] ||
+	if [ -f /etc/selinux/.autorelabel ] || [ -f /.autorelabel ] ||
 	   grep -iwqs autorelabel /proc/cmdline; then
 		/etc/rc.d/scripts/selinux_relabel "$SELINUX_STATE" "$SELINUX_MP"
 		if [ $? -eq 3 ]; then
@@ -502,7 +496,7 @@ if [ -n "$SELINUX_STATE" ]; then
 		fi
 	fi
 elif [ -d /etc/selinux ]; then
-	[ -f /etc/selinux/.autorelabel -o -f /.autorelabel ] ||
+	[ -f /etc/selinux/.autorelabel ] || [ -f /.autorelabel ] ||
 		touch /etc/selinux/.autorelabel
 fi
 

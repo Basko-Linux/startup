@@ -13,7 +13,7 @@ for i in /var/lock/subsys/*; do
 	[ -f "$i" ] || continue
 
 	# Don't run *.rpm* and *~ scripts
-	[ "${i%.rpm*}" = "$i" -a "${i%\~}" = "$i" ] || continue
+	[ -n "${i##*.rpm*}" ] && [ -n "${i##*\~}" ] || continue
 
 	# Get the subsystem name.
 	subsys="${i#/var/lock/subsys/}"

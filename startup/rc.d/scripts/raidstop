@@ -20,7 +20,7 @@ rootdev="$(mount 2>/dev/null |awk '$2=="on" && $3=="/" {print $1}')"
 rootdev="${rootdev#/dev/}"
 
 for mddev in ${mdlist}; do
-	if [ "$mddev" = "$rootdev" -o -z "${rootdev##${mddev}p*}" ]; then
+	if [ "$mddev" = "$rootdev" ] || [ -z "${rootdev##${mddev}p*}" ]; then
 		continue
 	fi
 	action "Turning off RAID for $mddev:" $raidstop "/dev/$mddev"

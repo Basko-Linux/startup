@@ -37,10 +37,10 @@ fi
 # If they want to run something in single user mode, might as well run it...
 for i in /etc/rc.d/rc1.d/S[0-9][0-9]*; do
 	# Check if the script is there.
-	[ ! -x "$i" ] && continue
+	[ -x "$i" ] || continue
 		
 	# Don't run *.rpm* and *~ scripts
-	[ "${i%.rpm*}" = "$i" -a "${i%\~}" = "$i" ] || continue
+	[ -n "${i##*.rpm*}" ] && [ -n "${i##*\~}" ] || continue
 
 	[ "$i" != "/etc/rc.d/rc1.d/S00single" ] || continue
 

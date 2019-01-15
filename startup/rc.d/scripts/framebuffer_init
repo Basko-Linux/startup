@@ -19,6 +19,6 @@ fi
 FBSET=/usr/sbin/fbset
 
 # Setup videomode if defined
-if [ -n "$MODE" -a -x "$FBSET" ]; then
+if [ -n "$MODE" ] && [ -x "$FBSET" ]; then
 	action "Setting framebuffer device settings:" "$FBSET" -a "$MODE"
 fi

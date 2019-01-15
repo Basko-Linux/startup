@@ -25,13 +25,13 @@ LOCKFILE=/var/lock/subsys/rawdevices
 assign_raw()
 {
    grep -v '^ *#' "$CONFIG" | while read RAW BLOCK; do 
-     if [ -n "$RAW" -a -n "$BLOCK" ]; then 
-         if [ "${RAW%/*}" = "/dev" -a -d /dev/raw ]; then
+     if [ -n "$RAW" ] && [ -n "$BLOCK" ]; then
+         if [ "${RAW%/*}" = "/dev" ] && [ -d /dev/raw ]; then
            echo "  Please correct your $CONFIG:"
            echo "     rawdevices are now located in the directory /dev/raw/ "
            exit 0
          fi
-         if [ "${RAW%/*}" = "/dev/raw" -a -f /dev/raw ]; then
+         if [ "${RAW%/*}" = "/dev/raw" ] && [ -f /dev/raw ]; then
            echo "  Please correct your $CONFIG:"
            echo "     rawdevices are not yet located in the directory /dev/raw/ "
            exit 0

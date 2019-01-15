@@ -4,7 +4,7 @@ MODPROBE=/sbin/modprobe
 MULTIPATH=/sbin/multipath
 KPARTX=/sbin/kpartx
 DMSETUP=/sbin/dmsetup
-if ! grep -iwqs nompath /proc/cmdline && [ -f /etc/multipath.conf -a -x "$MULTIPATH" ]; then
+if ! grep -iwqs nompath /proc/cmdline && [ -f /etc/multipath.conf ] && [ -x "$MULTIPATH" ]; then
 	"$MODPROBE" dm-multipath > /dev/null 2>&1
 	"$MULTIPATH" -v 0
 	if [ -x "$KPARTX" ]; then
