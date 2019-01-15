@@ -23,17 +23,37 @@ SourceIfNotEmpty /etc/sysconfig/framebuffer && is_yes "$ENABLE" || exit 0
 LOCKFILE=/var/lock/subsys/fbsetfont
 RETVAL=0
 
+foreach_ttys()
+{
+	local i t
+	for i in $TTYS; do
+		t="/dev/tty$i"
+		[ ! -c "$t" ] || "$1" "$t"
+	done
+
+	[ -s /etc/inittab ] ||
+		return 0
+
+	sed -ne 's,^\([0-9]\+\):[0-9]\+:respawn:/s\?bin/\(a\|m\|min\)\?getty\([[:space:]].*\|$\),/dev/tty\1,pg' </etc/inittab |
+	while read t; do
+		[ ! -c "$t" ] || "$1" "$t"
+	done
+}
+
+check_tty()
+{
+	: >>"$1"
+}
+
+setsysfont()
+{
+	/sbin/setsysfont <"$1" >>"$1" 2>&1
+}
+
 start()
 {
 	# Initializing ttys.
-	sed -ne 's,^\([0-9]\+\):[0-9]\+:respawn:/sbin/mingetty.*,/dev/tty\1,pg' </etc/inittab |
-		while read t; do
-			[ ! -c "$t" ] || : >>"$t"
-		done
-	for i in $TTYS; do
-		t="/dev/tty$i"
-		[ ! -c "$t" ] || : >>"$t"
-	done
+	foreach_ttys check_tty
 
 	do_setsysfont=
 
@@ -48,18 +68,9 @@ start()
 		do_setsysfont=1
 
 	# Update system font.
-	if [ -x /sbin/setsysfont ] && [ -n "$do_setsysfont" ]; then
-		sed -ne 's,^\([0-9]\+\):[0-9]\+:respawn:/sbin/mingetty.*,/dev/tty\1,pg' </etc/inittab |
-			while read t; do
-				[ ! -c "$t" ] ||
-					/sbin/setsysfont <"$t" >>"$t" 2>&1
-			done
-		for i in $TTYS; do
-			t="/dev/tty$i"
-			[ ! -c "$t" ] ||
-				/sbin/setsysfont <"$t" >>"$t" 2>&1
-		done
-	fi
+	[ ! -x /sbin/setsysfont ] || [ -z "$do_setsysfont" ] ||
+		foreach_ttys setsysfont
+
 	touch "$LOCKFILE"
 }
 
