@@ -22,29 +22,17 @@ WITHOUT_RC_COMPAT=1
 # Source function library
 . /etc/init.d/functions
 
-# Fix console loglevel
-dmesg -n "$LOGLEVEL"
-
-HOSTNAME=`hostname`
-
-# Read in config data
-if ! SourceIfNotEmpty /etc/sysconfig/network; then
-	NETWORKING=no
-fi
-
-[ ! -x "$RESOLVE_HOSTNAME_COMMAND" ] ||
-	HOSTNAME="$("$RESOLVE_HOSTNAME_COMMAND")"
-
-[ -z "$HOSTNAME" ] || [ "$HOSTNAME" = "(none)" ] &&
-	HOSTNAME=localhost ||:
-
 PrintMargin()
 {
-	if [ "$BOOTUP" != serial ]; then
-		local n
-		n=`echo -n "$*" |wc -c` 2>/dev/null &&
-			tput hpa $(( (COLUMNS - n)/2 ))
-	fi
+	local n
+	[ "$BOOTUP" = serial ] ||
+		! n=`echo -n "$*" |wc -c` 2>/dev/null ||
+		tput hpa $(( ($COLUMNS - $n) / 2 ))
+}
+
+ActionIfExecutable()
+{
+	[ ! -x "$2" ] || action "$@"
 }
 
 rootfs_mounted=
@@ -62,6 +50,93 @@ automatic_reboot()
 	echo 'Automatic reboot in progress.'
 	reboot -f
 }
+
+in_cmdline()
+{
+	[ -e /proc/cmdline ] &&
+		grep -iwqs "$1" /proc/cmdline
+}
+
+hide_plymouth()
+{
+	local plymouth=plymouth
+	! $plymouth --ping >/dev/null 2>&1 ||
+		$plymouth --hide-splash
+}
+
+fastboot=
+_RUN_QUOTACHECK=0
+check_filesystem()
+{
+	[ -z "$fastboot" ] ||
+		return 0
+
+	local MSG="$1" rc
+	shift
+
+	echo -n "$MSG "
+	initlog -c "fsck $*"
+	rc=$?
+
+	# The exit code returned by fsck is the sum of the following conditions:
+	#     0    - No errors
+	#     1    - File system errors corrected
+	#     2    - System should be rebooted
+	#     4    - File system errors left uncorrected
+	#     8    - Operational error
+	#     16   - Usage or syntax error
+	#     32   - Fsck canceled by user request
+	#     128  - Shared library error
+
+	case "$rc" in
+		0)
+			success "$MSG"
+			echo
+			;;
+		1)
+			passed "$MSG"
+			echo
+			_RUN_QUOTACHECK=1
+			;;
+		*)
+			failure "$MSG"
+			echo
+
+			# A return of 3 or higher means there were serious problems.
+			if [ "$rc" -gt 3 ]; then
+				hide_plymouth
+				echo
+				echo "*** An error occurred during the file system check."
+				echo "*** Dropping you to a shell; the system will reboot"
+				echo "*** when you leave the shell."
+
+				export PS1="(FS Repair) \# # "
+				sulogin
+			fi
+
+			automatic_reboot
+			;;
+	esac
+}
+
+check_quota()
+{
+	local MSG="$1"
+	shift
+	[ "$_RUN_QUOTACHECK" = 0 ] ||
+		ActionIfExecutable "$MSG" /sbin/quotacheck "$@"
+}
+
+# Fix console loglevel
+dmesg -n "$LOGLEVEL"
+
+HOSTNAME=`hostname`
+
+[ ! -x "$RESOLVE_HOSTNAME_COMMAND" ] ||
+	HOSTNAME="$("$RESOLVE_HOSTNAME_COMMAND")"
+
+[ -z "$HOSTNAME" ] || [ "$HOSTNAME" = "(none)" ] &&
+	HOSTNAME=localhost ||:
 
 # Print a banner. ;)
 WELCOME="Welcome to "
@@ -100,7 +175,7 @@ if grep -wqs sysfs /proc/filesystems; then
 fi
 
 if [ -z "$USEMODULES" ]; then
-	[ -f /proc/modules ] && [ -x /sbin/modprobe ] && ! grep -iwqs nomodules /proc/cmdline &&
+	[ -f /proc/modules ] && [ -x /sbin/modprobe ] && ! in_cmdline nomodules &&
 		USEMODULES=y ||
 		USEMODULES=n
 fi
@@ -114,12 +189,11 @@ else
 fi
 
 UDEV_SERVICE="${UDEV_SERVICE:-/etc/init.d/udevd}"
-RUN_UDEV=
-[ ! -x "$UDEV_SERVICE" ] || grep -iwqs noudev /proc/cmdline ||
-	RUN_UDEV=1
+[ -x "$UDEV_SERVICE" ] && ! in_cmdline noudev ||
+	UDEV_SERVICE=
 
 # Start udev
-[ -z "$RUN_UDEV" ] ||
+[ -z "$UDEV_SERVICE" ] ||
 	RUN_FROM_SYSINIT=1 "$UDEV_SERVICE" start
 
 [ -c /dev/rtc ] ||
@@ -140,94 +214,27 @@ action "Activating swap partitions:" swapon -a -e
 action "Setting hostname $HOSTNAME:" hostname "$HOSTNAME"
 
 # Set the NIS domain name
-if [ -n "$NISDOMAIN" ] && ! is_no "$NISDOMAIN"; then
+[ -z "$NISDOMAIN" ] || is_no "$NISDOMAIN" ||
 	action "Setting NIS domain name $NISDOMAIN:" domainname "$NISDOMAIN"
-fi
 
-if [ -f /fastboot ] || grep -iwqs fastboot /proc/cmdline; then
+[ ! -f /fastboot ] && ! in_cmdline fastboot ||
 	fastboot=yes
-else
-	fastboot=
-fi
 
-if [ -n "$FSCKOPTIONS" ]; then
-	fsckoptions="$FSCKOPTIONS"
-else
-	fsckoptions=
-fi
+fsckoptions=
+[ -z "$FSCKOPTIONS" ] || fsckoptions="$FSCKOPTIONS"
+[ ! -f /forcefsck   ] || fsckoptions="-f $fsckoptions"
 
-if [ -f /forcefsck ]; then
-	fsckoptions="-f $fsckoptions"
-fi
-
-if [ "$BOOTUP" != "serial" ]; then
-	fsckoptions="-C $fsckoptions"
-else
+[ "$BOOTUP" != "serial" ] &&
+	fsckoptions="-C $fsckoptions" ||
 	fsckoptions="-V $fsckoptions"
-fi
 
-hide_plymouth()
-{
-	local plymouth=plymouth
-
-	if $plymouth --ping >/dev/null 2>&1; then
-		$plymouth --hide-splash
-	fi
-}
 
 _RUN_QUOTACHECK=0
-check_rootfs=1
-if [ -n "$fastboot" ]; then
-	check_rootfs=
-elif fgrep ' / ' /proc/mounts | tail -1 | cut -d' ' -f4 | fgrep -wqs 'rw'; then
-	check_rootfs=
-elif fgrep ' / ' /proc/mounts | tail -1 | cut -d' ' -f3 | grep -qs '^nfs'; then
-	check_rootfs=
-fi
-if [ -n "$check_rootfs" ]; then
-	STRING="Checking root filesystem"
-	echo "$STRING"
-	initlog -c "fsck -Tay $fsckoptions /"
-	rc=$?
-
-	# The exit code returned by fsck is the sum of the following conditions:
-	#     0    - No errors
-	#     1    - File system errors corrected
-	#     2    - System should be rebooted
-	#     4    - File system errors left uncorrected
-	#     8    - Operational error
-	#     16   - Usage or syntax error
-	#     32   - Fsck canceled by user request
-	#     128  - Shared library error
-
-	if [ $rc = 0 ]; then
-		success "$STRING"
-		echo
-	elif [ $rc = 1 ]; then
-		passed "$STRING"
-		echo
-	else
-		failure "$STRING"
-		echo
-	fi
-
-	if [ $rc -gt 1 ]; then
-		# A return of 3 or higher means there were serious problems.
-		if [ $rc -gt 3 ]; then
-			hide_plymouth
-			echo
-			echo "*** An error occurred during the file system check."
-			echo "*** Dropping you to a shell; the system will reboot"
-			echo "*** when you leave the shell."
-
-			PS1="(ROOTFS Repair) \# # "; export PS1
-			sulogin
-		fi
-
-		automatic_reboot
-	elif [ $rc = 1 ]; then
-		_RUN_QUOTACHECK=1
-	fi
+if [ -z "$fastboot" ] &&
+	! fgrep ' / ' /proc/mounts | tail -1 | cut -d' ' -f4 | grep -qsw 'rw' &&
+	! fgrep ' / ' /proc/mounts | tail -1 | cut -d' ' -f3 | grep -qs '^nfs'
+then
+	check_filesystem "Checking root filesystem:" -Tay $fsckoptions /
 fi
 
 # Remount the root filesystem read-write
@@ -238,19 +245,15 @@ rootfs_mounted=1
 # The root filesystem is now read-write, so we can now log via syslog() directly
 [ -z "$IN_INITLOG" ] || IN_INITLOG=
 
-# Clear mtab
-[ -L /etc/mtab ] || >/etc/mtab
-
 # Set the system clock (when /etc/adjtime is present)
 [ ! -s /etc/adjtime ] || /etc/init.d/clock start
 
-# Remove stale backups
-rm -f /etc/mtab~ /etc/mtab~~
-
 # /etc/mtab may point to /proc/mounts, in this case no update needed
 if [ ! -L /etc/mtab ]; then
-	# Enter root and /proc into mtab. (pixel) also added /initrd/loopfs for loopback root
-	mount -f /initrd/loopfs 2>/dev/null
+	# Clear mtab
+	>/etc/mtab
+
+	# Enter root and /proc into mtab
 	mount -f /
 	mount -f /proc
 	[ -d /sys/bus ] && mount -f -t sysfs sysfs /sys
@@ -260,25 +263,24 @@ if [ ! -L /etc/mtab ]; then
 	! mountpoint -q /dev/shm || mount -f -t tmpfs shmfs /dev/shm
 fi
 
+# Remove stale backups
+rm -f /etc/mtab~ /etc/mtab~~
+
 # Set hard disk parameters
 /etc/rc.d/scripts/idetune
 
 # Update quotas if fsck was run on /
-QUOTACHECK=/sbin/quotacheck
-if [ "$_RUN_QUOTACHECK" = 1 ] && [ -x "$QUOTACHECK" ]; then
-	action "Checking root filesystem quotas:" "$QUOTACHECK" -v /
-fi
+check_quota "Checking root filesystem quotas:" -v /
 
-if [ -f /proc/sys/kernel/hostname ]; then
-	[ "$(readlink /etc/HOSTNAME)" = /proc/sys/kernel/hostname ] ||
-		ln -snf /proc/sys/kernel/hostname /etc/HOSTNAME
-fi
+# Setup /etc/HOSTNAME
+[ -f /proc/sys/kernel/hostname ] && [ "$(readlink /etc/HOSTNAME)" = /proc/sys/kernel/hostname ] ||
+	ln -snf /proc/sys/kernel/hostname /etc/HOSTNAME
 
 # Load modules where appropriate
 splash_update depmod 3
-if [ -z "$fastboot" ] && [ -x /sbin/depmod ] && is_yes "$USEMODULES"; then
+
+[ -n "$fastboot" ] || [ ! -x /sbin/depmod ] || ! is_yes "$USEMODULES" ||
 	INITLOG_ARGS= action "Finding module dependencies:" depmod -A
-fi
 
 # Configure kernel parameters
 splash_update kernel 4
@@ -286,8 +288,8 @@ action 'Configuring kernel parameters:' systemd-sysctl
 
 if [ -f /proc/sys/kernel/modprobe ]; then
 	if is_yes "$USEMODULES"; then
-		if [ -z "$RUN_UDEV" ]; then
-			sysctl -w kernel.modprobe="/sbin/modprobe" >/dev/null 2>&1
+		if [ -z "$UDEV_SERVICE" ]; then
+			sysctl -w kernel.modprobe="$MODPROBE" >/dev/null 2>&1
 			sysctl -w kernel.hotplug="/sbin/hotplug" >/dev/null 2>&1
 		fi
 	else
@@ -303,7 +305,7 @@ fi
 # Load device-mapper, create its device file
 if [ -e /proc/devices ] && [ -e /proc/misc ]; then
 	$MODPROBE dm-mod >/dev/null 2>&1
-	if [ -z "$RUN_UDEV" ]; then
+	if [ -z "$UDEV_SERVICE" ]; then
 		MAJOR="$(sed -ne 's/^ *\([0-9]\+\) \+misc$/\1/p' /proc/devices)"
 		MINOR="$(sed -ne 's/^ *\([0-9]\+\) \+device-mapper$/\1/p' /proc/misc)"
 		if [ -n "$MAJOR" ] && [ -n "$MINOR" ]; then
@@ -317,34 +319,25 @@ if [ -e /proc/devices ] && [ -e /proc/misc ]; then
 fi
 
 # Setup early encrypted block devices
-cryptdisks_early_exe=/etc/rc.d/scripts/cryptdisks-early
-if [ -x "$cryptdisks_early_exe" ]; then
-	$cryptdisks_early_exe start
-fi
+ExecIfExecutable /etc/rc.d/scripts/cryptdisks-early start
 
 # Activate multipath devices
 /etc/rc.d/scripts/multipath_start
 
 # Activate EVMS
-EVMS_ACTIVE=
-STARTEVMS=/sbin/startevms
-if [ -x "$STARTEVMS" ] && ! grep -iwqs noevms /proc/cmdline; then
-	action "Starting up EVMS:" "$STARTEVMS" init
-	EVMS_ACTIVE=1
-fi
-
-# Add raid devices
-if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat ]; then
-	# A non-zero return means there were problems.
+if [ ! -x /sbin/startevms ] || in_cmdline noevms ||
+	! action "Starting up EVMS:" /sbin/startevms init
+then
+	# Add raid devices
 	if ! /etc/rc.d/scripts/raidstart; then
 		hide_plymouth
 		echo
 		echo
 		echo "*** An error occurred during the RAID startup."
 		stop=
-		if grep -iwqs 'onraiderror=stop' /proc/cmdline; then
+		if in_cmdline onraiderror=stop; then
 			stop=1
-		elif ! grep -iwqs 'onraiderror=ignore' /proc/cmdline; then
+		elif ! in_cmdline onraiderror=ignore; then
 			echo "*** - Press ENTER for dropping you to a shell;"
 			echo "***   the system will reboot when you leave the shell."
 			echo "*** - Or wait 1 minute to continue normal startup."
@@ -361,58 +354,22 @@ if [ -z "$EVMS_ACTIVE" ] && [ -f /proc/mdstat ]; then
 		fi
 		unset stop
 	fi
-fi
 
-# Activate LVM
-if [ -z "$EVMS_ACTIVE" ]; then
+	# Activate LVM
 	/etc/rc.d/scripts/lvm_start
 fi
 
 # Setup remaining encrypted block devices
-cryptdisks_exe=/etc/rc.d/scripts/cryptdisks
-if [ -x "$cryptdisks_exe" ]; then
-	$cryptdisks_exe start
-fi
+ExecIfExecutable /etc/rc.d/scripts/cryptdisks start
 
 # Check filesystems
 splash_update localfs 5
+
+# Reset quota check
 _RUN_QUOTACHECK=0
-if [ -z "$fastboot" ]; then
-	STRING="Checking filesystems"
-	echo "$STRING"
-	# (pixel) do not check loopback files, will be done later (aren't available yet)
-	initlog -c "fsck -TRAay -t noloop $fsckoptions"
-	rc=$?
 
-	if [ $rc = 0 ]; then
-		success "$STRING"
-		echo
-	elif [ $rc = 1 ]; then
-		passed "$STRING"
-		echo
-	else
-		failure "$STRING"
-		echo
-	fi
-
-	if [ $rc -gt 1 ]; then
-		# A return of 3 or higher means there were serious problems.
-		if [ $rc -gt 3 ]; then
-			hide_plymouth
-			echo
-			echo "*** An error occurred during the file system check."
-			echo "*** Dropping you to a shell; the system will reboot"
-			echo "*** when you leave the shell."
-
-			PS1="(FS Repair) \# # "; export PS1
-			sulogin
-		fi
-
-		automatic_reboot
-	elif [ $rc = 1 ]; then
-		_RUN_QUOTACHECK=1
-	fi
-fi
+# (pixel) do not check loopback files, will be done later (aren't available yet)
+check_filesystem "Checking filesystems:" -TRAay -t noloop $fsckoptions
 
 # Mount all other filesystems (except for NFS and /proc, which is already
 # mounted). Contrary to standard usage,
@@ -423,38 +380,7 @@ action 'Mounting local filesystems:' mount -a -t nocifs,davfs,ftpfs,loop,ncp,ncp
 localfs_mounted=1
 
 # (pixel) Check loopback filesystems
-if [ -z "$fastboot" ]; then
-	STRING="Checking loopback filesystems:"
-	echo -n "$STRING "
-	initlog -c "fsck -TRAay -t loop,ext2 $fsckoptions"
-	rc=$?
-	if [ "$rc" = "0" ]; then
-		success "$STRING"
-		echo
-	elif [ "$rc" = "1" ]; then
-		passed "$STRING"
-		echo
-	fi
-
-	# A return of 2 or higher means there were serious problems.
-	if [ $rc -gt 1 ]; then
-		failure "$STRING"
-		hide_plymouth
-		echo
-		echo
-		echo "*** An error occurred during the file system check."
-		echo "*** Dropping you to a shell; the system will reboot"
-		echo "*** when you leave the shell."
-
-		PS1="(FS Repair) \# #"; export PS1
-		sulogin
-
-		automatic_reboot
-	elif [ "$rc" = "1" ] && [ -x "$QUOTACHECK" ]; then
-		hide_plymouth
-		action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
-	fi
-fi
+check_filesystem "Checking loopback filesystems" -TRAay -t loop,ext2 $fsckoptions
 
 # Mount loopback
 action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat -O no_netdev
@@ -464,13 +390,9 @@ action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat -O no_netdev
 # Set system font
 ExecIfExecutable /sbin/setsysfont >/dev/null 2>&1
 
-if [ "$_RUN_QUOTACHECK" = 1 ] && [ -x "$QUOTACHECK" ]; then
-	action "Checking filesystem quotas:" "$QUOTACHECK" -v -R -a
-fi
+check_quota "Checking filesystem quotas:" -v -R -a
 
-if [ -x /sbin/quotaon ]; then
-	action "Turning on user and group quotas for local filesystems:" /sbin/quotaon -a
-fi
+ActionIfExecutable "Turning on user and group quotas for local filesystems:" /sbin/quotaon -a
 
 # Check SELinux status
 SELINUX_STATE=
@@ -488,8 +410,7 @@ fi
 
 # Check whether a full relabel is needed
 if [ -n "$SELINUX_STATE" ]; then
-	if [ -f /etc/selinux/.autorelabel ] || [ -f /.autorelabel ] ||
-	   grep -iwqs autorelabel /proc/cmdline; then
+	if [ -f /etc/selinux/.autorelabel ] || [ -f /.autorelabel ] || in_cmdline autorelabel; then
 		/etc/rc.d/scripts/selinux_relabel "$SELINUX_STATE" "$SELINUX_MP"
 		if [ $? -eq 3 ]; then
 			automatic_reboot
@@ -508,8 +429,7 @@ action "Cleaning up temporary files from previous boot:" /etc/rc.d/scripts/clean
 
 # Set SELinux context
 [ -z "$SELINUX_STATE" ] ||
-	action 'Setting SELinux context:' \
-		$RESTORECON -R /tmp /var/run/utmp* /var/log/wtmp*
+	action 'Setting SELinux context:' $RESTORECON -R /tmp /var/run/utmp* /var/log/wtmp*
 
 # Language fixes
 /etc/rc.d/scripts/lang
@@ -523,21 +443,17 @@ ExecIfExecutable /etc/rc.d/rc.serial
 
 # Initialize firewall
 for f in /etc/rc.d/scripts/firewall /etc/rc.d/rc.firewall /etc/rc.firewall; do
-	if ExecIfExecutable "$f"; then
-		break
-	fi
+	! ExecIfExecutable "$f" || break
 done
 
 # If they asked for ide-scsi, load it
-if grep -iwqs ide-scsi /proc/cmdline; then
+if in_cmdline ide-scsi; then
 	$MODPROBE ide-cd >/dev/null 2>&1
 	$MODPROBE ide-scsi >/dev/null 2>&1
 fi
 
 splash_update chrooted 8
-if [ -x /usr/sbin/update_chrooted ]; then
-	action "Updating chrooted environments:" /usr/sbin/update_chrooted conf lib
-fi
+ActionIfExecutable "Updating chrooted environments:" /usr/sbin/update_chrooted conf lib
 
 # Tune RSBAC if required
 ExecIfExecutable /etc/rc.d/scripts/rsbac_autotune
