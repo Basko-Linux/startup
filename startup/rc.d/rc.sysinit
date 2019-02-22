@@ -396,25 +396,25 @@ ActionIfExecutable "Turning on user and group quotas for local filesystems:" /sb
 
 # Check SELinux status
 SELINUX_STATE=
-SELINUX_MP="$(sed '/^selinuxfs \(\/[^ ]\+\) .*/!d;s//\1/;q' /proc/mounts)"
+SELINUX_MP=
 RESTORECON=/sbin/restorecon
 
-if [ -n "$SELINUX_MP" ] && [ -x "$RESTORECON" ]; then
-	if [ -r "$SELINUX_MP"/enforce ]; then
+if [ -x "$RESTORECON" ] &&
+		SELINUX_MP="$(findmnt -n -m --output=target -S selinuxfs)" &&
+		[ -d "$SELINUX_MP" ]
+then
+	# assume enforcing mode by default
+	SELINUX_STATE=1
+	[ ! -r "$SELINUX_MP"/enforce ] ||
 		SELINUX_STATE="$(head -1 "$SELINUX_MP"/enforce)"
-	else
-		# if the value cannnot be read, assume enforcing mode
-		SELINUX_STATE=1
-	fi
 fi
 
 # Check whether a full relabel is needed
 if [ -n "$SELINUX_STATE" ]; then
 	if [ -f /etc/selinux/.autorelabel ] || [ -f /.autorelabel ] || in_cmdline autorelabel; then
 		/etc/rc.d/scripts/selinux_relabel "$SELINUX_STATE" "$SELINUX_MP"
-		if [ $? -eq 3 ]; then
+		[ "$?" != 3 ] ||
 			automatic_reboot
-		fi
 	fi
 elif [ -d /etc/selinux ]; then
 	[ -f /etc/selinux/.autorelabel ] || [ -f /.autorelabel ] ||
