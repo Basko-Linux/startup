@@ -248,24 +248,6 @@ rootfs_mounted=1
 # Set the system clock (when /etc/adjtime is present)
 [ ! -s /etc/adjtime ] || /etc/init.d/clock start
 
-# /etc/mtab may point to /proc/mounts, in this case no update needed
-if [ ! -L /etc/mtab ]; then
-	# Clear mtab
-	>/etc/mtab
-
-	# Enter root and /proc into mtab
-	mount -f /
-	mount -f /proc
-	[ -d /sys/bus ] && mount -f -t sysfs sysfs /sys
-	[ -f /proc/bus/usb/devices ] && mount -f -t usbfs usbfs /proc/bus/usb
-	! mountpoint -q /dev || mount -f -t tmpfs udevfs /dev
-	! mountpoint -q /dev/pts || mount -f -t devpts devpts /dev/pts
-	! mountpoint -q /dev/shm || mount -f -t tmpfs shmfs /dev/shm
-fi
-
-# Remove stale backups
-rm -f /etc/mtab~ /etc/mtab~~
-
 # Set hard disk parameters
 /etc/rc.d/scripts/idetune
 
