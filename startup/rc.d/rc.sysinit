@@ -127,6 +127,15 @@ check_quota()
 		ActionIfExecutable "$MSG" /sbin/quotacheck "$@"
 }
 
+mount_early()
+{
+	if mountpoint -q "$1"; then
+		action "Remounting $1:" mount -n "$1" -o remount
+	else
+		action "Mounting $1:" mount -n -t "$2" "$3" "$1"
+	fi
+}
+
 # Fix console loglevel
 dmesg -n "$LOGLEVEL"
 
@@ -158,21 +167,11 @@ else
 fi
 
 # Mount /proc (done here so volume labels can work with fsck)
-if mountpoint -q /proc; then
-	action 'Remounting /proc:' mount -n /proc -o remount
-else
-	action 'Mounting /proc:' mount -n -t proc proc /proc
-fi
+mount_early /proc proc proc
 chgrp proc /proc >/dev/null 2>&1 ||:
 
 # Mount /sys where appropriate
-if grep -wqs sysfs /proc/filesystems; then
-	if mountpoint -q /sys; then
-		action 'Remounting /sys:' mount -n /sys -o remount
-	else
-		action 'Mounting /sys:' mount -n -t sysfs sysfs /sys
-	fi
-fi
+! grep -wqs sysfs /proc/filesystems || mount_early /sys sysfs sysfs
 
 if [ -z "$USEMODULES" ]; then
 	[ -f /proc/modules ] && [ -x /sbin/modprobe ] && ! in_cmdline nomodules &&
@@ -182,8 +181,7 @@ fi
 
 if is_yes "$USEMODULES"; then
 	MODPROBE=/sbin/modprobe
-	# Load modules
-	systemd-modules-load
+	/etc/rc.d/scripts/load_modules
 else
 	MODPROBE=/bin/true
 fi
