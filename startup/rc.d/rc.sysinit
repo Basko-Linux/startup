@@ -248,9 +248,6 @@ rootfs_mounted=1
 # Set the system clock (when /etc/adjtime is present)
 [ ! -s /etc/adjtime ] || /etc/init.d/clock start
 
-# Set hard disk parameters
-/etc/rc.d/scripts/idetune
-
 # Update quotas if fsck was run on /
 check_quota "Checking root filesystem quotas:" -v /
 
