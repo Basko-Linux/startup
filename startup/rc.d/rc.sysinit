@@ -434,9 +434,6 @@ fi
 splash_update chrooted 8
 ActionIfExecutable "Updating chrooted environments:" /usr/sbin/update_chrooted conf lib
 
-# Tune RSBAC if required
-ExecIfExecutable /etc/rc.d/scripts/rsbac_autotune
-
 # Now that we have all of our basic modules loaded and the kernel going,
 # let's dump the syslog ring somewhere so we can find it later
 dmesg >/var/log/dmesg
