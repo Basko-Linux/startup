@@ -14,8 +14,9 @@ WITHOUT_RC_COMPAT=1
 # Default log device.
 LOGDEVICE=/dev/tty12
 
-# Path to fbset program.
+# Path to programs.
 FBSET=/usr/sbin/fbset
+SETSYSFONT=/sbin/setsysfont
 
 # Parse framebuffer config.
 SourceIfNotEmpty /etc/sysconfig/framebuffer && is_yes "$ENABLE" || exit 0
@@ -47,7 +48,7 @@ check_tty()
 
 setsysfont()
 {
-	/sbin/setsysfont <"$1" >>"$1" 2>&1
+	"$SETSYSFONT" <"$1" >>"$1" 2>&1
 }
 
 start()
@@ -68,7 +69,7 @@ start()
 		do_setsysfont=1
 
 	# Update system font.
-	[ ! -x /sbin/setsysfont ] || [ -z "$do_setsysfont" ] ||
+	[ ! -x "$SETSYSFONT" ] || [ -z "$do_setsysfont" ] ||
 		foreach_ttys setsysfont
 
 	touch "$LOCKFILE"
