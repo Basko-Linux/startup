@@ -22,6 +22,9 @@ WITHOUT_RC_COMPAT=1
 # Source function library
 . /etc/init.d/functions
 
+# Read in config data
+SourceIfNotEmpty /etc/sysconfig/network
+
 PrintMargin()
 {
 	local n
@@ -139,7 +142,7 @@ mount_early()
 # Fix console loglevel
 dmesg -n "$LOGLEVEL"
 
-HOSTNAME=`hostname`
+HOSTNAME=${HOSTNAME:-`hostname`}
 
 [ ! -x "$RESOLVE_HOSTNAME_COMMAND" ] ||
 	HOSTNAME="$("$RESOLVE_HOSTNAME_COMMAND")"
