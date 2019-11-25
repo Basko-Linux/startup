@@ -102,18 +102,6 @@ if [ -s /etc/sysconfig/i18n -a ! -e /etc/locale.conf ]; then
 	chmod 644 /etc/locale.conf
 fi
 
-# Dup of timeconfig %%post - here to avoid a dependency.
-if [ -L %_sysconfdir/localtime ]; then
-	_FNAME=`ls -ld %_sysconfdir/localtime |awk '{print $11}' |sed 's/lib/share/'`
-	if [ -f "$_FNAME" ]; then
-		rm %_sysconfdir/localtime
-		cp -fp "$_FNAME" %_sysconfdir/localtime
-		if ! grep -q "^ZONE=" %_sysconfdir/sysconfig/clock; then
-			echo "ZONE=\"$_FNAME"\" |sed -e "s|[^\"]*/usr/share/zoneinfo/||" >>%_sysconfdir/sysconfig/clock
-		fi
-	fi
-fi
-
 %preun
 if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del fbsetfont
