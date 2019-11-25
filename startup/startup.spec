@@ -114,11 +114,6 @@ if [ -L %_sysconfdir/localtime ]; then
 	fi
 fi
 
-if grep -qs '^fb:[0-9]*:once:/etc/rc.d/scripts/framebuffer_setfont' /etc/inittab; then
-	/sbin/chkconfig --add fbsetfont
-	sed -i 's,^\(fb:[0-9]*:once:/etc/rc.d/scripts/framebuffer_setfont\),#\1,' /etc/inittab
-fi
-
 %preun
 if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del fbsetfont
