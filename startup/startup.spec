@@ -97,11 +97,6 @@ for f in /var/{log/wtmp,run/utmp}; do
 	fi
 done
 
-if [ -s /etc/sysconfig/i18n -a ! -e /etc/locale.conf ]; then
-	grep -E '^(LANG|LANGUAGE|LC_ADDRESS|LC_COLLATE|LC_CTYPE|LC_IDENTIFICATION|LC_MEASUREMENT|LC_MESSAGES|LC_MONETARY|LC_NAME|LC_NUMERIC|LC_PAPER|LC_TELEPHONE|LC_TIME)=' /etc/sysconfig/i18n > /etc/locale.conf
-	chmod 644 /etc/locale.conf
-fi
-
 %preun
 if [ $1 -eq 0 ]; then
 	/sbin/chkconfig --del fbsetfont
