@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.9.8
+Version: 0.9.9.9
 Release: alt1
 
 Summary: The system startup scripts
@@ -147,6 +147,14 @@ done
 %ghost %config(noreplace,missingok) %verify(not md5 mtime size) %attr(600,root,root) %_localstatedir/random/random-seed
 
 %changelog
+* Thu Nov 28 2019 Alexey Gladkov <legion@altlinux.ru> 0.9.9.9-alt1
+- rc.sysinit:
+  + Remount procfs/sysfs even if these filesystems were not mounted.
+  + Do not change group of /proc since it does not change anything.
+- Remove creation of /etc/locale.conf.
+- Remove the legacy code of migration /etc/localtime.
+- Remove the legacy code of migration framebuffer_setfont.
+
 * Wed Nov 20 2019 Alexey Gladkov <legion@altlinux.ru> 0.9.9.8-alt1
 - rc.sysinit:
   + Fix regression with ignoring HOSTNAME.
