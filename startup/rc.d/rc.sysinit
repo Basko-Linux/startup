@@ -132,11 +132,9 @@ check_quota()
 
 mount_early()
 {
-	if mountpoint -q "$1"; then
-		action "Remounting $1:" mount -n "$1" -o remount
-	else
+	mountpoint -q "$1" ||
 		action "Mounting $1:" mount -n -t "$2" "$3" "$1"
-	fi
+	action "Remounting $1:" mount -n "$1" -o remount
 }
 
 # Fix console loglevel
