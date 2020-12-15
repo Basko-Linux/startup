@@ -170,6 +170,18 @@ fi
 # Mount /proc (done here so volume labels can work with fsck)
 mount_early /proc proc proc
 
+# Check and create symlinks if needed
+ln_if_needed()
+{
+	[ ! -e "$1" ] || [ -L "$2" ] || ln -s -- "$1" "$2"
+}
+
+ln_if_needed /proc/self/fd/2 /dev/stderr
+ln_if_needed /proc/self/fd/1 /dev/stdout
+ln_if_needed /proc/self/fd/0 /dev/stdin
+ln_if_needed /proc/self/fd /dev/fd
+ln_if_needed /proc/kcore /dev/core
+
 # Mount /sys where appropriate
 ! grep -wqs sysfs /proc/filesystems || mount_early /sys sysfs sysfs
 
