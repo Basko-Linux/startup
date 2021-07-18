@@ -194,10 +194,8 @@ fi
 MODPROBE=/bin/true
 
 if is_yes "$USEMODULES"; then
-	if systemd_modules_load="$(find_util systemd-modules-load)"; then
-		"$systemd_modules_load"
-	fi
 	MODPROBE=/sbin/modprobe
+	action "Loading module:" /sbin/systemd-modules-load
 fi
 
 UDEV_SERVICE="${UDEV_SERVICE:-/etc/init.d/udevd}"
@@ -275,9 +273,7 @@ splash_update depmod 3
 
 # Configure kernel parameters
 splash_update kernel 4
-if systemd_sysctl=$(find_util systemd-sysctl); then
-	action 'Configuring kernel parameters:' "$systemd_sysctl"
-fi
+action 'Configuring kernel parameters:' /sbin/systemd-sysctl
 
 if [ -f /proc/sys/kernel/modprobe ]; then
 	if is_yes "$USEMODULES"; then

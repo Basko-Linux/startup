@@ -42,10 +42,8 @@ if [ -n "$CLEAN_TMP" ] && [ "$CLEAN_TMP" -ge 1 ]; then
 	)
 fi
 
-if systemd_tmpfiles="$(find_util systemd-tmpfiles)"; then
-	"$systemd_tmpfiles" --clean
-	"$systemd_tmpfiles" --remove --create --boot --exclude-prefix=/dev
-fi
+/sbin/systemd-tmpfiles --clean
+/sbin/systemd-tmpfiles --remove --create --boot --exclude-prefix=/dev
 
 # Possibly create lastlog, faillog, utmp and wtmp, reset utmp and possibly utmpx.
 for f in /var/log/{lastlog,faillog}; do

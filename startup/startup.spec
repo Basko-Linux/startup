@@ -30,9 +30,9 @@ Requires: /sbin/fsck
 # due to systemd-sysctl, systemd-tmpfiles, and systemd-modules-load (see ALT#29537).
 # We need a separate version of the utilities because they have less
 # dependencies (see ALT#39444).
-Requires: systemd-modules-load-standalone
-Requires: systemd-sysctl-standalone
-Requires: systemd-tmpfiles-standalone
+Requires: /sbin/systemd-modules-load
+Requires: /sbin/systemd-sysctl
+Requires: /sbin/systemd-tmpfiles
 
 # due to update_wms
 Conflicts: xinitrc < 0:2.4.13-alt1
