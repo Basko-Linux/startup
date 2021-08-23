@@ -1,5 +1,5 @@
 Name: startup
-Version: 0.9.9.11
+Version: 0.9.9.12
 Release: alt1
 
 Summary: The system startup scripts
@@ -152,6 +152,9 @@ done
 %ghost %config(noreplace,missingok) %verify(not md5 mtime size) %attr(600,root,root) %_localstatedir/random/random-seed
 
 %changelog
+* Mon Aug 23 2021 Alexey Gladkov <legion@altlinux.ru> 0.9.9.12-alt1
+- Use alternatives instead of standalone systemd utilities.
+
 * Wed Jan 27 2021 Alexey Gladkov <legion@altlinux.ru> 0.9.9.11-alt1
 - Use standalone versions of systemd utilities.
 
