@@ -26,6 +26,10 @@ Requires: hwclock >= 1:2.14-alt1
 Requires: sysvinit-utils
 # due to fsck in rc.sysinit (ALT#22410)
 Requires: /sbin/fsck
+# due to /etc/modules move
+Requires: /etc/modules
+# due to /etc/sysctl.conf move
+Requires: /etc/sysctl.conf
 
 # due to systemd-sysctl, systemd-tmpfiles, and systemd-modules-load (see ALT#29537).
 # We need a separate version of the utilities because they have less
@@ -56,7 +60,7 @@ change runlevels, and shut the system down cleanly.
 
 %install
 mkdir -p %buildroot%_sysconfdir/rc.d/rc{0,1,2,3,4,5,6}.d
-install -p -m644 inittab modules sysctl.conf %buildroot%_sysconfdir/
+install -p -m644 inittab %buildroot%_sysconfdir/
 cp -a rc.d sysconfig %buildroot%_sysconfdir/
 
 # these services do not support chkconfig:
@@ -108,7 +112,7 @@ if [ $1 -eq 0 ]; then
 fi
 
 %triggerpostun -- initscripts < 1:5.49.1-alt1
-for f in %_sysconfdir/{inittab,modules,sysctl.conf,sysconfig/{clock,framebuffer,i18n,init,mouse,system}}; do
+for f in %_sysconfdir/{inittab,sysconfig/{clock,framebuffer,i18n,init,mouse,system}}; do
 	if [ ! -f "$f" ]; then
 	        if [ -f "$f".rpmsave ]; then
 	                cp -pf "$f".rpmsave "$f"
@@ -130,8 +134,6 @@ done
 %files
 %config(noreplace) %verify(not md5 mtime size) %_sysconfdir/sysconfig/*
 %config(noreplace) %_sysconfdir/inittab
-%config(noreplace) %verify(not md5 size mtime) %_sysconfdir/modules
-%config(noreplace) %_sysconfdir/sysctl.conf
 %config(missingok) %_sysconfdir/rc.d/rc?.d/*
 %dir    %_sysconfdir/rc.d/scripts
 %config %_sysconfdir/rc.d/scripts/*
