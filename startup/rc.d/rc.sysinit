@@ -241,8 +241,8 @@ fsckoptions=
 
 _RUN_QUOTACHECK=0
 if [ -z "$fastboot" ] &&
-	! fgrep ' / ' /proc/mounts | tail -1 | cut -d' ' -f4 | grep -qsw 'rw' &&
-	! fgrep ' / ' /proc/mounts | tail -1 | cut -d' ' -f3 | grep -qs '^nfs'
+	! grep -F ' / ' /proc/mounts | tail -1 | cut -d' ' -f4 | grep -qsw 'rw' &&
+	! grep -F ' / ' /proc/mounts | tail -1 | cut -d' ' -f3 | grep -qs '^nfs'
 then
 	check_filesystem "Checking root filesystem:" -Tay $fsckoptions /
 fi
