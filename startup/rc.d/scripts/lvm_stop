@@ -2,7 +2,7 @@
 
 VGCHANGE=/sbin/vgchange
 if [ -x "$VGCHANGE" ] && [ -s /etc/lvm/lvm.conf ] &&
-   egrep -qs '^ *([^ ]+ +){3}dm-[0-9]+$' /proc/partitions; then
+   grep -E -qs '^ *([^ ]+ +){3}dm-[0-9]+$' /proc/partitions; then
 	WITHOUT_RC_COMPAT=1
 	. /etc/init.d/functions
 

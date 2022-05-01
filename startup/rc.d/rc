@@ -65,7 +65,7 @@ for i in "/etc/rc.d/rc$runlevel.d"/K*; do
 	[ -f "/var/lock/subsys/$subsys" ] || [ -f "/var/lock/subsys/$subsys.init" ] || continue
 
 	# Bring the subsystem down.
-	if egrep -qs '(action|stop_daemon|killproc|msg_) ' "$i"; then
+	if grep -E -qs '(action|stop_daemon|killproc|msg_) ' "$i"; then
 		"$i" stop
 	else
 		action "Stopping $subsys:" "$i" stop
@@ -95,7 +95,7 @@ for i in "/etc/rc.d/rc$runlevel.d"/S*; do
 	fi
 
 	if [ "$subsys" = halt ] || [ "$subsys" = reboot ] || [ "$subsys" = single ] || [ "$subsys" = local ] ||
-		egrep -qs '(action|daemon|msg_) ' "$i"; then
+		grep -E -qs '(action|daemon|msg_) ' "$i"; then
 		"$i" start
 	else
 		action "Starting $subsys:" "$i" start
