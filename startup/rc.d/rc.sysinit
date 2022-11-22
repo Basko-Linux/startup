@@ -358,7 +358,7 @@ splash_update localfs 5
 _RUN_QUOTACHECK=0
 
 # (pixel) do not check loopback files, will be done later (aren't available yet)
-check_filesystem "Checking filesystems:" -TRAay -t noloop $fsckoptions
+check_filesystem "Checking filesystems:" -MTRAay -t noloop $fsckoptions
 
 # Mount all other filesystems (except for NFS and /proc, which is already
 # mounted). Contrary to standard usage,
@@ -369,7 +369,7 @@ action 'Mounting local filesystems:' mount -a -t nocifs,davfs,ftpfs,loop,ncp,ncp
 localfs_mounted=1
 
 # (pixel) Check loopback filesystems
-check_filesystem "Checking loopback filesystems" -TRAay -t loop,ext2 $fsckoptions
+check_filesystem "Checking loopback filesystems" -MTRAay -t loop,ext2 $fsckoptions
 
 # Mount loopback
 action "Mounting loopback filesystems:" mount -a -t loop,ext2,vfat -O no_netdev
