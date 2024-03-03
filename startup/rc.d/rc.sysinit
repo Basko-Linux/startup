@@ -150,7 +150,7 @@ HOSTNAME=${HOSTNAME:-`hostname`}
 
 # Print a banner. ;)
 WELCOME="Welcome to "
-BANNER="ALT Linux"
+BANNER="Basko Linux"
 PrintMargin "$WELCOME$BANNER"
 echo -n "$WELCOME"
 SETCOLOR_INFO
